@@ -42,6 +42,7 @@ static const wxString MARK_BUFFER_EXT = "md";
 class TxtRich: public wxRichTextCtrl
 {
 public:
+    wxString current_filePath;
     TxtRich(wxWindow* parent);
     wxMenu* edit_menu();
     void load_file(const wxString filePath);
@@ -51,7 +52,7 @@ public:
 private:
     std::unique_ptr<wxRichTextStyleSheet> m_styleSheet;
 
-    // wxTextAttrEx style_base;
+    wxRichTextAttr style_h1;
     wxRichTextAttr style_base;
     wxRichTextAttr style_urls;
     wxRichTextAttr style_code;
@@ -64,6 +65,8 @@ private:
     void new_document();
     void push_xml_data(const wxString& xml_data);
     void deploy_md_node();
+
+    void h1_style_init();
 
     void next_line();
     void row_check();

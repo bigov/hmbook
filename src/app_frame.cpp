@@ -1,6 +1,3 @@
-#include "app_frame.h"
-#include "main_panel.h"
-#include "nav_panel.h"
 #include "wx/sstream.h"
 #include "wx/filedlg.h"
 #include "wx/filename.h"
@@ -17,6 +14,10 @@
 #include "wx/dirdlg.h"
 #include "wx/dir.h"
 
+#include "app_frame.h"
+#include "main_panel.h"
+#include "nav_panel.h"
+
 static const int APP_CLOSE = 1000;
 static const wxString ASSETS_DIR = "assets";
 static const wxString APP_ICON_FNAME = "icon.png";
@@ -26,50 +27,30 @@ AppFrame::AppFrame(const wxString& title)
 {
     wxInitAllImageHandlers();
     
+    // Настройка иконки приложения
     const wxString iconPath = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPathWithSep() 
         + ASSETS_DIR + wxFileName::GetPathSeparator() + APP_ICON_FNAME;
     SetAppIcon(iconPath);
 
-    // Основной контейнер из двух областей: левая навигация и правый редактор.
-    // Он отвечает за интерактивный разделитель (sash), который пользователь
-    // перетаскивает мышью для изменения относительной ширины панелей.
     this->splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition,
                                     wxDefaultSize, wxSP_NO_XP_THEME);
-    // Минимальная ширина каждой из двух областей, чтобы панели не схлопывались.
-    this->splitter->SetMinimumPaneSize(120);
-    // При изменении размера окна дополнительное место преимущественно получает
-    // правая панель (редактор), левая навигация остается более стабильной.
-    this->splitter->SetSashGravity(0.0);
-    // Фон корневого окна синхронизируется с фоном splitter, чтобы боковые поля
-    // по краям выглядели тем же цветом, что и область вокруг разделителя.
-    SetBackgroundColour(this->splitter->GetBackgroundColour());
-
+    
     MainPanel* main_panel = new MainPanel(this->splitter);
-    txt_rich = main_panel->get_txt_rich();
-
-    // Левая контейнерная панель навигации с такой же светлой theme-рамкой,
-    // как у правой панели, чтобы визуально обе стороны выглядели одинаково.
-    wxPanel* nav_border_panel = new wxPanel(this->splitter, wxID_ANY, wxDefaultPosition,
-                                            wxDefaultSize, wxBORDER_THEME);
-    // Дерево навигации, вложенное в левую контейнерную панель.
-    nav_panel = new NavPanel(nav_border_panel, txt_rich);
-    // Комфортная минимальная ширина панели навигации для читаемости заголовков.
-    nav_panel->SetMinSize(wxSize(20, -1));
-
-    // Компоновщик левой панели: дерево занимает всю полезную площадь контейнера.
-    wxBoxSizer* navSizer = new wxBoxSizer(wxVERTICAL);
-    navSizer->Add(nav_panel, 1, wxEXPAND);
-    nav_border_panel->SetSizer(navSizer);
-
-    // Размещение областей в splitter: слева навигация, справа редактор.
-    // Третий аргумент задает начальную позицию разделителя по оси X.
-    this->splitter->SplitVertically(nav_border_panel, main_panel);
+    NavPanel* nav_panel = new NavPanel(this->splitter, main_panel->get_txt_rich());
+    this->txt_rich = main_panel->get_txt_rich();
+    this->tree_viewer = nav_panel->get_tree_viewer();
+    
+    this->splitter->SplitVertically(nav_panel, main_panel);
+    this->splitter->SetMinimumPaneSize(80); // Минимальная ширина
+    this->splitter->SetSashGravity(0.0);    // При изменении размера окна ширина панели навигации остается неизменной.
 
     // Корневой компоновщик фрейма: размещает splitter на все окно, оставляя
-    // только боковые внешние поля, без верхнего и нижнего отступа.
+    
     wxBoxSizer* frameSizer = new wxBoxSizer(wxHORIZONTAL);
-    frameSizer->Add(this->splitter, 1, wxEXPAND | wxLEFT | wxRIGHT, 3);
-    SetSizer(frameSizer);
+    frameSizer->Add(this->splitter, 1, wxEXPAND | wxLEFT | wxRIGHT, 3); // боковые внешние поля
+    
+    this->SetSizer(frameSizer);
+    this->SetBackgroundColour(this->splitter->GetBackgroundColour());
 
     wxMenu* fileMenu = new wxMenu;
 
@@ -85,7 +66,7 @@ AppFrame::AppFrame(const wxString& title)
     
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, _("File"));
-    menuBar->Append(txt_rich->edit_menu(), _("Edit"));
+    menuBar->Append(main_panel->get_txt_rich()->edit_menu(), _("Edit"));
     SetMenuBar(menuBar);
 
 #if wxUSE_STATUSBAR
@@ -116,7 +97,7 @@ void AppFrame::OpenDir(wxCommandEvent& WXUNUSED(event))
     wxDirDialog dlg(this, "Select directory", defaultDir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
     if (dlg.ShowModal() == wxID_OK) {
         wxString path = dlg.GetPath();
-        nav_panel->load_directory(path);
+        this->tree_viewer->load_directory(path);
     }
 }
 
@@ -180,7 +161,7 @@ void AppFrame::load_params()
 
     this->SetSize(win_x, win_y, win_width, win_height);
     this->splitter->SetSashPosition(span); // позиция разделителя
-    this->nav_panel->load_directory(config.Read("/MainWindow/current_dir", wxEmptyString));
+    this->tree_viewer->load_directory(config.Read("/MainWindow/current_dir", wxEmptyString));
     this->txt_rich->load_file(config.Read("/MainWindow/current_file", wxEmptyString));
 }
 
@@ -196,7 +177,7 @@ void AppFrame::save_params()
     config.Write("/MainWindow/X", (long)pos.x);
     config.Write("/MainWindow/Y", (long)pos.y);
     config.Write("/MainWindow/span", (long)this->splitter->GetSashPosition());
-    config.Write("/MainWindow/current_dir", this->nav_panel->current_dir);
-    config.Write("/MainWindow/current_file", this->nav_panel->current_file);
+    config.Write("/MainWindow/current_dir", this->tree_viewer->current_dir);
+    config.Write("/MainWindow/current_file", this->txt_rich->current_filePath);
     config.Flush();
 }

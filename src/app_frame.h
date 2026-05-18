@@ -5,7 +5,7 @@
 
 #include "txt_rich.h"
 
-class NavPanel;
+class TreeViewer;
 
 class AppFrame: public wxFrame
 {
@@ -18,9 +18,10 @@ public:
     void FileSaveAs(wxCommandEvent& event);
 
 private:
-    TxtRich* txt_rich;
-    NavPanel* nav_panel;
+    TxtRich* txt_rich = nullptr;
+    TreeViewer* tree_viewer = nullptr;
     wxSplitterWindow* splitter;
+
     void load_params();
     void save_params();
     void SetAppIcon(const wxString& iconPath);

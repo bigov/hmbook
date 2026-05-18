@@ -69,6 +69,7 @@ TxtRich::TxtRich(wxWindow* parent)
     this->style_base.SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR
          | wxTEXT_ATTR_BACKGROUND_COLOUR | wxTEXT_ATTR_ALIGNMENT);
     this->style_base.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
+    this->style_base.SetLeftIndent(24);
 
     this->style_urls.SetFlags(wxTEXT_ATTR_FONT
          | wxTEXT_ATTR_TEXT_COLOUR
@@ -114,6 +115,7 @@ TxtRich::TxtRich(wxWindow* parent)
     this->style_code.SetBackgroundColour(color_gray_bg);
 
     this->SetStyleSheet(this->m_styleSheet.get());
+    h1_style_init();
 
     this->node_current = nullptr;
     new_document();
@@ -130,6 +132,36 @@ void TxtRich::new_document()
     this->row_current = 0;
     this->row_total = 0;
 }
+
+void TxtRich::h1_style_init()
+{
+    // Настроить параграфные атрибуты
+    this->style_h1.SetFlags(wxTEXT_ATTR_ALIGNMENT | wxTEXT_ATTR_FONT_SIZE | wxTEXT_ATTR_FONT_WEIGHT
+            | wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER | wxTEXT_ATTR_LEFT_INDENT);
+    this->style_h1.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
+    this->style_h1.SetFontSize(20);
+    this->style_h1.SetFontWeight(wxFONTWEIGHT_BOLD);
+    this->style_h1.SetLeftIndent(24);             // абзацный отступ слева
+    // this->style_h1.SetLineSpacing(120);        // проценты (пример)
+    this->style_h1.SetParagraphSpacingBefore(80); // вертикальный отступ сверху
+    this->style_h1.SetParagraphSpacingAfter(36);  // вертикальный отступ снизу
+
+    // Применить атрибуты к определению стиля
+    auto h1_style = new wxRichTextParagraphStyleDefinition("H1"); // Создать определение стиля
+    h1_style->SetStyle(this->style_h1);                           // Установить атрибуты стиля
+    // h1_style->SetNextStyle("Normal");                          // Указать, какой стиль следует после этого (опционально)
+    
+    //Добавить стиль в таблицу стилей 
+    wxRichTextBuffer& buffer = this->GetBuffer();
+    auto style_sheet = buffer.GetStyleSheet(); // Получить таблицу стилей
+    if (!style_sheet)
+    {
+        style_sheet = new wxRichTextStyleSheet; // Если отсутствует, то создать новую
+        buffer.SetStyleSheet(style_sheet);
+    }
+    style_sheet->AddParagraphStyle(h1_style);
+}
+
 
 void TxtRich::load_xml_handler()
 {
@@ -196,6 +228,7 @@ void TxtRich::load_file(const wxString filePath)
     } else {
         this->load_plain_file(filePath);
     }
+    this->current_filePath = filePath;
 }
 
 // --- Load the Markdown file text ---
@@ -224,6 +257,7 @@ void TxtRich::load_md_file(const wxString filePath)
     if (text.size() >= 1 && text.substr(text.size()-1) == "\n") next_line();
     cmark_node_free(node);
     this->EndSuppressUndo();
+
 }
 
 // --- Load the plain text content from a file ---
@@ -326,20 +360,34 @@ void TxtRich::md_custom_block(cmark_node* n) {
 }
 
 void TxtRich::md_header() {
-    // Размер заголовка
-    int font_size = 16 - cmark_node_get_heading_level(this->node_current);
-    this->BeginFontSize(font_size);
-    this->BeginBold();
+    int level = cmark_node_get_heading_level(this->node_current);
+    
+    if(level == 1) {
+        this->BeginParagraphStyle("H1");
+    } else {
+        // Для остальных уровней заголовков можно использовать базовый стиль с увеличенным размером шрифта
+        wxRichTextAttr header_attr = this->style_base;
+        int font_size = 18 - level; // Уменьшаем размер шрифта для более низких уровней заголовков
+        header_attr.SetFontSize(font_size);
+        header_attr.SetFontWeight(wxFONTWEIGHT_BOLD);
+        this->BeginStyle(header_attr);
+    }
 
     // Текст заголовка — в первой дочерней текстовой ноде
     this->node_current = cmark_node_first_child(this->node_current);
     show_literal(this->node_current);
-    this->EndBold();
-    this->EndFontSize();
+
+    if(level == 1) {
+        this->EndParagraphStyle();
+    } else {
+        this->EndStyle();
+    }
 }
+
 void TxtRich::md_thematic_break(cmark_node* n) {
     this->WriteText("Thematic break\n");
 }
+
 void TxtRich::md_text(cmark_node* n) {
     show_literal(n);
 }

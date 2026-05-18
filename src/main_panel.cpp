@@ -46,12 +46,13 @@ MainPanel::MainPanel(wxWindow* parent)
 
     wxBoxSizer* tabsSizer = new wxBoxSizer(wxHORIZONTAL);
     tabsSizer->AddStretchSpacer(1);
-    tabsSizer->Add(tabBtnRich, 0, wxRIGHT, 6);
+    int buttonSpacing = 8; // Расстояние между кнопками
+    tabsSizer->Add(tabBtnRich, 0, wxRIGHT, buttonSpacing);
     tabsSizer->Add(tabBtnText, 0);
     tabsPanel->SetSizer(tabsSizer);
 
     wxBoxSizer* rootSizer = new wxBoxSizer(wxVERTICAL);
-    rootSizer->Add(m_book, 1, wxEXPAND | wxALL, 10);
+    rootSizer->Add(m_book, 1, wxEXPAND | wxALL, 0);
     rootSizer->Add(tabsPanel, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
     SetSizer(rootSizer);
 }
