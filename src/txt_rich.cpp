@@ -4,20 +4,18 @@
 #include <sstream>
 #include <cstring>
 
-#include "wx/menu.h"
-#include "wx/richtext/richtextxml.h"
-#include "wx/wfstream.h"
-#include "wx/sstream.h"
-#include "wx/colordlg.h"
-#include "wx/fontdlg.h"
-#include "wx/textdlg.h"
-#include "wx/tokenzr.h"
-#include "wx/log.h"
 #include "txt_rich.h"
 
 
 namespace
 {
+    void bind_style_sheet(wxRichTextCtrl* ctrl, wxRichTextStyleSheet* sheet)
+    {
+        if (!ctrl || !sheet) return;
+        ctrl->SetStyleSheet(sheet);
+        ctrl->GetBuffer().SetStyleSheet(sheet);
+    }
+
     std::string to_utf8(const wxString& value)
     {
         const wxScopedCharBuffer utf8 = value.ToUTF8();
@@ -101,6 +99,33 @@ TxtRich::TxtRich(wxWindow* parent)
     this->m_styleSheet->AddCharacterStyle(s.get());
     s.release();
 
+    // Style for headers
+    this->headingDef = new wxRichTextParagraphStyleDefinition("Heading");
+    wxRichTextAttr headingAttr;
+    headingAttr.SetFlags(wxTEXT_ATTR_FONT_WEIGHT |
+                         wxTEXT_ATTR_FONT_SIZE |
+                         wxTEXT_ATTR_PARA_SPACING_BEFORE |
+                         wxTEXT_ATTR_ALIGNMENT);
+    headingAttr.SetFontWeight(wxFONTWEIGHT_BOLD);
+    headingAttr.SetFontSize(16);
+    headingAttr.SetParagraphSpacingBefore(36); // верхний отступ (tenths of a millimetre)
+    //headingAttr.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
+    headingAttr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);
+    this->headingDef->SetStyle(headingAttr);
+    this->m_styleSheet->AddParagraphStyle(this->headingDef);
+
+    /*
+    wxRichTextAttr h = this->style_base;
+    h.SetFontWeight(wxFONTWEIGHT_BOLD);
+    h.SetFontPointSize(14);
+    h.SetFlags(wxTEXT_ATTR_PARA_SPACING_BEFORE);
+    h.SetParagraphSpacingBefore(20);
+    auto p = std::make_unique<wxRichTextParagraphStyleDefinition>("style_header");
+    p->SetStyle(h);
+    this->m_styleSheet->AddParagraphStyle(p.get());
+    p.release();
+    */
+
     // Style for code blocks and inline code
     wxFontInfo fi = wxFontInfo(11);
     fi.Family(wxFONTFAMILY_TELETYPE).Style(wxFONTSTYLE_NORMAL);
@@ -114,8 +139,7 @@ TxtRich::TxtRich(wxWindow* parent)
     this->style_code = this->style_code_block;
     this->style_code.SetBackgroundColour(color_gray_bg);
 
-    this->SetStyleSheet(this->m_styleSheet.get());
-    h1_style_init();
+    bind_style_sheet(this, this->m_styleSheet.get());
 
     this->node_current = nullptr;
     new_document();
@@ -124,44 +148,13 @@ TxtRich::TxtRich(wxWindow* parent)
 void TxtRich::new_document()
 {
     this->Clear();
+    this->GetBuffer().ClearStyleStack();
+    bind_style_sheet(this, this->m_styleSheet.get());
     this->SetInsertionPoint(0);
     this->SetBasicStyle(this->style_base);
-    this->SetDefaultStyle(this->style_base);
-    this->SetAndShowDefaultStyle(this->style_base);
-    this->GetBuffer().SetDefaultStyle(this->style_base);
     this->row_current = 0;
     this->row_total = 0;
 }
-
-void TxtRich::h1_style_init()
-{
-    // Настроить параграфные атрибуты
-    this->style_h1.SetFlags(wxTEXT_ATTR_ALIGNMENT | wxTEXT_ATTR_FONT_SIZE | wxTEXT_ATTR_FONT_WEIGHT
-            | wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER | wxTEXT_ATTR_LEFT_INDENT);
-    this->style_h1.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    this->style_h1.SetFontSize(20);
-    this->style_h1.SetFontWeight(wxFONTWEIGHT_BOLD);
-    this->style_h1.SetLeftIndent(24);             // абзацный отступ слева
-    // this->style_h1.SetLineSpacing(120);        // проценты (пример)
-    this->style_h1.SetParagraphSpacingBefore(80); // вертикальный отступ сверху
-    this->style_h1.SetParagraphSpacingAfter(36);  // вертикальный отступ снизу
-
-    // Применить атрибуты к определению стиля
-    auto h1_style = new wxRichTextParagraphStyleDefinition("H1"); // Создать определение стиля
-    h1_style->SetStyle(this->style_h1);                           // Установить атрибуты стиля
-    // h1_style->SetNextStyle("Normal");                          // Указать, какой стиль следует после этого (опционально)
-    
-    //Добавить стиль в таблицу стилей 
-    wxRichTextBuffer& buffer = this->GetBuffer();
-    auto style_sheet = buffer.GetStyleSheet(); // Получить таблицу стилей
-    if (!style_sheet)
-    {
-        style_sheet = new wxRichTextStyleSheet; // Если отсутствует, то создать новую
-        buffer.SetStyleSheet(style_sheet);
-    }
-    style_sheet->AddParagraphStyle(h1_style);
-}
-
 
 void TxtRich::load_xml_handler()
 {
@@ -235,6 +228,8 @@ void TxtRich::load_file(const wxString filePath)
 void TxtRich::load_md_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
+    bind_style_sheet(this, this->m_styleSheet.get());
+
     std::string text = "";
     load_file_content(filePath, text);
 
@@ -287,7 +282,8 @@ void TxtRich::load_xml_file(const wxString filePath)
 void TxtRich::next_line() {
     this->row_current++;
     //В начале документа новый абзац не создавать (уже есть).
-    if(this->row_current > 1) Newline();
+    //if(this->row_current > 1) 
+    Newline();
     row_check();
 }
 
@@ -325,15 +321,15 @@ void TxtRich::md_item(cmark_node* n) {
 }
 
 void TxtRich::md_code_block() {
-    wxRichTextAttr box_attr;
-    box_attr.SetBackgroundColour(style_code.GetBackgroundColour());
-    wxTextBoxAttr& tba = box_attr.GetTextBoxAttr();
+    wxRichTextAttr attr_bg;
+    attr_bg.SetBackgroundColour(style_code.GetBackgroundColour());
+    wxTextBoxAttr& tba = attr_bg.GetTextBoxAttr();
     tba.GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
     tba.GetRightMargin().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
     tba.GetLeftPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
     tba.GetRightPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
 
-    wxRichTextBox* box = this->WriteTextBox(box_attr);
+    wxRichTextBox* box = this->WriteTextBox(attr_bg);
     if (!box) return;
 
     box->SetDefaultStyle(this->style_code_block);
@@ -360,28 +356,18 @@ void TxtRich::md_custom_block(cmark_node* n) {
 }
 
 void TxtRich::md_header() {
-    int level = cmark_node_get_heading_level(this->node_current);
-    
-    if(level == 1) {
-        this->BeginParagraphStyle("H1");
-    } else {
-        // Для остальных уровней заголовков можно использовать базовый стиль с увеличенным размером шрифта
-        wxRichTextAttr header_attr = this->style_base;
-        int font_size = 18 - level; // Уменьшаем размер шрифта для более низких уровней заголовков
-        header_attr.SetFontSize(font_size);
-        header_attr.SetFontWeight(wxFONTWEIGHT_BOLD);
-        this->BeginStyle(header_attr);
-    }
-
+    //wxRichTextAttr attr_header = this->style_base;
+    //int level = cmark_node_get_heading_level(this->node_current);
+    //int font_size = 18 - level; // Уменьшаем размер шрифта для более низких уровней заголовков
+    //attr_header.SetFontSize(font_size);
+    //attr_header.SetFontWeight(wxFONTWEIGHT_BOLD);
+    this->BeginParagraphStyle("Heading");
     // Текст заголовка — в первой дочерней текстовой ноде
     this->node_current = cmark_node_first_child(this->node_current);
-    show_literal(this->node_current);
-
-    if(level == 1) {
-        this->EndParagraphStyle();
-    } else {
-        this->EndStyle();
-    }
+    const char* lit = cmark_node_get_literal(this->node_current);
+    if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
+    Newline();
+    this->EndParagraphStyle(); // End the paragraph style for the header
 }
 
 void TxtRich::md_thematic_break(cmark_node* n) {
@@ -443,8 +429,8 @@ void TxtRich::deploy_md_node()
     
   switch (t) {
   case CMARK_NODE_NONE:
-    next_line();
     md_none();
+    next_line();
     break;
   // -- Block nodes --
   case CMARK_NODE_DOCUMENT:
@@ -452,39 +438,39 @@ void TxtRich::deploy_md_node()
     this->row_total = cmark_node_get_end_line(this->node_current);
     break;
   case CMARK_NODE_HEADING:
-    next_line();
     md_header();
+    next_line();
     break;
   case CMARK_NODE_PARAGRAPH:
-    next_line();
     break;
-  case CMARK_NODE_BLOCK_QUOTE:
     next_line();
+  case CMARK_NODE_BLOCK_QUOTE:
     md_blockquote(node_current);
+    next_line();
     break;
   case CMARK_NODE_LIST:
-    next_line();
     md_list(node_current);
+    next_line();
     break;
   case CMARK_NODE_ITEM:
-    next_line();
     md_item(node_current);
+    next_line();
     break;
   case CMARK_NODE_CODE_BLOCK:
-    next_line();
     md_code_block();
+    next_line();
     break;
   case CMARK_NODE_HTML_BLOCK:
-    next_line();
     md_html_block(node_current);
+    next_line();
     break;
   case CMARK_NODE_CUSTOM_BLOCK:
-    next_line();
     md_custom_block(node_current);
+    next_line();
     break;
   case CMARK_NODE_THEMATIC_BREAK:
-    next_line();
     md_thematic_break(node_current);
+    next_line();
     break;
   // -- Inline nodes --
   case CMARK_NODE_TEXT:

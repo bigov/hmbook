@@ -12,7 +12,17 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 
 #pragma once
 #include <memory>
+
+#include "wx/menu.h"
 #include "wx/richtext/richtextctrl.h"
+#include "wx/richtext/richtextxml.h"
+#include "wx/wfstream.h"
+#include "wx/sstream.h"
+#include "wx/colordlg.h"
+#include "wx/fontdlg.h"
+#include "wx/textdlg.h"
+#include "wx/tokenzr.h"
+#include "wx/log.h"
 
 extern "C" {
 #include "cmark.h"
@@ -50,13 +60,15 @@ public:
     void save_xml_file(const wxString filePath);
 
 private:
+    // Style sheet для хранения стилей, используемых в документе
     std::unique_ptr<wxRichTextStyleSheet> m_styleSheet;
 
-    wxRichTextAttr style_h1;
     wxRichTextAttr style_base;
     wxRichTextAttr style_urls;
     wxRichTextAttr style_code;
     wxRichTextAttr style_code_block;
+
+    wxRichTextParagraphStyleDefinition* headingDef;
 
     int row_current;
     int row_total;
@@ -65,8 +77,6 @@ private:
     void new_document();
     void push_xml_data(const wxString& xml_data);
     void deploy_md_node();
-
-    void h1_style_init();
 
     void next_line();
     void row_check();
