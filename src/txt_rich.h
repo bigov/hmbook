@@ -86,34 +86,35 @@ private:
 
     int row_current = 0;
     int row_total = 0;
-    cmark_node* node_current = nullptr;
+
+    void dbg_node(cmark_node* node, const char* info);
     
     void new_document();
     void push_xml_data(const wxString& xml_data);
-    void deploy_md_node();
 
-    void dbg_node(const char* info);
-    void next_line();
-    void row_check();
-    void show_literal(cmark_node* n);
-    void md_none();
-    void md_blockquote(cmark_node* n);
-    void md_list(cmark_node* n);
-    void md_item(cmark_node* n);
-    void md_code_block();
-    void md_html_block(cmark_node* n);
-    void md_custom_block(cmark_node* n);
-    void md_header();
-    void md_thematic_break(cmark_node* n);
-    void md_text(cmark_node* n);
-    void md_code_inline();
-    void md_html_inline(cmark_node* n);
-    void md_custom_inline(cmark_node* n);
-    void md_emph();
-    void md_strong();
-    void md_link();
-    void md_image(cmark_node* n);
-    void md_unknown(cmark_node* n);
+    void display_node(cmark_node* node);
+    void append_line();
+    void row_check(cmark_node* node);
+    void md_paragraph(cmark_node* node);
+    void show_literal(cmark_node* node);
+    void md_none(cmark_node* node);
+    void md_blockquote(cmark_node* node);
+    void md_list(cmark_node* node);
+    void md_item(cmark_node* node);
+    void md_code_block(cmark_node* node);
+    void md_html_block(cmark_node* node);
+    void md_custom_block(cmark_node* node);
+    void md_header(cmark_node* node);
+    void md_thematic_break(cmark_node* node);
+    void md_text(cmark_node* node);
+    void md_code_inline(cmark_node* node);
+    void md_html_inline(cmark_node* node);
+    void md_custom_inline(cmark_node* node);
+    void md_emph(cmark_node* node);
+    void md_strong(cmark_node* node);
+    void md_link(cmark_node* node);
+    void md_image(cmark_node* node);
+    void md_unknown(cmark_node* node);
 
     void on_change_font(wxCommandEvent& WXUNUSED(event));
     void on_left_align(wxCommandEvent& event);

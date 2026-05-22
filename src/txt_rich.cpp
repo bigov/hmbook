@@ -215,24 +215,23 @@ void TxtRich::load_md_file(const wxString filePath)
     std::string text = "";
     load_file_content(filePath, text);
 
-    cmark_node* node = cmark_parse_document(text.c_str(),
-         text.size(), CMARK_OPT_DEFAULT);
+    cmark_node* node = cmark_parse_document(text.c_str(), text.size(), CMARK_OPT_DEFAULT);
     if (!node) {
         wxLogError(_("Error parsing file '%s'."), filePath.wc_str());
         node = nullptr;
         return;
     }
-    this->node_current = node;
+
     this->BeginSuppressUndo();
-    deploy_md_node();
-    this->node_current = nullptr;
+    display_node(node);
+    
     // Дополнить пустые строки до конца документа.
     while (this->row_current < this->row_total) {
-        next_line();
+        append_line();
     }
     
     // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
-    if (text.size() >= 1 && text.substr(text.size()-1) == "\n") next_line();
+    if (text.size() >= 1 && text.substr(text.size()-1) == "\n") append_line();
     cmark_node_free(node);
     this->EndSuppressUndo();
 
@@ -262,48 +261,45 @@ void TxtRich::load_xml_file(const wxString filePath)
 }
 
 // Переход на следующую строку.
-void TxtRich::next_line() {
-    this->row_current++;
-    //В начале документа новый абзац не создавать (уже есть).
-    //if(this->row_current > 1) 
+void TxtRich::append_line() {
     Newline();
-    row_check();
+    this->row_current++;
 }
 
-void TxtRich::row_check() {
-    if(this->node_current == nullptr) return;
-    int row_node_start = cmark_node_get_start_line(this->node_current);
-    while (row_node_start > this->row_current)
+void TxtRich::row_check(cmark_node* node) {
+    if(!node) return;
+    int row_begin = cmark_node_get_start_line(node);
+    while (row_begin > this->row_current)
     {
-        this->row_current++;
         Newline();
+        this->row_current++;
     }
 }
 
 // Содержимое текстовых узлов, code, html_inline и т.д.
 // rtc->SetValue(wxString::FromUTF8(u8"äöü — пример"));
-void TxtRich::show_literal(cmark_node* n) {
-    const char* lit = cmark_node_get_literal(n);
+void TxtRich::show_literal(cmark_node* node) {
+    const char* lit = cmark_node_get_literal(node);
     if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
 }
 
-void TxtRich::md_none() {
+void TxtRich::md_none(cmark_node* node) {
     this->WriteText("ERROR: Not found node\n");
 }
 
-void TxtRich::md_blockquote(cmark_node* n) {
+void TxtRich::md_blockquote(cmark_node* node) {
     this->WriteText("Block quote\n");
 }
 
-void TxtRich::md_list(cmark_node* n) {
+void TxtRich::md_list(cmark_node* node) {
     this->WriteText("List\n");
 }
 
-void TxtRich::md_item(cmark_node* n) {
+void TxtRich::md_item(cmark_node* node) {
     this->WriteText("Item\n");
 }
 
-void TxtRich::md_code_block() {
+void TxtRich::md_code_block(cmark_node* node) {
     wxRichTextAttr attr_bg;
     attr_bg.SetBackgroundColour(this->color_gray_bg);
     wxTextBoxAttr& tba = attr_bg.GetTextBoxAttr();
@@ -320,7 +316,7 @@ void TxtRich::md_code_block() {
         box->SetDefaultStyle(this->defCharCoBl->GetStyle());
     }
     // Многострочный литерал
-    const char* lit = cmark_node_get_literal(this->node_current);
+    const char* lit = cmark_node_get_literal(node);
 
     if (lit && *lit) {
         std::istringstream ss(lit);
@@ -334,212 +330,204 @@ void TxtRich::md_code_block() {
     }
 }
 
-void TxtRich::md_html_block(cmark_node* n) {
+void TxtRich::md_html_block(cmark_node* node) {
     this->WriteText("HTML block\n");
 }
-void TxtRich::md_custom_block(cmark_node* n) {
+void TxtRich::md_custom_block(cmark_node* node) {
     this->WriteText("Custom block\n");
 }
 
-void TxtRich::md_header() {
-    //wxRichTextAttr attr_header = this->style_base;
-    //int level = cmark_node_get_heading_level(this->node_current);
-    //int font_size = 18 - level; // Уменьшаем размер шрифта для более низких уровней заголовков
-    //attr_header.SetFontSize(font_size);
-    //attr_header.SetFontWeight(wxFONTWEIGHT_BOLD);
+void TxtRich::md_header(cmark_node* node) {
+    int font_size = 18 - cmark_node_get_heading_level(node) * 2;
+    wxFont f(wxFontInfo(font_size).Weight(wxFONTWEIGHT_BOLD));
+
     this->BeginParagraphStyle("ParaHead");
+    this->BeginFont(f);
+
     // Текст заголовка — в первой дочерней текстовой ноде
-    this->node_current = cmark_node_first_child(this->node_current);
-    const char* lit = cmark_node_get_literal(this->node_current);
-    if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
+    display_node(cmark_node_first_child(node));
+    
+    this->EndFont();
     this->WriteText("\n");
     this->EndParagraphStyle();
 }
 
-void TxtRich::md_thematic_break(cmark_node* n) {
+void TxtRich::md_thematic_break(cmark_node* node) {
     this->WriteText("Thematic break\n");
 }
 
-void TxtRich::md_text(cmark_node* n) {
-    show_literal(n);
+void TxtRich::md_text(cmark_node* node) {
+    show_literal(node);
 }
 
-void TxtRich::md_code_inline() {
+void TxtRich::md_code_inline(cmark_node* node) {
     if (this->defCharCoLn)
     {
         this->BeginStyle(this->defCharCoLn->GetStyle());
     }
     this->WriteText(" ");
-    show_literal(this->node_current);
+    show_literal(node);
     this->WriteText(" ");
     if (this->defCharCoLn)
     {
         this->EndStyle();
     }
 }
-void TxtRich::md_html_inline(cmark_node* n) {
+void TxtRich::md_html_inline(cmark_node* node) {
     this->WriteText("HTML inline\n");
 }
-void TxtRich::md_custom_inline(cmark_node* n) {
+void TxtRich::md_custom_inline(cmark_node* node) {
     this->WriteText("Custom inline\n");
 }
-void TxtRich::md_emph() {
+void TxtRich::md_emph(cmark_node* node) {
     this->BeginItalic();
-    this->node_current = cmark_node_first_child(this->node_current);
-    show_literal(this->node_current);
+    display_node(cmark_node_first_child(node));
     this->EndItalic();
 }
-void TxtRich::md_strong() {
+void TxtRich::md_strong(cmark_node* node) {
     this->BeginBold();
-    this->node_current = cmark_node_first_child(this->node_current);
-    show_literal(this->node_current);
+    display_node(cmark_node_first_child(node));
     this->EndBold();
 }
-void TxtRich::md_link() {
-    const char *url = cmark_node_get_url(this->node_current);
-    //const char *title = cmark_node_get_title(this->node_current);
-    this->node_current = cmark_node_first_child(this->node_current);
-    const char *text = cmark_node_get_literal(this->node_current);
+void TxtRich::md_link(cmark_node* node) {
+    const char *url = cmark_node_get_url(node);
+    //const char *title = cmark_node_get_title(node);
+    //const char *text = cmark_node_get_literal(cmark_node_first_child(node));
     this->BeginURL(url, "style_urls");
-    this->WriteText(wxString::FromUTF8(text));
+    display_node(cmark_node_first_child(node));
+    //this->WriteText(wxString::FromUTF8(text));
     this->EndURL();
 }
-void TxtRich::md_image(cmark_node* n) {
+void TxtRich::md_image(cmark_node* node) {
     this->WriteText("Image\n");
 }
-void TxtRich::md_unknown(cmark_node* n) {
+void TxtRich::md_unknown(cmark_node* node) {
     this->WriteText("Unknown\n");
+}
+
+void TxtRich::md_paragraph(cmark_node* node) {
+    row_check(node);
 }
 
 // ---------------------------------------------
 // --- диапазон строк ноды (для отладки) ---
-void TxtRich::dbg_node(const char* info) {
+void TxtRich::dbg_node(cmark_node* node, const char* info) {
     int start_line = 0;
     int end_line = 0;
-    if (this->node_current) 
+    if (node) 
     { 
-        start_line = cmark_node_get_start_line(this->node_current);
-        end_line = cmark_node_get_end_line(this->node_current);
+        start_line = cmark_node_get_start_line(node);
+        end_line = cmark_node_get_end_line(node);
     }
-        std::cerr << "[" << start_line << " - " << end_line << "] " << info << "\n";
+    std::cerr << "[" << start_line << " - " << end_line << "] " << info << "\n";
 }
 
-void TxtRich::deploy_md_node()
+void TxtRich::display_node(cmark_node* node)
 {
-  if (!node_current) return;
-  cmark_node_type t = cmark_node_get_type(node_current);
+  if (!node) return;
+  cmark_node_type t = cmark_node_get_type(node);
 
  bool D = true;
 
   switch (t) {
   case CMARK_NODE_NONE:
-    if (D) dbg_node("NONE");
-    md_none();
-    next_line();
+    if (D) dbg_node(node, "NONE");
+    md_none(node);
     break;
   // -- Block nodes --
   case CMARK_NODE_DOCUMENT:
-    if (D) dbg_node("DOCUMENT");
+    if (D) dbg_node(node, "DOCUMENT");
     new_document();
-    this->row_total = cmark_node_get_end_line(this->node_current);
+    this->row_current = cmark_node_get_start_line(node);
+    this->row_total = cmark_node_get_end_line(node);
     break;
   case CMARK_NODE_HEADING:
-    if (D) dbg_node("HEADING");
-    md_header();
-    //next_line();
+    if (D) dbg_node(node, "HEADING");
+    md_header(node);
     break;
   case CMARK_NODE_PARAGRAPH:
-    if (D) dbg_node("PARAGRAPH");
+    if (D) dbg_node(node, "PARAGRAPH");
+    md_paragraph(node);
     break;
-    next_line();
   case CMARK_NODE_BLOCK_QUOTE:
-    if (D) dbg_node("BLOCK_QUOTE");
-    md_blockquote(node_current);
-    next_line();
+    if (D) dbg_node(node, "BLOCK_QUOTE");
+    md_blockquote(node);
     break;
   case CMARK_NODE_LIST:
-    if (D) dbg_node("LIST");
-    md_list(node_current);
-    next_line();
+    if (D) dbg_node(node, "LIST");
+    md_list(node);
     break;
   case CMARK_NODE_ITEM:
-    if (D) dbg_node("ITEM");
-    md_item(node_current);
-    next_line();
+    if (D) dbg_node(node, "ITEM");
+    md_item(node);
     break;
   case CMARK_NODE_CODE_BLOCK:
-    if (D) dbg_node("CODE_BLOCK");
-    md_code_block();
-    next_line();
+    if (D) dbg_node(node, "CODE_BLOCK");
+    md_code_block(node);
     break;
   case CMARK_NODE_HTML_BLOCK:
-    if (D) dbg_node("HTML_BLOCK");
-    md_html_block(node_current);
-    next_line();
+    if (D) dbg_node(node, "HTML_BLOCK");
+    md_html_block(node);
     break;
   case CMARK_NODE_CUSTOM_BLOCK:
-    if (D) dbg_node("CUSTOM_BLOCK");
-    md_custom_block(node_current);
-    next_line();
+    if (D) dbg_node(node, "CUSTOM_BLOCK");
+    md_custom_block(node);
     break;
   case CMARK_NODE_THEMATIC_BREAK:
-    if (D) dbg_node("THEMATIC_BREAK");
-    md_thematic_break(node_current);
-    next_line();
+    if (D) dbg_node(node, "THEMATIC_BREAK");
+    md_thematic_break(node);
+    break;
     break;
   // -- Inline nodes --
   case CMARK_NODE_TEXT:
-    if (D) dbg_node("TEXT");
-    md_text(node_current);
+    if (D) dbg_node(node, "TEXT");
+    md_text(node);
     break;
   case CMARK_NODE_SOFTBREAK:
-    if (D) dbg_node("SOFTBREAK");
-    next_line();
+    if (D) dbg_node(node, "SOFTBREAK");
     break;
   case CMARK_NODE_LINEBREAK:
-    if (D) dbg_node("LINEBREAK");
+    if (D) dbg_node(node, "LINEBREAK");
     this->WriteText("\n");
-    next_line();
     break;
   case CMARK_NODE_CODE:
-    if (D) dbg_node("CODE");
-    md_code_inline();
+    if (D) dbg_node(node, "CODE");
+    md_code_inline(node);
     break;
   case CMARK_NODE_HTML_INLINE:
-    if (D) dbg_node("HTML_INLINE");
-    md_html_inline(node_current);
+    if (D) dbg_node(node, "HTML_INLINE");
+    md_html_inline(node);
     break;
   case CMARK_NODE_CUSTOM_INLINE:
-    if (D) dbg_node("CUSTOM_INLINE");
-    md_custom_inline(node_current);
+    if (D) dbg_node(node, "CUSTOM_INLINE");
+    md_custom_inline(node);
     break;
   case CMARK_NODE_EMPH:
-    if (D) dbg_node("EMPH");
-    md_emph();
+    if (D) dbg_node(node, "EMPH");
+    md_emph(node);
     break;
   case CMARK_NODE_STRONG:
-    if (D) dbg_node("STRONG");
-    md_strong();
+    if (D) dbg_node(node, "STRONG");
+    md_strong(node);
     break;
   case CMARK_NODE_LINK:
-    if (D) dbg_node("LINK");
-    md_link();
+    if (D) dbg_node(node, "LINK");
+    md_link(node);
     break;
   case CMARK_NODE_IMAGE:
-    if (D) dbg_node("IMAGE");
-    md_image(node_current);
+    if (D) dbg_node(node, "IMAGE");
+    md_image(node);
     break;
   default:
-    if (D) dbg_node("UNKNOWN");
-    md_unknown(node_current);
+    if (D) dbg_node(node, "UNKNOWN");
+    md_unknown(node);
     break;
   }
 
     // Рекурсивный обход
-    cmark_node* child = cmark_node_first_child(node_current);
+    cmark_node* child = cmark_node_first_child(node);
     while (child) {
-        this->node_current = child;
-        deploy_md_node();
+        display_node(child);
         child = cmark_node_next(child);
     }
 }
