@@ -69,7 +69,7 @@ private:
     wxColor color_gray_bg = "#f0f0f0";
     
     wxFont font_base = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
-         wxFONTWEIGHT_NORMAL, false, "Adwaita Sans");
+         wxFONTWEIGHT_NORMAL, false, "Adwaita Sans Text");
     wxFont font_code = wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
          wxFONTWEIGHT_NORMAL, false, "Adwaita Mono");
 

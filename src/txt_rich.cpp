@@ -349,6 +349,7 @@ void TxtRich::md_header(cmark_node* node) {
     
     this->EndFont();
     this->WriteText("\n");
+    this->row_current++;
     this->EndParagraphStyle();
 }
 
@@ -407,6 +408,14 @@ void TxtRich::md_unknown(cmark_node* node) {
 
 void TxtRich::md_paragraph(cmark_node* node) {
     row_check(node);
+    this->BeginParagraphStyle("ParaBase");
+    node = cmark_node_first_child(node);
+    while (node)
+    {
+      display_node(node);
+      node = cmark_node_next(node);
+    }
+    this->EndParagraphStyle();
 }
 
 // ---------------------------------------------
@@ -444,10 +453,12 @@ void TxtRich::display_node(cmark_node* node)
   case CMARK_NODE_HEADING:
     if (D) dbg_node(node, "HEADING");
     md_header(node);
+    node = nullptr;
     break;
   case CMARK_NODE_PARAGRAPH:
     if (D) dbg_node(node, "PARAGRAPH");
     md_paragraph(node);
+    node = nullptr;
     break;
   case CMARK_NODE_BLOCK_QUOTE:
     if (D) dbg_node(node, "BLOCK_QUOTE");
@@ -485,10 +496,13 @@ void TxtRich::display_node(cmark_node* node)
     break;
   case CMARK_NODE_SOFTBREAK:
     if (D) dbg_node(node, "SOFTBREAK");
+    this->WriteText("\n");
+    this->row_current++;
     break;
   case CMARK_NODE_LINEBREAK:
     if (D) dbg_node(node, "LINEBREAK");
     this->WriteText("\n");
+    this->row_current++;
     break;
   case CMARK_NODE_CODE:
     if (D) dbg_node(node, "CODE");
