@@ -22,3 +22,12 @@ proprietary software.
   
   - https://github.com/wxWidgets/wxWidgets/blob/master/docs/licence.txt
   - https://wxwidgets.org/about/licence/
+
+## cmark Library
+
+cmark is a reference implementation of CommonMark in C. It is a parser and
+renderer library used to process Markdown content and is distributed under the
+BSD 2-Clause License.
+
+  - https://github.com/commonmark/cmark
+  - https://github.com/commonmark/cmark/blob/master/COPYING

@@ -52,32 +52,47 @@ static const wxString MARK_BUFFER_EXT = "md";
 class TxtRich: public wxRichTextCtrl
 {
 public:
-    wxString current_filePath;
     TxtRich(wxWindow* parent);
+    ~TxtRich() override;
+    wxString current_filePath;
     wxMenu* edit_menu();
     void load_file(const wxString filePath);
     void save_plain_file(const wxString filePath);
     void save_xml_file(const wxString filePath);
 
 private:
-    // Style sheet для хранения стилей, используемых в документе
-    std::unique_ptr<wxRichTextStyleSheet> m_styleSheet;
+    
+    wxColor color_base_fg = "#444444";
+    wxColor color_urls_fg = "#25A4D1"; 
+    wxColor color_code_fg = "#0954b8";
+    wxColor color_base_bg = "#ffffff";
+    wxColor color_gray_bg = "#f0f0f0";
+    
+    wxFont font_base = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
+         wxFONTWEIGHT_NORMAL, false, "Adwaita Sans");
+    wxFont font_code = wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
+         wxFONTWEIGHT_NORMAL, false, "Adwaita Mono");
 
-    wxRichTextAttr style_base;
-    wxRichTextAttr style_urls;
-    wxRichTextAttr style_code;
-    wxRichTextAttr style_code_block;
+    wxRichTextCharacterStyleDefinition* defCharBase = nullptr; // базовый стиль
+    wxRichTextCharacterStyleDefinition* defCharLink = nullptr; // ссылки
+    wxRichTextCharacterStyleDefinition* defCharCoBl = nullptr; // code block
+    wxRichTextCharacterStyleDefinition* defCharCoLn = nullptr; // code inline
 
-    wxRichTextParagraphStyleDefinition* headingDef;
+    wxRichTextParagraphStyleDefinition* defParaBase = nullptr; // базовый стиль для абзаца
+    wxRichTextParagraphStyleDefinition* defParaHead = nullptr; // стиль для заголовков
 
-    int row_current;
-    int row_total;
-    cmark_node* node_current;
+    // Таблица стилей для всего документа
+    std::unique_ptr<wxRichTextStyleSheet> style_sheet = nullptr;
+
+    int row_current = 0;
+    int row_total = 0;
+    cmark_node* node_current = nullptr;
     
     void new_document();
     void push_xml_data(const wxString& xml_data);
     void deploy_md_node();
 
+    void dbg_node(const char* info);
     void next_line();
     void row_check();
     void show_literal(cmark_node* n);
@@ -91,7 +106,7 @@ private:
     void md_header();
     void md_thematic_break(cmark_node* n);
     void md_text(cmark_node* n);
-    void md_code();
+    void md_code_inline();
     void md_html_inline(cmark_node* n);
     void md_custom_inline(cmark_node* n);
     void md_emph();

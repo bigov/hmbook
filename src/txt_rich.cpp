@@ -9,13 +9,6 @@
 
 namespace
 {
-    void bind_style_sheet(wxRichTextCtrl* ctrl, wxRichTextStyleSheet* sheet)
-    {
-        if (!ctrl || !sheet) return;
-        ctrl->SetStyleSheet(sheet);
-        ctrl->GetBuffer().SetStyleSheet(sheet);
-    }
-
     std::string to_utf8(const wxString& value)
     {
         const wxScopedCharBuffer utf8 = value.ToUTF8();
@@ -60,98 +53,88 @@ TxtRich::TxtRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                     wxBORDER_NONE | wxWANTS_CHARS)
 {
+    this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
 
-    m_styleSheet = std::make_unique<wxRichTextStyleSheet>();
-    node_current = nullptr;
+    // Base character style
+    this->defCharBase = new wxRichTextCharacterStyleDefinition("CharBase");
+    auto style_base = &defCharBase->GetStyle();
+    style_base->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    style_base->SetFont(this->font_base);
+    style_base->SetTextColour(this->color_base_fg);
+    style_base->SetBackgroundColour(this->color_base_bg);
+    this->style_sheet->AddCharacterStyle(this->defCharBase);
+    this->SetDefaultStyle(this->defCharBase->GetStyle());
+        
+    // Style for code blocks
+    this->defCharCoBl = new wxRichTextCharacterStyleDefinition("CharCoBl");
+    auto style_code_block = &defCharCoBl->GetStyle();
+    style_code_block->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    style_code_block->SetFont(this->font_code);
+    style_code_block->SetTextColour(this->color_code_fg);
+    this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
-    this->style_base.SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR
-         | wxTEXT_ATTR_BACKGROUND_COLOUR | wxTEXT_ATTR_ALIGNMENT);
-    this->style_base.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    this->style_base.SetLeftIndent(24);
-
-    this->style_urls.SetFlags(wxTEXT_ATTR_FONT
-         | wxTEXT_ATTR_TEXT_COLOUR
-         | wxTEXT_ATTR_BACKGROUND_COLOUR);
-
-    this->style_code.SetFlags(wxTEXT_ATTR_FONT
-         | wxTEXT_ATTR_TEXT_COLOUR
-         | wxTEXT_ATTR_BACKGROUND_COLOUR);
-
-
-    wxFont base_font = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    base_font.SetFaceName("Adwaita Sans");
-    wxColor color_base_fg = "#444444";
-    wxColor color_urls_fg = "#25A4D1"; 
-    wxColor color_code_fg = "#0954b8";
-    wxColor color_base_bg = "#ffffff";
-    wxColor color_gray_bg = "#f0f0f0";
-
-    this->style_base.SetFont(base_font);
-    this->style_base.SetTextColour(color_base_fg);
-    this->style_base.SetBackgroundColour(color_base_bg);
-    this->style_base.SetFontWeight(wxFONTWEIGHT_NORMAL);
+    // Style for inline code
+    this->defCharCoLn = new wxRichTextCharacterStyleDefinition("CharCoLn");
+    auto style_code_inline = &defCharCoLn->GetStyle();
+    style_code_inline->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    style_code_inline->SetFont(this->font_code);
+    style_code_inline->SetTextColour(this->color_code_fg);
+    style_code_inline->SetBackgroundColour(this->color_gray_bg);
+    this->style_sheet->AddCharacterStyle(this->defCharCoLn);
 
     // Style for links
-    this->style_urls.SetTextColour(color_urls_fg);
-    this->style_urls.SetFontUnderlined(true);
-    auto s = std::make_unique<wxRichTextCharacterStyleDefinition>("style_urls");
-    s->SetStyle(this->style_urls);
-    this->m_styleSheet->AddCharacterStyle(s.get());
-    s.release();
+    this->defCharLink = new wxRichTextCharacterStyleDefinition("CharLink");
+    auto style_link = &defCharLink->GetStyle();
+    style_link->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    style_link->SetFont(this->font_base);
+    style_link->SetTextColour(this->color_urls_fg);
+    style_link->SetFontUnderlined(true);
+    this->style_sheet->AddCharacterStyle(this->defCharLink);
+
+    // Base paragraph style
+    this->defParaBase = new wxRichTextParagraphStyleDefinition("ParaBase");
+    auto style_para_base = &defParaBase->GetStyle();
+    style_para_base->SetFlags(wxTEXT_ATTR_ALIGNMENT |
+         wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
+         wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
+    style_para_base->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
+    style_para_base->SetLeftIndent(0);
+    style_para_base->SetRightIndent(0);
+    style_para_base->SetParagraphSpacingBefore(0);
+    style_para_base->SetParagraphSpacingAfter(0);
+    this->style_sheet->AddParagraphStyle(this->defParaBase);
+    this->SetDefaultStyle(this->defParaBase->GetStyle());
 
     // Style for headers
-    this->headingDef = new wxRichTextParagraphStyleDefinition("Heading");
-    wxRichTextAttr headingAttr;
-    headingAttr.SetFlags(wxTEXT_ATTR_FONT_WEIGHT |
-                         wxTEXT_ATTR_FONT_SIZE |
-                         wxTEXT_ATTR_PARA_SPACING_BEFORE |
-                         wxTEXT_ATTR_ALIGNMENT);
-    headingAttr.SetFontWeight(wxFONTWEIGHT_BOLD);
-    headingAttr.SetFontSize(16);
-    headingAttr.SetParagraphSpacingBefore(36); // верхний отступ (tenths of a millimetre)
-    //headingAttr.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    headingAttr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);
-    this->headingDef->SetStyle(headingAttr);
-    this->m_styleSheet->AddParagraphStyle(this->headingDef);
+    this->defParaHead = new wxRichTextParagraphStyleDefinition("ParaHead");
+    auto style_heading = &defParaHead->GetStyle();
+    style_heading->SetFlags(wxTEXT_ATTR_ALIGNMENT |
+         wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
+         wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
+    style_heading->SetAlignment(wxTEXT_ALIGNMENT_CENTER);
+    style_heading->SetParagraphSpacingBefore(36);
+    style_heading->SetParagraphSpacingAfter(18);
+    //this->defParaHead->SetStyle(*style_heading);
+    this->style_sheet->AddParagraphStyle(this->defParaHead);
 
-    /*
-    wxRichTextAttr h = this->style_base;
-    h.SetFontWeight(wxFONTWEIGHT_BOLD);
-    h.SetFontPointSize(14);
-    h.SetFlags(wxTEXT_ATTR_PARA_SPACING_BEFORE);
-    h.SetParagraphSpacingBefore(20);
-    auto p = std::make_unique<wxRichTextParagraphStyleDefinition>("style_header");
-    p->SetStyle(h);
-    this->m_styleSheet->AddParagraphStyle(p.get());
-    p.release();
-    */
+    this->GetBuffer().SetStyleSheet(this->style_sheet.get());
+    this->ApplyStyleSheet(this->style_sheet.get());
 
-    // Style for code blocks and inline code
-    wxFontInfo fi = wxFontInfo(11);
-    fi.Family(wxFONTFAMILY_TELETYPE).Style(wxFONTSTYLE_NORMAL);
-    fi.FaceName("Adwaita Mono").Weight(wxFONTWEIGHT_NORMAL);
-    wxFont font_code_style(fi);
-
-    this->style_code_block.SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    this->style_code_block.SetFont(font_code_style);
-    this->style_code_block.SetTextColour(color_code_fg);
-
-    this->style_code = this->style_code_block;
-    this->style_code.SetBackgroundColour(color_gray_bg);
-
-    bind_style_sheet(this, this->m_styleSheet.get());
-
-    this->node_current = nullptr;
     new_document();
+}
+
+
+TxtRich::~TxtRich()
+{
+    // Буфер rich text хранит «сырой» указатель на style sheet и сам его не удаляет.
+    // Перед уничтожением style_sheet явно обнуляем ссылку в буфере.
+    this->GetBuffer().SetStyleSheet(nullptr);
 }
 
 void TxtRich::new_document()
 {
     this->Clear();
-    this->GetBuffer().ClearStyleStack();
-    bind_style_sheet(this, this->m_styleSheet.get());
     this->SetInsertionPoint(0);
-    this->SetBasicStyle(this->style_base);
     this->row_current = 0;
     this->row_total = 0;
 }
@@ -228,7 +211,6 @@ void TxtRich::load_file(const wxString filePath)
 void TxtRich::load_md_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
-    bind_style_sheet(this, this->m_styleSheet.get());
 
     std::string text = "";
     load_file_content(filePath, text);
@@ -248,7 +230,8 @@ void TxtRich::load_md_file(const wxString filePath)
     while (this->row_current < this->row_total) {
         next_line();
     }
-    // Баг парсера: если текст заканчивается на '\n', то последняя строка не считается, а она должна быть.
+    
+    // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
     if (text.size() >= 1 && text.substr(text.size()-1) == "\n") next_line();
     cmark_node_free(node);
     this->EndSuppressUndo();
@@ -322,7 +305,7 @@ void TxtRich::md_item(cmark_node* n) {
 
 void TxtRich::md_code_block() {
     wxRichTextAttr attr_bg;
-    attr_bg.SetBackgroundColour(style_code.GetBackgroundColour());
+    attr_bg.SetBackgroundColour(this->color_gray_bg);
     wxTextBoxAttr& tba = attr_bg.GetTextBoxAttr();
     tba.GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
     tba.GetRightMargin().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
@@ -332,7 +315,10 @@ void TxtRich::md_code_block() {
     wxRichTextBox* box = this->WriteTextBox(attr_bg);
     if (!box) return;
 
-    box->SetDefaultStyle(this->style_code_block);
+    if (this->defCharCoBl)
+    {
+        box->SetDefaultStyle(this->defCharCoBl->GetStyle());
+    }
     // Многострочный литерал
     const char* lit = cmark_node_get_literal(this->node_current);
 
@@ -361,13 +347,13 @@ void TxtRich::md_header() {
     //int font_size = 18 - level; // Уменьшаем размер шрифта для более низких уровней заголовков
     //attr_header.SetFontSize(font_size);
     //attr_header.SetFontWeight(wxFONTWEIGHT_BOLD);
-    this->BeginParagraphStyle("Heading");
+    this->BeginParagraphStyle("ParaHead");
     // Текст заголовка — в первой дочерней текстовой ноде
     this->node_current = cmark_node_first_child(this->node_current);
     const char* lit = cmark_node_get_literal(this->node_current);
     if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
-    Newline();
-    this->EndParagraphStyle(); // End the paragraph style for the header
+    this->WriteText("\n");
+    this->EndParagraphStyle();
 }
 
 void TxtRich::md_thematic_break(cmark_node* n) {
@@ -378,12 +364,18 @@ void TxtRich::md_text(cmark_node* n) {
     show_literal(n);
 }
 
-void TxtRich::md_code() {
-    this->BeginStyle(style_code);
+void TxtRich::md_code_inline() {
+    if (this->defCharCoLn)
+    {
+        this->BeginStyle(this->defCharCoLn->GetStyle());
+    }
     this->WriteText(" ");
     show_literal(this->node_current);
     this->WriteText(" ");
-    this->EndStyle();
+    if (this->defCharCoLn)
+    {
+        this->EndStyle();
+    }
 }
 void TxtRich::md_html_inline(cmark_node* n) {
     this->WriteText("HTML inline\n");
@@ -420,90 +412,125 @@ void TxtRich::md_unknown(cmark_node* n) {
 }
 
 // ---------------------------------------------
-
+// --- диапазон строк ноды (для отладки) ---
+void TxtRich::dbg_node(const char* info) {
+    int start_line = 0;
+    int end_line = 0;
+    if (this->node_current) 
+    { 
+        start_line = cmark_node_get_start_line(this->node_current);
+        end_line = cmark_node_get_end_line(this->node_current);
+    }
+        std::cerr << "[" << start_line << " - " << end_line << "] " << info << "\n";
+}
 
 void TxtRich::deploy_md_node()
 {
   if (!node_current) return;
   cmark_node_type t = cmark_node_get_type(node_current);
-    
+
+ bool D = true;
+
   switch (t) {
   case CMARK_NODE_NONE:
+    if (D) dbg_node("NONE");
     md_none();
     next_line();
     break;
   // -- Block nodes --
   case CMARK_NODE_DOCUMENT:
+    if (D) dbg_node("DOCUMENT");
     new_document();
     this->row_total = cmark_node_get_end_line(this->node_current);
     break;
   case CMARK_NODE_HEADING:
+    if (D) dbg_node("HEADING");
     md_header();
-    next_line();
+    //next_line();
     break;
   case CMARK_NODE_PARAGRAPH:
+    if (D) dbg_node("PARAGRAPH");
     break;
     next_line();
   case CMARK_NODE_BLOCK_QUOTE:
+    if (D) dbg_node("BLOCK_QUOTE");
     md_blockquote(node_current);
     next_line();
     break;
   case CMARK_NODE_LIST:
+    if (D) dbg_node("LIST");
     md_list(node_current);
     next_line();
     break;
   case CMARK_NODE_ITEM:
+    if (D) dbg_node("ITEM");
     md_item(node_current);
     next_line();
     break;
   case CMARK_NODE_CODE_BLOCK:
+    if (D) dbg_node("CODE_BLOCK");
     md_code_block();
     next_line();
     break;
   case CMARK_NODE_HTML_BLOCK:
+    if (D) dbg_node("HTML_BLOCK");
     md_html_block(node_current);
     next_line();
     break;
   case CMARK_NODE_CUSTOM_BLOCK:
+    if (D) dbg_node("CUSTOM_BLOCK");
     md_custom_block(node_current);
     next_line();
     break;
   case CMARK_NODE_THEMATIC_BREAK:
+    if (D) dbg_node("THEMATIC_BREAK");
     md_thematic_break(node_current);
     next_line();
     break;
   // -- Inline nodes --
   case CMARK_NODE_TEXT:
+    if (D) dbg_node("TEXT");
     md_text(node_current);
     break;
   case CMARK_NODE_SOFTBREAK:
+    if (D) dbg_node("SOFTBREAK");
     next_line();
     break;
   case CMARK_NODE_LINEBREAK:
+    if (D) dbg_node("LINEBREAK");
+    this->WriteText("\n");
     next_line();
     break;
   case CMARK_NODE_CODE:
-    md_code();
+    if (D) dbg_node("CODE");
+    md_code_inline();
     break;
   case CMARK_NODE_HTML_INLINE:
+    if (D) dbg_node("HTML_INLINE");
     md_html_inline(node_current);
     break;
   case CMARK_NODE_CUSTOM_INLINE:
+    if (D) dbg_node("CUSTOM_INLINE");
     md_custom_inline(node_current);
     break;
   case CMARK_NODE_EMPH:
+    if (D) dbg_node("EMPH");
     md_emph();
     break;
   case CMARK_NODE_STRONG:
+    if (D) dbg_node("STRONG");
     md_strong();
     break;
   case CMARK_NODE_LINK:
+    if (D) dbg_node("LINK");
     md_link();
     break;
   case CMARK_NODE_IMAGE:
+    if (D) dbg_node("IMAGE");
     md_image(node_current);
     break;
   default:
+    if (D) dbg_node("UNKNOWN");
     md_unknown(node_current);
     break;
   }
