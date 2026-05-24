@@ -16,5 +16,6 @@ public:
 private:
     wxSimplebook* m_book;
     TxtRich* m_txtRich;
-    wxTextCtrl* m_plainText;
+    wxTextCtrl* m_source;
+    wxTextCtrl* m_buffer;
 };

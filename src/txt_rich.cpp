@@ -58,18 +58,30 @@ TxtRich::TxtRich(wxWindow* parent)
     // Base character style
     this->defCharBase = new wxRichTextCharacterStyleDefinition("CharBase");
     auto style_base = &defCharBase->GetStyle();
-    style_base->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    style_base->SetFlags(wxTEXT_ATTR_FONT_POINT_SIZE | wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    //style_base->SetFont(wxFontInfo(14).FaceName("Adwaita Sans Text"));
     style_base->SetFont(this->font_base);
     style_base->SetTextColour(this->color_base_fg);
     style_base->SetBackgroundColour(this->color_base_bg);
+    style_base->SetLeftIndent(20);
+    style_base->SetRightIndent(10);
+    style_base->SetCharacterStyleName("CharBase");
     this->style_sheet->AddCharacterStyle(this->defCharBase);
+
+    // Basic style defines the document-wide baseline appearance.
+    // SetDefaultStyle влияет только на последующий ввод, а за стиль всего буфера отвечает SetBasicStyle.
+    // Рекомендуемая схема:
+    //  - сначала SetFont(font_base),
+    //  - затем SetBasicStyle с нужными цветами,
+    //  - отдельно формировать default стиль для ввода как объединение char+paragraph атрибутов.
+    this->SetBasicStyle(this->defCharBase->GetStyle());  // стиль буфера по-умолчанию
     this->SetDefaultStyle(this->defCharBase->GetStyle());
         
     // Style for code blocks
     this->defCharCoBl = new wxRichTextCharacterStyleDefinition("CharCoBl");
     auto style_code_block = &defCharCoBl->GetStyle();
     style_code_block->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_code_block->SetFont(this->font_code);
+    style_code_block->SetFont(this->font_mono);
     style_code_block->SetTextColour(this->color_code_fg);
     this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
@@ -77,7 +89,7 @@ TxtRich::TxtRich(wxWindow* parent)
     this->defCharCoLn = new wxRichTextCharacterStyleDefinition("CharCoLn");
     auto style_code_inline = &defCharCoLn->GetStyle();
     style_code_inline->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_code_inline->SetFont(this->font_code);
+    style_code_inline->SetFont(this->font_mono);
     style_code_inline->SetTextColour(this->color_code_fg);
     style_code_inline->SetBackgroundColour(this->color_gray_bg);
     this->style_sheet->AddCharacterStyle(this->defCharCoLn);
@@ -111,9 +123,12 @@ TxtRich::TxtRich(wxWindow* parent)
     style_heading->SetFlags(wxTEXT_ATTR_ALIGNMENT |
          wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
          wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
-    style_heading->SetAlignment(wxTEXT_ALIGNMENT_CENTER);
-    style_heading->SetParagraphSpacingBefore(36);
-    style_heading->SetParagraphSpacingAfter(18);
+    style_heading->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
+    style_heading->SetLeftIndent(20);
+    style_heading->SetRightIndent(10);
+    style_heading->SetParagraphSpacingBefore(20);
+    style_heading->SetParagraphSpacingAfter(0);
+    style_heading->SetCharacterStyleName("CharBase");
     //this->defParaHead->SetStyle(*style_heading);
     this->style_sheet->AddParagraphStyle(this->defParaHead);
 
@@ -171,6 +186,22 @@ void TxtRich::save_xml_file(const wxString filePath)
         wxLogError(_("Cannot save rich buffer file '%s'."), filePath.wc_str());
     }
     return;
+}
+
+wxString TxtRich::export_xml_text()
+{
+    wxRichTextBuffer& buffer = this->GetBuffer();
+    load_xml_handler();
+
+    wxString xml_text;
+    wxStringOutputStream xml_stream(&xml_text);
+    if (!buffer.SaveFile(xml_stream, wxRICHTEXT_TYPE_XML))
+    {
+        wxLogWarning(_("Cannot serialize rich buffer to XML string."));
+        return wxEmptyString;
+    }
+
+    return xml_text;
 }
 
 // --- Load the prepared XML data into the control's buffer ---

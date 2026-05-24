@@ -59,6 +59,7 @@ public:
     void load_file(const wxString filePath);
     void save_plain_file(const wxString filePath);
     void save_xml_file(const wxString filePath);
+    wxString export_xml_text();
 
 private:
     
@@ -68,10 +69,8 @@ private:
     wxColor color_base_bg = "#ffffff";
     wxColor color_gray_bg = "#f0f0f0";
     
-    wxFont font_base = wxFont(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL,
-         wxFONTWEIGHT_NORMAL, false, "Adwaita Sans Text");
-    wxFont font_code = wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
-         wxFONTWEIGHT_NORMAL, false, "Adwaita Mono");
+    wxFont font_base = wxFontInfo(11).FaceName("Adwaita Sans Text");
+    wxFont font_mono = wxFontInfo(11).FaceName("Adwaita Mono");
 
     wxRichTextCharacterStyleDefinition* defCharBase = nullptr; // базовый стиль
     wxRichTextCharacterStyleDefinition* defCharLink = nullptr; // ссылки
