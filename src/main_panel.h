@@ -1,6 +1,8 @@
-#pragma once
+#ifndef MAIN_PANEL_H
+#define MAIN_PANEL_H
 
 #include "wx/panel.h"
+#include "tools.h"
 
 class TxtRich;
 class wxAuiNotebook;
@@ -10,12 +12,15 @@ class MainPanel : public wxPanel
 {
 public:
     explicit MainPanel(wxWindow* parent);
-
     TxtRich* get_txt_rich() const;
 
 private:
-    wxAuiNotebook* m_book;
-    TxtRich* m_txtRich;
-    wxTextCtrl* m_source;
-    wxTextCtrl* m_buffer;
+    wxAuiNotebook* notebook;
+    TxtRich* page_rich;
+    wxTextCtrl* page_source;
+    wxTextCtrl* page_buffer;
+
+    void init_pages();
 };
+
+#endif // MAIN_PANEL_H

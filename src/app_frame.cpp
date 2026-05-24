@@ -44,8 +44,7 @@ AppFrame::AppFrame(const wxString& title)
     this->splitter->SetMinimumPaneSize(80); // Минимальная ширина
     this->splitter->SetSashGravity(0.0);    // При изменении размера окна ширина панели навигации остается неизменной.
 
-    // Корневой компоновщик фрейма: размещает splitter на все окно, оставляя
-    
+    // Корневой компоновщик фрейма: размещает splitter на все окно
     wxBoxSizer* frameSizer = new wxBoxSizer(wxHORIZONTAL);
     frameSizer->Add(this->splitter, 1, wxEXPAND | wxLEFT | wxRIGHT, 3); // боковые внешние поля
     
