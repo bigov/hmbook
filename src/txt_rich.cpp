@@ -6,6 +6,26 @@
 
 #include "txt_rich.h"
 
+bool isFileExist(const wxString filePath)
+{
+    if (wxFileExists(filePath)) return true;
+    wxLogError(_("Not found file '%s'."), filePath.wc_str());
+    return false;
+}
+
+void load_file_content(const wxString filePath, std::string& content)
+{
+    content.clear();
+    const wchar_t* f = filePath.wc_str();
+    if (std::ifstream reader{f}; reader)
+   {
+        std::string line;
+        while (std::getline(reader, line)) content.append(line + "\n");
+    } else {
+        wxLogError(_("Cannot read file '%s'."), filePath.wc_str());
+    }
+}
+
 
 namespace
 {
@@ -24,26 +44,6 @@ namespace
             pos += content.size();
         }
         return tpl;
-    }
-
-    bool isFileExist(const wxString filePath)
-    {
-        if (wxFileExists(filePath)) return true;
-        wxLogError(_("Not found file '%s'."), filePath.wc_str());
-        return false;
-    }
-
-    void load_file_content(const wxString filePath, std::string& content)
-    {
-        content.clear();
-        const wchar_t* f = filePath.wc_str();
-        if (std::ifstream reader{f}; reader)
-        {
-            std::string line;
-            while (std::getline(reader, line)) content.append(line + "\n");
-        } else {
-            wxLogError(_("Cannot read file '%s'."), filePath.wc_str());
-        }
     }
 
 } // namespace
@@ -242,11 +242,9 @@ void TxtRich::load_file(const wxString filePath)
 void TxtRich::load_md_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
+    load_file_content(filePath, file_content);
 
-    std::string text = "";
-    load_file_content(filePath, text);
-
-    cmark_node* node = cmark_parse_document(text.c_str(), text.size(), CMARK_OPT_DEFAULT);
+    cmark_node* node = cmark_parse_document(file_content.c_str(), file_content.size(), CMARK_OPT_DEFAULT);
     if (!node) {
         wxLogError(_("Error parsing file '%s'."), filePath.wc_str());
         node = nullptr;
@@ -262,7 +260,7 @@ void TxtRich::load_md_file(const wxString filePath)
     }
     
     // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
-    if (text.size() >= 1 && text.substr(text.size()-1) == "\n") append_line();
+    if (file_content.size() >= 1 && file_content.substr(file_content.size()-1) == "\n") append_line();
     cmark_node_free(node);
     this->EndSuppressUndo();
 
@@ -272,12 +270,11 @@ void TxtRich::load_md_file(const wxString filePath)
 void TxtRich::load_plain_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
-    std::string plain_text;
-    load_file_content(filePath, plain_text);
+    load_file_content(filePath, file_content);
 
     new_document();
     this->BeginSuppressUndo();
-    this->WriteText(wxString::FromUTF8(plain_text.c_str()));
+    this->WriteText(wxString::FromUTF8(file_content.c_str()));
     this->EndSuppressUndo();
     this->SetInsertionPoint(0);
 }
@@ -286,9 +283,8 @@ void TxtRich::load_plain_file(const wxString filePath)
 void TxtRich::load_xml_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
-    std::string xml_content;
-    load_file_content(filePath, xml_content);
-    push_xml_data(xml_content);
+    load_file_content(filePath, file_content);
+    push_xml_data(file_content);
 }
 
 // Переход на следующую строку.

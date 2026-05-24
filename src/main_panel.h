@@ -3,7 +3,7 @@
 #include "wx/panel.h"
 
 class TxtRich;
-class wxSimplebook;
+class wxAuiNotebook;
 class wxTextCtrl;
 
 class MainPanel : public wxPanel
@@ -14,7 +14,7 @@ public:
     TxtRich* get_txt_rich() const;
 
 private:
-    wxSimplebook* m_book;
+    wxAuiNotebook* m_book;
     TxtRich* m_txtRich;
     wxTextCtrl* m_source;
     wxTextCtrl* m_buffer;

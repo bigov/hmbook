@@ -49,12 +49,16 @@ static const wxString RICH_BUFFER_EXT = "wxrt";
 static const wxString TEXT_BUFFER_EXT = "txt";
 static const wxString MARK_BUFFER_EXT = "md";
 
+bool isFileExist(const wxString filePath);
+void load_file_content(const wxString filePath, std::string& content);
+
 class TxtRich: public wxRichTextCtrl
 {
 public:
     TxtRich(wxWindow* parent);
     ~TxtRich() override;
     wxString current_filePath;
+    std::string file_content;
     wxMenu* edit_menu();
     void load_file(const wxString filePath);
     void save_plain_file(const wxString filePath);

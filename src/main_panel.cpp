@@ -5,8 +5,7 @@
 #include <cstdlib>
 
 #include "txt_rich.h"
-#include "wx/button.h"
-#include "wx/simplebook.h"
+#include "wx/aui/auibook.h"
 #include "wx/sizer.h"
 #include "wx/textctrl.h"
 
@@ -60,16 +59,14 @@ namespace
 }
 
 MainPanel::MainPanel(wxWindow* parent)
-    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME)
+    : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
-    SetBackgroundColour(wxColour("#ffffff"));
-
-    m_book = new wxSimplebook(
+    m_book = new wxAuiNotebook(
         this,
         wxID_ANY,
         wxDefaultPosition,
         wxDefaultSize,
-        wxBORDER_NONE
+        wxAUI_NB_BOTTOM | wxAUI_NB_RIGHT | wxBORDER_NONE
     );
 
     m_txtRich = new TxtRich(m_book);
@@ -95,65 +92,27 @@ MainPanel::MainPanel(wxWindow* parent)
     m_book->AddPage(m_source, "source", false);
     m_book->AddPage(m_buffer, "buffer", false);
 
-    wxPanel* tabsPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition,
-                                     wxDefaultSize, wxBORDER_NONE);
-    //tabsPanel->SetBackgroundColour(GetBackgroundColour());
-    tabsPanel->SetBackgroundColour("#EFEFEF");
-    
-
-    wxButton* tabBtnRich = new wxButton(tabsPanel, wxID_ANY, "txt_rich", wxDefaultPosition,
-                                        wxDefaultSize, 0);
-    wxButton* tabBtnSource = new wxButton(tabsPanel, wxID_ANY, "source", wxDefaultPosition,
-                                        wxDefaultSize, 0);
-    wxButton* tabBtnBuffer = new wxButton(tabsPanel, wxID_ANY, "buffer", wxDefaultPosition,
-                                        wxDefaultSize, 0);
-
-    tabBtnRich->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { m_book->SetSelection(0); });
-    
-    tabBtnSource->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        const wxString filePath = m_txtRich->current_filePath;
-        if (!filePath.IsEmpty())
+    auto refreshActivePageContent = [this]() {
+        switch (m_book->GetSelection())
         {
-            std::ifstream input(filePath.wc_str(), std::ios::binary);
-            if (input)
-            {
-                std::ostringstream buffer;
-                buffer << input.rdbuf();
-                m_source->ChangeValue(wxString::FromUTF8(buffer.str()));
-            }
-            else
-            {
-                m_source->Clear();
-            }
+        case 1:
+            m_source->ChangeValue(wxString::FromUTF8(m_txtRich->file_content.c_str()));
+            break;
+        case 2:
+            m_buffer->ChangeValue(decode_numeric_xml_entities(m_txtRich->export_xml_text()));
+            break;
+        default:
+            break;
         }
-        else
-        {
-            m_source->Clear();
-        }
-        m_book->SetSelection(1);
-    });
-    
-    tabBtnBuffer->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        const wxString xml_text = m_txtRich->export_xml_text();
-        m_buffer->ChangeValue(decode_numeric_xml_entities(xml_text));
-        m_book->SetSelection(2);
+    };
+
+    m_book->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, [refreshActivePageContent](wxAuiNotebookEvent& event) {
+        refreshActivePageContent();
+        event.Skip();
     });
 
-    wxBoxSizer* tabsSizer = new wxBoxSizer(wxHORIZONTAL);
-    tabsSizer->AddStretchSpacer(1);
-    int buttonSpacing = 2; // Расстояние между кнопками
-    int rightMargin = 16;  // Отступ справа от последней кнопки
-   
-    tabsSizer->Add(tabBtnRich, 0, wxRIGHT, buttonSpacing);
-    tabsSizer->Add(tabBtnSource, 0, wxRIGHT, buttonSpacing);
-    tabsSizer->Add(tabBtnBuffer, 0, wxRIGHT, rightMargin);
-   
-    tabsPanel->SetSizer(tabsSizer);
-
-    wxBoxSizer* rootSizer = new wxBoxSizer(wxVERTICAL);
-    rootSizer->Add(m_book, 1, wxEXPAND | wxALL, 0);
-    rootSizer->Add(tabsPanel, 0, wxEXPAND | wxALL, 0);
-    SetSizer(rootSizer);
+    SetSizer(new wxBoxSizer(wxVERTICAL));
+    GetSizer()->Add(m_book, 1, wxEXPAND | wxALL, 0);
 }
 
 TxtRich* MainPanel::get_txt_rich() const
