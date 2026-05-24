@@ -1,8 +1,12 @@
 #ifndef MAIN_PANEL_H
 #define MAIN_PANEL_H
 
+#include "wx/aui/auibook.h"
+#include "wx/sizer.h"
+#include "wx/textctrl.h"
+
 #include "wx/panel.h"
-#include "tools.h"
+#include "txt_rich.h"
 
 class TxtRich;
 class wxAuiNotebook;

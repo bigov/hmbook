@@ -1,25 +1,11 @@
 #include "main_panel.h"
 
-#include <fstream>
-#include <sstream>
-#include <cstdlib>
-
-#include "txt_rich.h"
-#include "wx/aui/auibook.h"
-#include "wx/sizer.h"
-#include "wx/textctrl.h"
-
 
 MainPanel::MainPanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
-    notebook = new wxAuiNotebook(
-        this,
-        wxID_ANY,
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxAUI_NB_BOTTOM | wxAUI_NB_RIGHT | wxBORDER_NONE
-    );
+    notebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxAUI_NB_BOTTOM | wxAUI_NB_RIGHT | wxBORDER_NONE);
     init_pages();
 
     auto refreshActivePageContent = [this]() {
@@ -29,7 +15,7 @@ MainPanel::MainPanel(wxWindow* parent)
             page_source->ChangeValue(wxString::FromUTF8(page_rich->file_content.c_str()));
             break;
         case 2:
-            page_buffer->ChangeValue(hmb_decode_xml(page_rich->export_xml_text()));
+            page_buffer->ChangeValue(page_rich->get_buffer());
             break;
         default:
             break;

@@ -188,7 +188,7 @@ void TxtRich::save_xml_file(const wxString filePath)
     return;
 }
 
-wxString TxtRich::export_xml_text()
+wxString TxtRich::get_buffer()
 {
     wxRichTextBuffer& buffer = this->GetBuffer();
     load_xml_handler();
@@ -201,7 +201,7 @@ wxString TxtRich::export_xml_text()
         return wxEmptyString;
     }
 
-    return xml_text;
+    return hmb_decode_xml(xml_text);
 }
 
 // --- Load the prepared XML data into the control's buffer ---

@@ -24,6 +24,8 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 #include "wx/tokenzr.h"
 #include "wx/log.h"
 
+#include "tools.h"
+
 extern "C" {
 #include "cmark.h"
 }
@@ -63,7 +65,7 @@ public:
     void load_file(const wxString filePath);
     void save_plain_file(const wxString filePath);
     void save_xml_file(const wxString filePath);
-    wxString export_xml_text();
+    wxString get_buffer();
 
 private:
     
