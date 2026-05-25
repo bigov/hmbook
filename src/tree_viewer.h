@@ -2,7 +2,7 @@
 
 #include "wx/treectrl.h"
 
-class TxtRich;  // Forward declaration
+class hmbRich;  // Forward declaration
 
 // Класс для хранения пути файла в элементе дерева
 class FileItemData : public wxTreeItemData
@@ -20,11 +20,11 @@ class TreeViewer : public wxTreeCtrl
 public:
     wxString current_dir;
     wxString current_file;
-    explicit TreeViewer(wxWindow* parent, TxtRich* txtRich = nullptr);
+    explicit TreeViewer(wxWindow* parent, hmbRich* txtRich = nullptr);
     void load_directory(const wxString& dir);
 
 private:
-    TxtRich* m_txtRich;
+    hmbRich* m_txtRich;
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);
 };

@@ -3,7 +3,7 @@
 #include "wx/string.h"
 #include "wx/splitter.h"
 
-#include "txt_rich.h"
+#include "rich.h"
 
 class TreeViewer;
 
@@ -18,7 +18,7 @@ public:
     void FileSaveAs(wxCommandEvent& event);
 
 private:
-    TxtRich* txt_rich = nullptr;
+    hmbRich* txt_rich = nullptr;
     TreeViewer* tree_viewer = nullptr;
     wxSplitterWindow* splitter;
 

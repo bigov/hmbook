@@ -1,10 +1,10 @@
-#include "nav_panel.h"
-#include "txt_rich.h"
 #include "wx/dir.h"
 #include "wx/filename.h"
 
+#include "nav_panel.h"
+#include "rich.h"
 
-TreeViewer::TreeViewer(wxWindow* parent, TxtRich* txtRich)
+TreeViewer::TreeViewer(wxWindow* parent, hmbRich* txtRich)
     : wxTreeCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                  wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE | wxBORDER_NONE),
       m_txtRich(txtRich)

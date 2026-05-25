@@ -6,9 +6,9 @@
 #include "wx/textctrl.h"
 
 #include "wx/panel.h"
-#include "txt_rich.h"
+#include "rich.h"
 
-class TxtRich;
+class hmbRich;
 class wxAuiNotebook;
 class wxTextCtrl;
 
@@ -16,11 +16,11 @@ class MainPanel : public wxPanel
 {
 public:
     explicit MainPanel(wxWindow* parent);
-    TxtRich* get_txt_rich() const;
+    hmbRich* get_txt_rich() const;
 
 private:
-    wxAuiNotebook* notebook;
-    TxtRich* page_rich;
+    wxAuiNotebook* nbook;
+    hmbRich* page_rich;
     wxTextCtrl* page_source;
     wxTextCtrl* page_buffer;
 

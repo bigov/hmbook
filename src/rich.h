@@ -13,6 +13,12 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 #pragma once
 #include <memory>
 
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <sstream>
+#include <cstring>
+
 #include "wx/menu.h"
 #include "wx/richtext/richtextctrl.h"
 #include "wx/richtext/richtextxml.h"
@@ -54,11 +60,11 @@ static const wxString MARK_BUFFER_EXT = "md";
 bool isFileExist(const wxString filePath);
 void load_file_content(const wxString filePath, std::string& content);
 
-class TxtRich: public wxRichTextCtrl
+class hmbRich: public wxRichTextCtrl
 {
 public:
-    TxtRich(wxWindow* parent);
-    ~TxtRich() override;
+    hmbRich(wxWindow* parent);
+    ~hmbRich() override;
     wxString current_filePath;
     std::string file_content;
     wxMenu* edit_menu();

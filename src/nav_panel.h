@@ -9,7 +9,7 @@
 class NavPanel : public wxPanel
 {
 public:
-    explicit NavPanel(wxWindow* parent, TxtRich* txtRich = nullptr);
+    explicit NavPanel(wxWindow* parent, hmbRich* txtRich = nullptr);
 
     TreeViewer* get_tree_viewer() const;
 

@@ -1,10 +1,4 @@
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <sstream>
-#include <cstring>
-
-#include "txt_rich.h"
+#include "rich.h"
 
 bool isFileExist(const wxString filePath)
 {
@@ -48,11 +42,12 @@ namespace
 
 } // namespace
 
-// Конструктор класса TxtCtl
-TxtRich::TxtRich(wxWindow* parent)
+// Конструктор класса
+hmbRich::hmbRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                     wxBORDER_NONE | wxWANTS_CHARS)
 {
+    
     this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
 
     // Base character style
@@ -139,14 +134,14 @@ TxtRich::TxtRich(wxWindow* parent)
 }
 
 
-TxtRich::~TxtRich()
+hmbRich::~hmbRich()
 {
     // Буфер rich text хранит «сырой» указатель на style sheet и сам его не удаляет.
     // Перед уничтожением style_sheet явно обнуляем ссылку в буфере.
     this->GetBuffer().SetStyleSheet(nullptr);
 }
 
-void TxtRich::new_document()
+void hmbRich::new_document()
 {
     this->Clear();
     this->SetInsertionPoint(0);
@@ -154,7 +149,7 @@ void TxtRich::new_document()
     this->row_total = 0;
 }
 
-void TxtRich::load_xml_handler()
+void hmbRich::load_xml_handler()
 {
     if (!wxRichTextBuffer::FindHandler(wxRICHTEXT_TYPE_XML))
     {
@@ -163,7 +158,7 @@ void TxtRich::load_xml_handler()
 }
 
 // --- Save the buffer content as plain text ---
-void TxtRich::save_plain_file(const wxString filePath)
+void hmbRich::save_plain_file(const wxString filePath)
 {
     wxRichTextBuffer& buffer = this->GetBuffer();
     const wxString plain_text = buffer.GetText().utf8_str();
@@ -177,7 +172,7 @@ void TxtRich::save_plain_file(const wxString filePath)
     }
 }
 
-void TxtRich::save_xml_file(const wxString filePath)
+void hmbRich::save_xml_file(const wxString filePath)
 {
     wxRichTextBuffer& buffer = this->GetBuffer();
     load_xml_handler();
@@ -188,7 +183,7 @@ void TxtRich::save_xml_file(const wxString filePath)
     return;
 }
 
-wxString TxtRich::get_buffer()
+wxString hmbRich::get_buffer()
 {
     wxRichTextBuffer& buffer = this->GetBuffer();
     load_xml_handler();
@@ -205,7 +200,7 @@ wxString TxtRich::get_buffer()
 }
 
 // --- Load the prepared XML data into the control's buffer ---
-void TxtRich::push_xml_data(const wxString& content)
+void hmbRich::push_xml_data(const wxString& content)
 {
     wxStringInputStream xml_stream(content);
     wxRichTextBuffer& buffer = this->GetBuffer();
@@ -220,7 +215,7 @@ void TxtRich::push_xml_data(const wxString& content)
 }
 
 // --- Load files with any formats ---
-void TxtRich::load_file(const wxString filePath)
+void hmbRich::load_file(const wxString filePath)
 {
     if(filePath.IsEmpty()) return;
 
@@ -239,7 +234,7 @@ void TxtRich::load_file(const wxString filePath)
 }
 
 // --- Load the Markdown file text ---
-void TxtRich::load_md_file(const wxString filePath)
+void hmbRich::load_md_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
     load_file_content(filePath, file_content);
@@ -267,7 +262,7 @@ void TxtRich::load_md_file(const wxString filePath)
 }
 
 // --- Load the plain text content from a file ---
-void TxtRich::load_plain_file(const wxString filePath)
+void hmbRich::load_plain_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
     load_file_content(filePath, file_content);
@@ -280,7 +275,7 @@ void TxtRich::load_plain_file(const wxString filePath)
 }
 
 // --- Load the XML content from a file ---
-void TxtRich::load_xml_file(const wxString filePath)
+void hmbRich::load_xml_file(const wxString filePath)
 {
     if (!isFileExist(filePath)) return;
     load_file_content(filePath, file_content);
@@ -288,12 +283,12 @@ void TxtRich::load_xml_file(const wxString filePath)
 }
 
 // Переход на следующую строку.
-void TxtRich::append_line() {
+void hmbRich::append_line() {
     Newline();
     this->row_current++;
 }
 
-void TxtRich::row_check(cmark_node* node) {
+void hmbRich::row_check(cmark_node* node) {
     if(!node) return;
     int row_begin = cmark_node_get_start_line(node);
     while (row_begin > this->row_current)
@@ -305,28 +300,28 @@ void TxtRich::row_check(cmark_node* node) {
 
 // Содержимое текстовых узлов, code, html_inline и т.д.
 // rtc->SetValue(wxString::FromUTF8(u8"äöü — пример"));
-void TxtRich::show_literal(cmark_node* node) {
+void hmbRich::show_literal(cmark_node* node) {
     const char* lit = cmark_node_get_literal(node);
     if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
 }
 
-void TxtRich::md_none(cmark_node* node) {
+void hmbRich::md_none(cmark_node* node) {
     this->WriteText("ERROR: Not found node\n");
 }
 
-void TxtRich::md_blockquote(cmark_node* node) {
+void hmbRich::md_blockquote(cmark_node* node) {
     this->WriteText("Block quote\n");
 }
 
-void TxtRich::md_list(cmark_node* node) {
+void hmbRich::md_list(cmark_node* node) {
     this->WriteText("List\n");
 }
 
-void TxtRich::md_item(cmark_node* node) {
+void hmbRich::md_item(cmark_node* node) {
     this->WriteText("Item\n");
 }
 
-void TxtRich::md_code_block(cmark_node* node) {
+void hmbRich::md_code_block(cmark_node* node) {
     wxRichTextAttr attr_bg;
     attr_bg.SetBackgroundColour(this->color_gray_bg);
     wxTextBoxAttr& tba = attr_bg.GetTextBoxAttr();
@@ -357,14 +352,14 @@ void TxtRich::md_code_block(cmark_node* node) {
     }
 }
 
-void TxtRich::md_html_block(cmark_node* node) {
+void hmbRich::md_html_block(cmark_node* node) {
     this->WriteText("HTML block\n");
 }
-void TxtRich::md_custom_block(cmark_node* node) {
+void hmbRich::md_custom_block(cmark_node* node) {
     this->WriteText("Custom block\n");
 }
 
-void TxtRich::md_header(cmark_node* node) {
+void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
     wxFont f(wxFontInfo(font_size).Weight(wxFONTWEIGHT_BOLD));
 
@@ -380,15 +375,15 @@ void TxtRich::md_header(cmark_node* node) {
     this->EndParagraphStyle();
 }
 
-void TxtRich::md_thematic_break(cmark_node* node) {
+void hmbRich::md_thematic_break(cmark_node* node) {
     this->WriteText("Thematic break\n");
 }
 
-void TxtRich::md_text(cmark_node* node) {
+void hmbRich::md_text(cmark_node* node) {
     show_literal(node);
 }
 
-void TxtRich::md_code_inline(cmark_node* node) {
+void hmbRich::md_code_inline(cmark_node* node) {
     if (this->defCharCoLn)
     {
         this->BeginStyle(this->defCharCoLn->GetStyle());
@@ -401,23 +396,23 @@ void TxtRich::md_code_inline(cmark_node* node) {
         this->EndStyle();
     }
 }
-void TxtRich::md_html_inline(cmark_node* node) {
+void hmbRich::md_html_inline(cmark_node* node) {
     this->WriteText("HTML inline\n");
 }
-void TxtRich::md_custom_inline(cmark_node* node) {
+void hmbRich::md_custom_inline(cmark_node* node) {
     this->WriteText("Custom inline\n");
 }
-void TxtRich::md_emph(cmark_node* node) {
+void hmbRich::md_emph(cmark_node* node) {
     this->BeginItalic();
     display_node(cmark_node_first_child(node));
     this->EndItalic();
 }
-void TxtRich::md_strong(cmark_node* node) {
+void hmbRich::md_strong(cmark_node* node) {
     this->BeginBold();
     display_node(cmark_node_first_child(node));
     this->EndBold();
 }
-void TxtRich::md_link(cmark_node* node) {
+void hmbRich::md_link(cmark_node* node) {
     const char *url = cmark_node_get_url(node);
     //const char *title = cmark_node_get_title(node);
     //const char *text = cmark_node_get_literal(cmark_node_first_child(node));
@@ -426,14 +421,14 @@ void TxtRich::md_link(cmark_node* node) {
     //this->WriteText(wxString::FromUTF8(text));
     this->EndURL();
 }
-void TxtRich::md_image(cmark_node* node) {
+void hmbRich::md_image(cmark_node* node) {
     this->WriteText("Image\n");
 }
-void TxtRich::md_unknown(cmark_node* node) {
+void hmbRich::md_unknown(cmark_node* node) {
     this->WriteText("Unknown\n");
 }
 
-void TxtRich::md_paragraph(cmark_node* node) {
+void hmbRich::md_paragraph(cmark_node* node) {
     row_check(node);
     this->BeginParagraphStyle("ParaBase");
     node = cmark_node_first_child(node);
@@ -447,7 +442,7 @@ void TxtRich::md_paragraph(cmark_node* node) {
 
 // ---------------------------------------------
 // --- диапазон строк ноды (для отладки) ---
-void TxtRich::dbg_node(cmark_node* node, const char* info) {
+void hmbRich::dbg_node(cmark_node* node, const char* info) {
     int start_line = 0;
     int end_line = 0;
     if (node) 
@@ -458,7 +453,7 @@ void TxtRich::dbg_node(cmark_node* node, const char* info) {
     std::cerr << "[" << start_line << " - " << end_line << "] " << info << "\n";
 }
 
-void TxtRich::display_node(cmark_node* node)
+void hmbRich::display_node(cmark_node* node)
 {
   if (!node) return;
   cmark_node_type t = cmark_node_get_type(node);
@@ -573,7 +568,7 @@ void TxtRich::display_node(cmark_node* node)
     }
 }
 
-wxMenu* TxtRich::edit_menu()
+wxMenu* hmbRich::edit_menu()
 {
     wxWindow* topLevel = wxGetTopLevelParent(this);
     wxMenu* editMenu = new wxMenu;
@@ -626,7 +621,7 @@ wxMenu* TxtRich::edit_menu()
 }
 
 
-void TxtRich::on_change_font(wxCommandEvent& WXUNUSED(event))
+void hmbRich::on_change_font(wxCommandEvent& WXUNUSED(event))
 {
     wxFontData data;
     data.EnableEffects(true);
@@ -649,7 +644,7 @@ void TxtRich::on_change_font(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void TxtRich::on_left_align(wxCommandEvent& WXUNUSED(event))
+void hmbRich::on_left_align(wxCommandEvent& WXUNUSED(event))
 {
     wxTextAttr attr;
     attr.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
@@ -659,7 +654,7 @@ void TxtRich::on_left_align(wxCommandEvent& WXUNUSED(event))
     this->SetStyle(start, end, attr);
 }
 
-void TxtRich::on_right_align(wxCommandEvent& WXUNUSED(event))
+void hmbRich::on_right_align(wxCommandEvent& WXUNUSED(event))
 {
     wxTextAttr attr;
     attr.SetAlignment(wxTEXT_ALIGNMENT_RIGHT);
@@ -669,7 +664,7 @@ void TxtRich::on_right_align(wxCommandEvent& WXUNUSED(event))
     this->SetStyle(start, end, attr);
 }
 
-void TxtRich::OnJustify(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnJustify(wxCommandEvent& WXUNUSED(event))
 {
     wxTextAttr attr;
     attr.SetAlignment(wxTEXT_ALIGNMENT_JUSTIFIED);
@@ -679,7 +674,7 @@ void TxtRich::OnJustify(wxCommandEvent& WXUNUSED(event))
     this->SetStyle(start, end, attr);
 }
 
-void TxtRich::OnCentre(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnCentre(wxCommandEvent& WXUNUSED(event))
 {
     wxTextAttr attr;
     attr.SetAlignment(wxTEXT_ALIGNMENT_CENTRE);
@@ -690,7 +685,7 @@ void TxtRich::OnCentre(wxCommandEvent& WXUNUSED(event))
 }
 
 
-void TxtRich::OnChangeTextColour(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnChangeTextColour(wxCommandEvent& WXUNUSED(event))
 {
     wxColourData data;
     data.SetColour(* wxBLACK);
@@ -717,7 +712,7 @@ void TxtRich::OnChangeTextColour(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void TxtRich::OnChangeBackgroundColour(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnChangeBackgroundColour(wxCommandEvent& WXUNUSED(event))
 {
     wxColourData data;
     data.SetColour(* wxWHITE);
@@ -744,7 +739,7 @@ void TxtRich::OnChangeBackgroundColour(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void TxtRich::OnLeftIndent(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnLeftIndent(wxCommandEvent& WXUNUSED(event))
 {
     wxString indentStr = wxGetTextFromUser
                          (
@@ -766,7 +761,7 @@ void TxtRich::OnLeftIndent(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void TxtRich::OnRightIndent(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnRightIndent(wxCommandEvent& WXUNUSED(event))
 {
     wxString indentStr = wxGetTextFromUser
                          (
@@ -788,7 +783,7 @@ void TxtRich::OnRightIndent(wxCommandEvent& WXUNUSED(event))
     }
 }
 
-void TxtRich::OnTabStops(wxCommandEvent& WXUNUSED(event))
+void hmbRich::OnTabStops(wxCommandEvent& WXUNUSED(event))
 {
     wxString tabsStr = wxGetTextFromUser
     (

@@ -1,6 +1,6 @@
 #include "nav_panel.h"
 
-NavPanel::NavPanel(wxWindow* parent, TxtRich* txtRich) :
+NavPanel::NavPanel(wxWindow* parent, hmbRich* txtRich) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME)
 {
 
