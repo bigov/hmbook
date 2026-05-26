@@ -4,23 +4,32 @@
 #include "wx/aui/auibook.h"
 #include "wx/sizer.h"
 #include "wx/textctrl.h"
-
 #include "wx/panel.h"
+
 #include "rich.h"
+#include "subscriber.h"
 
 class hmbRich;
+class hmbPanelTree;
 class wxAuiNotebook;
 class wxTextCtrl;
 
-class hmbPanelView : public wxPanel
+// Панель вида реализует интерфейс подписчика,
+// чтобы напрямую получать уведомления о выборе файла из panel_tree.
+class hmbPanelView : public wxPanel, public hmbSubscriber
 {
 public:
     explicit hmbPanelView(wxWindow* parent);
-    void save_file_as();
-    void load_file(const wxString& filePath);
-    wxMenu* get_edit_menu();
 
-    hmbRich* get_txt_rich() const;
+    // Связывает panel_view с panel_tree в роли подписчика.
+    // После вызова этого метода panel_view начнет получать load_file(...).
+    void bind_tree_selection(hmbPanelTree* panelTree);
+
+    // Реализация абстрактного метода hmbSubscriber.
+    // Вызывается panel_tree при выборе файла в дереве.
+    void load_file(const wxString& filePath) override;
+    void save_file_as();
+    wxMenu* get_edit_menu();
     wxString get_current_file() const;
 
 private:

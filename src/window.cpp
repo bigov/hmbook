@@ -1,5 +1,4 @@
 #include "hmb/window.h"
-#include "hmb/events.h"
 
 static const int APP_CLOSE = 1000;
 static const wxString ASSETS_DIR = "assets";
@@ -21,11 +20,7 @@ hmbWindow::hmbWindow(const wxString& title)
     
     this->panel_view = new hmbPanelView(this->splitter);
     this->panel_tree = new hmbPanelTree(this->splitter);
-
-    this->panel_tree->get_tree_viewer()->Bind(
-        EVT_HMB_TREE_FILE_SELECTED,
-        &hmbRich::on_tree_file_selected,
-        this->panel_view->get_txt_rich());
+    this->panel_view->bind_tree_selection(this->panel_tree); // связываем выбор в дереве с отображением в панели просмотра
     
     this->splitter->SplitVertically(panel_tree, panel_view);
 

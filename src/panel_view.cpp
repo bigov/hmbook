@@ -1,4 +1,5 @@
 #include "hmb/panel_view.h"
+#include "hmb/panel_tree.h"
 
 
 hmbPanelView::hmbPanelView(wxWindow* parent)
@@ -36,6 +37,22 @@ wxMenu* hmbPanelView::get_edit_menu()
     return this->page_rich->edit_menu();
 }
 
+// Регистрация подписки на выбор файла в дереве hmbPanelTree.
+// Далее panel_tree будет вызывать load_file(...) у этого экземпляра.
+void hmbPanelView::bind_tree_selection(hmbPanelTree* panelTree)
+{
+    if (!panelTree) return;
+    panelTree->bind_file_selected_handler(this);
+}
+
+void hmbPanelView::load_file(const wxString& filePath)
+{
+    // Реакция подписчика на событие выбора файла:
+    // делегируем загрузку выбранного файла в текущую панель просмотра.
+    this->page_rich->load_file(filePath);
+    this->nbook->SetSelection(0);
+}
+
 void hmbPanelView::init_pages()
 {
     this->page_rich = new hmbRich(nbook);
@@ -64,12 +81,6 @@ void hmbPanelView::init_pages()
 
 }
 
-void hmbPanelView::load_file(const wxString& filePath)
-{
-    this->page_rich->load_file(filePath);
-    this->nbook->SetSelection(0);
-}
-
 void hmbPanelView::save_file_as()
 {
     this->page_rich->save_file_as();
@@ -78,9 +89,4 @@ void hmbPanelView::save_file_as()
 wxString hmbPanelView::get_current_file() const
 {
     return this->page_rich->current_file;
-}
-
-hmbRich* hmbPanelView::get_txt_rich() const
-{
-    return this->page_rich;
 }

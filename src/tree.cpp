@@ -1,8 +1,7 @@
 #include "wx/dir.h"
 #include "wx/filename.h"
 
-#include "hmb/events.h"
-#include "hmb/panel_tree.h"
+#include "hmb/tree.h"
 
 hmbTree::hmbTree(wxWindow* parent)
     : wxTreeCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
@@ -10,6 +9,13 @@ hmbTree::hmbTree(wxWindow* parent)
 {
     // Привязываем событие выбора элемента в дереве
     Bind(wxEVT_TREE_SEL_CHANGED, &hmbTree::on_selection, this);
+}
+
+void hmbTree::bind_file_selected_handler(hmbSubscriber* subscriber)
+{
+    // Регистрация/замена подписчика на выбор файла.
+    // Если subscriber == nullptr, уведомления временно отключаются.
+    this->file_selected_subscriber = subscriber;
 }
 
 void hmbTree::load_directory(const wxString& dir)
@@ -65,6 +71,7 @@ void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
 
 void hmbTree::on_selection(wxTreeEvent& event)
 {
+    // Получаем идентификатор выбранного узла из системного события wxTreeCtrl.
     wxTreeItemId itemId = event.GetItem();
     if (!itemId.IsOk())
     {
@@ -76,12 +83,14 @@ void hmbTree::on_selection(wxTreeEvent& event)
     FileItemData* pData = static_cast<FileItemData*>(GetItemData(itemId));
     if (pData)
     {
+        // Сохраняем текущий выбранный файл в состоянии дерева.
         this->current_file = pData->GetFilePath();
 
-        wxCommandEvent fileSelectedEvent(EVT_HMB_TREE_FILE_SELECTED, GetId());
-        fileSelectedEvent.SetEventObject(this);
-        fileSelectedEvent.SetString(this->current_file);
-        GetEventHandler()->ProcessEvent(fileSelectedEvent);
+        // Прямой вызов подписчика без промежуточного wx-слоя событий.
+        if (this->file_selected_subscriber)
+        {
+            this->file_selected_subscriber->load_file(this->current_file);
+        }
     }
 
     event.Skip();

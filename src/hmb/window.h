@@ -38,7 +38,6 @@ private:
     wxSplitterWindow* splitter = nullptr;
     hmbPanelView* panel_view = nullptr;
     hmbPanelTree* panel_tree = nullptr;
-    hmbTree* tree_viewer = nullptr;
 
     void load_params();
     void save_params();

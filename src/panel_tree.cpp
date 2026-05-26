@@ -1,4 +1,5 @@
 #include "hmb/panel_tree.h"
+#include "hmb/tree.h"
 
 hmbPanelTree::hmbPanelTree(wxWindow* parent) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME)
@@ -14,9 +15,16 @@ hmbPanelTree::hmbPanelTree(wxWindow* parent) :
     this->SetSizer(navSizer);
 }
 
-hmbTree* hmbPanelTree::get_tree_viewer() const
+void hmbPanelTree::bind_file_selected_handler(hmbSubscriber* subscriber)
 {
-    return this->tree_viewer;
+    // Пробрасываем подписчика напрямую в дерево.
+    // Теперь именно hmbTree вызывает подписчика при выборе файла.
+    this->tree_viewer->bind_file_selected_handler(subscriber);
+}
+
+void hmbPanelTree::load_directory(const wxString& dir)
+{
+    this->tree_viewer->load_directory(dir);
 }
 
 wxString hmbPanelTree::get_current_dir() const
