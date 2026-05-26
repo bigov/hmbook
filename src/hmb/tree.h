@@ -21,12 +21,12 @@ class hmbTree : public wxTreeCtrl
 public:
     wxString current_file = wxEmptyString;
     explicit hmbTree(wxWindow* parent);
-    void bind_file_selected_handler(hmbSubscriber* subscriber);
+    void bind_subscriber(hmbSubscriber* subscriber);
     void load_directory(const wxString& dir);
     wxString get_current_dir() const;
 
 private:
-    hmbSubscriber* file_selected_subscriber = nullptr;
+    hmbSubscriber* subscriber = nullptr;
     wxString current_dir = wxEmptyString;
 
     void populate_tree(const wxString& path, wxTreeItemId parent);

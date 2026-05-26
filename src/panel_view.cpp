@@ -37,18 +37,9 @@ wxMenu* hmbPanelView::get_edit_menu()
     return this->page_rich->edit_menu();
 }
 
-// Регистрация подписки на выбор файла в дереве hmbPanelTree.
-// Далее panel_tree будет вызывать load_file(...) у этого экземпляра.
-void hmbPanelView::bind_tree_selection(hmbPanelTree* panelTree)
-{
-    if (!panelTree) return;
-    panelTree->bind_file_selected_handler(this);
-}
-
+// Реализация интерфейса абстрактного метода hmbSubscriber. Вызывается panel_tree при выборе файла в дереве.
 void hmbPanelView::load_file(const wxString& filePath)
 {
-    // Реакция подписчика на событие выбора файла:
-    // делегируем загрузку выбранного файла в текущую панель просмотра.
     this->page_rich->load_file(filePath);
     this->nbook->SetSelection(0);
 }

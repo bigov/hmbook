@@ -15,11 +15,20 @@ hmbPanelTree::hmbPanelTree(wxWindow* parent) :
     this->SetSizer(navSizer);
 }
 
-void hmbPanelTree::bind_file_selected_handler(hmbSubscriber* subscriber)
+hmbPanelTree::~hmbPanelTree()
 {
-    // Пробрасываем подписчика напрямую в дерево.
-    // Теперь именно hmbTree вызывает подписчика при выборе файла.
-    this->tree_viewer->bind_file_selected_handler(subscriber);
+    this->bind_subscriber(nullptr);  // отключить подписку
+    if (this->tree_viewer)
+    {
+        delete this->tree_viewer;
+        this->tree_viewer = nullptr;
+    }
+}
+
+void hmbPanelTree::bind_subscriber(hmbSubscriber* subscriber)
+{
+    // hmbTree будет вызывать интерфейс подписчика (при выборе файла).
+    this->tree_viewer->bind_subscriber(subscriber);
 }
 
 void hmbPanelTree::load_directory(const wxString& dir)

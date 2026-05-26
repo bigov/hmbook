@@ -21,10 +21,6 @@ class hmbPanelView : public wxPanel, public hmbSubscriber
 public:
     explicit hmbPanelView(wxWindow* parent);
 
-    // Связывает panel_view с panel_tree в роли подписчика.
-    // После вызова этого метода panel_view начнет получать load_file(...).
-    void bind_tree_selection(hmbPanelTree* panelTree);
-
     // Реализация абстрактного метода hmbSubscriber.
     // Вызывается panel_tree при выборе файла в дереве.
     void load_file(const wxString& filePath) override;

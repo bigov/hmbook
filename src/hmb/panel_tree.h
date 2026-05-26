@@ -13,11 +13,12 @@ class hmbPanelTree : public wxPanel
 {
 public:
     explicit hmbPanelTree(wxWindow* parent);
+    ~hmbPanelTree();
 
-    // Регистрация подписчика на событие выбора файла в дереве.
+    // Регистрация подписчика на выбор файла в дереве.
     // Подписчик должен жить не меньше, чем hmbPanelTree, пока активна подписка.
-    // Передача nullptr разрешена: это эквивалент снятия подписки.
-    void bind_file_selected_handler(hmbSubscriber* subscriber);
+    // Передача nullptr - отключение подписки.
+    void bind_subscriber(hmbSubscriber* subscriber);
     wxString get_current_dir() const;
     void open_dir();
     void load_directory(const wxString& dir);
