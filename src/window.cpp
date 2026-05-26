@@ -14,15 +14,15 @@
 #include "wx/dirdlg.h"
 #include "wx/dir.h"
 
-#include "app_frame.h"
-#include "main_panel.h"
-#include "nav_panel.h"
+#include "hmb/window.h"
+#include "hmb/main_panel.h"
+#include "hmb/nav_panel.h"
 
 static const int APP_CLOSE = 1000;
 static const wxString ASSETS_DIR = "assets";
 static const wxString APP_ICON_FNAME = "icon.png";
 
-AppFrame::AppFrame(const wxString& title)
+hmbWindow::hmbWindow(const wxString& title)
     : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxTAB_TRAVERSAL)
 {
     wxInitAllImageHandlers();
@@ -54,14 +54,14 @@ AppFrame::AppFrame(const wxString& title)
     wxMenu* fileMenu = new wxMenu;
 
     fileMenu->Append(wxID_OPEN, _("Open Dir\tCtrl+O"));
-    Bind(wxEVT_MENU, &AppFrame::OpenDir, this, wxID_OPEN);
+    Bind(wxEVT_MENU, &hmbWindow::OpenDir, this, wxID_OPEN);
 
     fileMenu->Append(wxID_SAVEAS, _("Save As...\tCtrl+S"));
-    Bind(wxEVT_MENU, &AppFrame::FileSaveAs, this, wxID_SAVEAS);
+    Bind(wxEVT_MENU, &hmbWindow::FileSaveAs, this, wxID_SAVEAS);
 
     fileMenu->Append(APP_CLOSE, _("Exit\tCtrl+W"));
-    Bind(wxEVT_MENU, &AppFrame::OnClose, this, APP_CLOSE);
-    Bind(wxEVT_CLOSE_WINDOW, &AppFrame::OnWindowClose, this);
+    Bind(wxEVT_MENU, &hmbWindow::OnClose, this, APP_CLOSE);
+    Bind(wxEVT_CLOSE_WINDOW, &hmbWindow::OnWindowClose, this);
     
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, _("File"));
@@ -75,7 +75,7 @@ AppFrame::AppFrame(const wxString& title)
     load_params();
 }
 
-void AppFrame::SetAppIcon(const wxString& iconPath)
+void hmbWindow::SetAppIcon(const wxString& iconPath)
 {
     // Set the application icon
     if (wxFileExists(iconPath))
@@ -90,7 +90,7 @@ void AppFrame::SetAppIcon(const wxString& iconPath)
 }
 
 
-void AppFrame::OpenDir(wxCommandEvent& WXUNUSED(event))
+void hmbWindow::OpenDir(wxCommandEvent& WXUNUSED(event))
 {
     wxString defaultDir = wxGetHomeDir(); // начальная папка
     wxDirDialog dlg(this, "Select directory", defaultDir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
@@ -101,7 +101,7 @@ void AppFrame::OpenDir(wxCommandEvent& WXUNUSED(event))
 }
 
 
-void AppFrame::FileSaveAs(wxCommandEvent& WXUNUSED(event))
+void hmbWindow::FileSaveAs(wxCommandEvent& WXUNUSED(event))
 {
     wxFileDialog
         saveFileDialog(this, _("Save file as"), "", "",
@@ -123,18 +123,18 @@ void AppFrame::FileSaveAs(wxCommandEvent& WXUNUSED(event))
 }
 
 
-void AppFrame::OnClose(wxCommandEvent& WXUNUSED(event))
+void hmbWindow::OnClose(wxCommandEvent& WXUNUSED(event))
 {
     Close(true);
 }
 
-void AppFrame::OnWindowClose(wxCloseEvent& event)
+void hmbWindow::OnWindowClose(wxCloseEvent& event)
 {
     save_params();
     event.Skip();
 }
 
-void AppFrame::load_params()
+void hmbWindow::load_params()
 {
     wxConfig config("Book", "Hyper-Markdown");
     /* Методы класса wxConfig:  ReadLong, ReadBool, ReadDouble и общего Read для wxString.
@@ -164,7 +164,7 @@ void AppFrame::load_params()
     this->txt_rich->load_file(config.Read("/MainWindow/current_file", wxEmptyString));
 }
 
-void AppFrame::save_params()
+void hmbWindow::save_params()
 {
     wxConfig config("Book", "Hyper-Markdown");
 

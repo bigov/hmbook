@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HMB_TREE_H
+#define HMB_TREE_H
 
 #include "wx/treectrl.h"
 
@@ -15,12 +16,12 @@ private:
     wxString m_filePath;
 };
 
-class TreeViewer : public wxTreeCtrl
+class hmbTree : public wxTreeCtrl
 {
 public:
     wxString current_dir;
     wxString current_file;
-    explicit TreeViewer(wxWindow* parent, hmbRich* txtRich = nullptr);
+    explicit hmbTree(wxWindow* parent, hmbRich* txtRich = nullptr);
     void load_directory(const wxString& dir);
 
 private:
@@ -28,3 +29,5 @@ private:
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);
 };
+
+#endif // HMB_TREE_H

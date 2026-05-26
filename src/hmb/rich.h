@@ -1,3 +1,6 @@
+#ifndef HMB_RICH_H
+#define HMB_RICH_H
+
 /**
 Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 
@@ -10,7 +13,6 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
     Dialog classes: wxRichTextStyleOrganiserDialog, wxRichTextFormattingDialog, wxSymbolPickerDialog
 */
 
-#pragma once
 #include <memory>
 
 #include <fstream>
@@ -142,3 +144,5 @@ private:
     void load_md_file(const wxString filePath);
     void load_plain_file(const wxString filePath);
 };
+
+#endif // HMB_RICH_H

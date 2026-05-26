@@ -1,4 +1,4 @@
-#include "tools.h"
+#include "hmb/tools.h"
 
 wxString hmb_decode_xml(const wxString& text)
 {

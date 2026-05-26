@@ -1,16 +1,18 @@
-#pragma once
+#ifndef HMB_WINDOW_H
+#define HMB_WINDOW_H
+
 #include "wx/frame.h"
 #include "wx/string.h"
 #include "wx/splitter.h"
 
 #include "rich.h"
 
-class TreeViewer;
+class hmbTree;
 
-class AppFrame: public wxFrame
+class hmbWindow: public wxFrame
 {
 public:
-    AppFrame(const wxString& title);
+    hmbWindow(const wxString& title);
 
     void OnClose(wxCommandEvent& event);
     void OnWindowClose(wxCloseEvent& event);
@@ -19,10 +21,12 @@ public:
 
 private:
     hmbRich* txt_rich = nullptr;
-    TreeViewer* tree_viewer = nullptr;
+    hmbTree* tree_viewer = nullptr;
     wxSplitterWindow* splitter;
 
     void load_params();
     void save_params();
     void SetAppIcon(const wxString& iconPath);
 };
+
+#endif // HMB_WINDOW_H

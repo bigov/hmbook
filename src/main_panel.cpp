@@ -1,4 +1,4 @@
-#include "main_panel.h"
+#include "hmb/main_panel.h"
 
 
 MainPanel::MainPanel(wxWindow* parent)

@@ -1,19 +1,19 @@
 #include "wx/dir.h"
 #include "wx/filename.h"
 
-#include "nav_panel.h"
-#include "rich.h"
+#include "hmb/nav_panel.h"
+#include "hmb/rich.h"
 
-TreeViewer::TreeViewer(wxWindow* parent, hmbRich* txtRich)
+hmbTree::hmbTree(wxWindow* parent, hmbRich* txtRich)
     : wxTreeCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                  wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE | wxBORDER_NONE),
       m_txtRich(txtRich)
 {
     // Привязываем событие выбора элемента в дереве
-    Bind(wxEVT_TREE_SEL_CHANGED, &TreeViewer::on_selection, this);
+    Bind(wxEVT_TREE_SEL_CHANGED, &hmbTree::on_selection, this);
 }
 
-void TreeViewer::load_directory(const wxString& dir)
+void hmbTree::load_directory(const wxString& dir)
 {
     if(dir.IsEmpty()) return;
 
@@ -29,7 +29,7 @@ void TreeViewer::load_directory(const wxString& dir)
     Expand(root);
 }
 
-void TreeViewer::populate_tree(const wxString& path, wxTreeItemId parent)
+void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
 {
     wxDir directory(path);
     if (!directory.IsOpened())
@@ -59,7 +59,7 @@ void TreeViewer::populate_tree(const wxString& path, wxTreeItemId parent)
     }
 }
 
-void TreeViewer::on_selection(wxTreeEvent& event)
+void hmbTree::on_selection(wxTreeEvent& event)
 {
     if (!m_txtRich) return;
     

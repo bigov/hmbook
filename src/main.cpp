@@ -4,7 +4,7 @@
 #endif
 #include "wx/config.h"
 
-#include "app_frame.h"
+#include "hmb/window.h"
 
 class MyApp: public wxApp
 {
@@ -18,8 +18,8 @@ wxIMPLEMENT_APP(MyApp);
 bool MyApp::OnInit()
 {
     if ( !wxApp::OnInit() ) return false;
-    AppFrame* frame = new AppFrame("Hyper Markdown Book");
-    frame->Show(true);
+    hmbWindow* win = new hmbWindow("Hyper Markdown Book");
+    win->Show(true);
 
     return true;
 }

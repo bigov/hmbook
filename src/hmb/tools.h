@@ -1,8 +1,8 @@
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef HMB_TOOLS_H
+#define HMB_TOOLS_H
 
 #include "wx/string.h"
 
 wxString hmb_decode_xml(const wxString& text);
 
-#endif // TOOLS_H
+#endif // HMB_TOOLS_H

@@ -1,4 +1,4 @@
-#include "rich.h"
+#include "hmb/rich.h"
 
 bool isFileExist(const wxString filePath)
 {
