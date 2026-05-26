@@ -1,7 +1,7 @@
-#include "hmb/main_panel.h"
+#include "hmb/panel_view.h"
 
 
-MainPanel::MainPanel(wxWindow* parent)
+hmbPanelView::hmbPanelView(wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
     nbook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
@@ -12,10 +12,10 @@ MainPanel::MainPanel(wxWindow* parent)
         switch (nbook->GetSelection())
         {
         case 1:
-            page_source->ChangeValue(wxString::FromUTF8(page_rich->file_content.c_str()));
+            this->page_source->ChangeValue(wxString::FromUTF8(this->page_rich->file_content.c_str()));
             break;
         case 2:
-            page_buffer->ChangeValue(page_rich->get_buffer());
+            this->page_buffer->ChangeValue(this->page_rich->get_buffer());
             break;
         default:
             break;
@@ -31,12 +31,16 @@ MainPanel::MainPanel(wxWindow* parent)
     GetSizer()->Add(nbook, 1, wxEXPAND | wxALL, 0);
 }
 
-
-void MainPanel::init_pages()
+wxMenu* hmbPanelView::get_edit_menu()
 {
-    page_rich = new hmbRich(nbook);
+    return this->page_rich->edit_menu();
+}
 
-    page_source = new wxTextCtrl(
+void hmbPanelView::init_pages()
+{
+    this->page_rich = new hmbRich(nbook);
+
+    this->page_source = new wxTextCtrl(
         nbook,
         wxID_ANY,
         wxEmptyString,
@@ -45,7 +49,7 @@ void MainPanel::init_pages()
         wxTE_MULTILINE | wxBORDER_NONE | wxTE_NO_VSCROLL
     );
 
-    page_buffer = new wxTextCtrl(
+    this->page_buffer = new wxTextCtrl(
         nbook,
         wxID_ANY,
         wxEmptyString,
@@ -54,14 +58,29 @@ void MainPanel::init_pages()
         wxTE_MULTILINE | wxBORDER_NONE | wxTE_NO_VSCROLL
     );
 
-    nbook->AddPage(page_rich, "txt_rich", true);
-    nbook->AddPage(page_source, "source", false);
-    nbook->AddPage(page_buffer, "buffer", false);
+    this->nbook->AddPage(page_rich, "txt_rich", true);
+    this->nbook->AddPage(page_source, "source", false);
+    this->nbook->AddPage(page_buffer, "buffer", false);
 
 }
 
-
-hmbRich* MainPanel::get_txt_rich() const
+void hmbPanelView::load_file(const wxString& filePath)
 {
-    return page_rich;
+    this->page_rich->load_file(filePath);
+    this->nbook->SetSelection(0);
+}
+
+void hmbPanelView::save_file_as()
+{
+    this->page_rich->save_file_as();
+}
+
+wxString hmbPanelView::get_current_file() const
+{
+    return this->page_rich->current_file;
+}
+
+hmbRich* hmbPanelView::get_txt_rich() const
+{
+    return this->page_rich;
 }

@@ -1,22 +1,5 @@
-#include "wx/sstream.h"
-#include "wx/filedlg.h"
-#include "wx/filename.h"
-#include "wx/wfstream.h"
-#include "wx/log.h"
-#include "wx/filefn.h"
-#include "wx/icon.h"
-#include "wx/image.h"
-#include "wx/menu.h"
-#include "wx/panel.h"
-#include "wx/sizer.h"
-#include "wx/stdpaths.h"
-#include "wx/config.h"
-#include "wx/dirdlg.h"
-#include "wx/dir.h"
-
 #include "hmb/window.h"
-#include "hmb/main_panel.h"
-#include "hmb/nav_panel.h"
+#include "hmb/events.h"
 
 static const int APP_CLOSE = 1000;
 static const wxString ASSETS_DIR = "assets";
@@ -32,17 +15,19 @@ hmbWindow::hmbWindow(const wxString& title)
         + ASSETS_DIR + wxFileName::GetPathSeparator() + APP_ICON_FNAME;
     SetAppIcon(iconPath);
 
-    this->splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition,
-                                    wxDefaultSize, wxSP_NO_XP_THEME);
-    
-    MainPanel* main_panel = new MainPanel(this->splitter);
-    NavPanel* nav_panel = new NavPanel(this->splitter, main_panel->get_txt_rich());
-    this->txt_rich = main_panel->get_txt_rich();
-    this->tree_viewer = nav_panel->get_tree_viewer();
-    
-    this->splitter->SplitVertically(nav_panel, main_panel);
+    this->splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_NO_XP_THEME);
     this->splitter->SetMinimumPaneSize(80); // Минимальная ширина
     this->splitter->SetSashGravity(0.0);    // При изменении размера окна ширина панели навигации остается неизменной.
+    
+    this->panel_view = new hmbPanelView(this->splitter);
+    this->panel_tree = new hmbPanelTree(this->splitter);
+
+    this->panel_tree->get_tree_viewer()->Bind(
+        EVT_HMB_TREE_FILE_SELECTED,
+        &hmbRich::on_tree_file_selected,
+        this->panel_view->get_txt_rich());
+    
+    this->splitter->SplitVertically(panel_tree, panel_view);
 
     // Корневой компоновщик фрейма: размещает splitter на все окно
     wxBoxSizer* frameSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -54,10 +39,10 @@ hmbWindow::hmbWindow(const wxString& title)
     wxMenu* fileMenu = new wxMenu;
 
     fileMenu->Append(wxID_OPEN, _("Open Dir\tCtrl+O"));
-    Bind(wxEVT_MENU, &hmbWindow::OpenDir, this, wxID_OPEN);
+    Bind(wxEVT_MENU, [this](wxCommandEvent& WXUNUSED(event)) {this->panel_tree->open_dir();}, wxID_OPEN);
 
     fileMenu->Append(wxID_SAVEAS, _("Save As...\tCtrl+S"));
-    Bind(wxEVT_MENU, &hmbWindow::FileSaveAs, this, wxID_SAVEAS);
+    Bind(wxEVT_MENU, [this](wxCommandEvent& WXUNUSED(event)) {this->panel_view->save_file_as();}, wxID_SAVEAS);
 
     fileMenu->Append(APP_CLOSE, _("Exit\tCtrl+W"));
     Bind(wxEVT_MENU, &hmbWindow::OnClose, this, APP_CLOSE);
@@ -65,7 +50,7 @@ hmbWindow::hmbWindow(const wxString& title)
     
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, _("File"));
-    menuBar->Append(main_panel->get_txt_rich()->edit_menu(), _("Edit"));
+    menuBar->Append(panel_view->get_edit_menu(), _("Edit"));
     SetMenuBar(menuBar);
 
 #if wxUSE_STATUSBAR
@@ -88,40 +73,6 @@ void hmbWindow::SetAppIcon(const wxString& iconPath)
         }
     }
 }
-
-
-void hmbWindow::OpenDir(wxCommandEvent& WXUNUSED(event))
-{
-    wxString defaultDir = wxGetHomeDir(); // начальная папка
-    wxDirDialog dlg(this, "Select directory", defaultDir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-    if (dlg.ShowModal() == wxID_OK) {
-        wxString path = dlg.GetPath();
-        this->tree_viewer->load_directory(path);
-    }
-}
-
-
-void hmbWindow::FileSaveAs(wxCommandEvent& WXUNUSED(event))
-{
-    wxFileDialog
-        saveFileDialog(this, _("Save file as"), "", "",
-                      "Plain text files (*.txt)|*.txt|Rich text XML (*.wxrt)|*.wxrt",
-                       wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
-    if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
-    
-    const int fileType = saveFileDialog.GetFilterIndex();
-    wxFileName fileName(saveFileDialog.GetPath());
-    if (fileName.GetExt().IsEmpty())
-    {
-        fileName.SetExt(fileType == 1 ? RICH_BUFFER_EXT : TEXT_BUFFER_EXT);
-    }
-    
-    const wxString filePath = fileName.GetFullPath();
-
-    if (fileType == 0) txt_rich->save_plain_file(filePath);
-    if (fileType == 1) txt_rich->save_xml_file(filePath);
-}
-
 
 void hmbWindow::OnClose(wxCommandEvent& WXUNUSED(event))
 {
@@ -160,8 +111,8 @@ void hmbWindow::load_params()
 
     this->SetSize(win_x, win_y, win_width, win_height);
     this->splitter->SetSashPosition(span); // позиция разделителя
-    this->tree_viewer->load_directory(config.Read("/MainWindow/current_dir", wxEmptyString));
-    this->txt_rich->load_file(config.Read("/MainWindow/current_file", wxEmptyString));
+    this->panel_tree->load_directory(config.Read("/MainWindow/current_dir", wxEmptyString));
+    this->panel_view->load_file(config.Read("/MainWindow/current_file", wxEmptyString));
 }
 
 void hmbWindow::save_params()
@@ -176,7 +127,7 @@ void hmbWindow::save_params()
     config.Write("/MainWindow/X", (long)pos.x);
     config.Write("/MainWindow/Y", (long)pos.y);
     config.Write("/MainWindow/span", (long)this->splitter->GetSashPosition());
-    config.Write("/MainWindow/current_dir", this->tree_viewer->current_dir);
-    config.Write("/MainWindow/current_file", this->txt_rich->current_filePath);
+    config.Write("/MainWindow/current_dir", this->panel_tree->get_current_dir());
+    config.Write("/MainWindow/current_file", this->panel_view->get_current_file());
     config.Flush();
 }

@@ -1,4 +1,7 @@
+#include "wx/filedlg.h"
+
 #include "hmb/rich.h"
+#include "hmb/tree.h"
 
 bool isFileExist(const wxString filePath)
 {
@@ -157,6 +160,28 @@ void hmbRich::load_xml_handler()
     }
 }
 
+
+void hmbRich::save_file_as(void)
+{
+    wxFileDialog saveFileDialog(this, _("Save file as"), "", "",
+                      "Plain text files (*.txt)|*.txt|Rich text XML (*.wxrt)|*.wxrt",
+                       wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+    if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
+    
+    const int fileType = saveFileDialog.GetFilterIndex();
+    wxFileName fileName(saveFileDialog.GetPath());
+    if (fileName.GetExt().IsEmpty())
+    {
+        fileName.SetExt(fileType == 1 ? RICH_BUFFER_EXT : TEXT_BUFFER_EXT);
+    }
+    
+    const wxString filePath = fileName.GetFullPath();
+
+    if (fileType == 0) this->save_plain_file(filePath);
+    if (fileType == 1) this->save_xml_file(filePath);
+
+}
+
 // --- Save the buffer content as plain text ---
 void hmbRich::save_plain_file(const wxString filePath)
 {
@@ -230,7 +255,7 @@ void hmbRich::load_file(const wxString filePath)
     } else {
         this->load_plain_file(filePath);
     }
-    this->current_filePath = filePath;
+    this->current_file = filePath;
 }
 
 // --- Load the Markdown file text ---
@@ -280,6 +305,15 @@ void hmbRich::load_xml_file(const wxString filePath)
     if (!isFileExist(filePath)) return;
     load_file_content(filePath, file_content);
     push_xml_data(file_content);
+}
+
+void hmbRich::on_tree_file_selected(wxCommandEvent& event)
+{
+    const wxString filePath = event.GetString();
+    if (!filePath.IsEmpty())
+    {
+        load_file(filePath);
+    }
 }
 
 // Переход на следующую строку.
