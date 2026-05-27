@@ -7,7 +7,6 @@
 #include "wx/panel.h"
 
 #include "rich.h"
-#include "subscriber.h"
 
 class hmbRich;
 class hmbPanelTree;
@@ -16,14 +15,14 @@ class wxTextCtrl;
 
 // Панель вида реализует интерфейс подписчика,
 // чтобы напрямую получать уведомления о выборе файла из panel_tree.
-class hmbPanelView : public wxPanel, public hmbSubscriber
+class hmbPanelView : public wxPanel
 {
 public:
     explicit hmbPanelView(wxWindow* parent);
 
     // Реализация абстрактного метода hmbSubscriber.
     // Вызывается panel_tree при выборе файла в дереве.
-    void load_file(const wxString& filePath) override;
+    void load_file(const wxString& filePath);
     void save_file_as();
     wxMenu* get_edit_menu();
 

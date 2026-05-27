@@ -59,7 +59,7 @@ void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
 }
 
 // Регистрация подписчика на событие выбора файла.
-void hmbTree::bind_subscriber(hmbSubscriber* subscriber)
+void hmbTree::bind_subscriber(hmbPanelView* subscriber)
 {
     this->subscriber = subscriber;
 }

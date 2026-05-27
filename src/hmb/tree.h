@@ -2,8 +2,8 @@
 #define HMB_TREE_H
 
 #include "wx/treectrl.h"
+#include "panel_view.h"
 
-#include "subscriber.h"
 
 // Класс для хранения пути файла в элементе дерева
 class FileItemData : public wxTreeItemData
@@ -21,11 +21,11 @@ class hmbTree : public wxTreeCtrl
 public:
     wxString current_file = wxEmptyString;
     explicit hmbTree(wxWindow* parent);
-    void bind_subscriber(hmbSubscriber* subscriber);
+    void bind_subscriber(hmbPanelView* subscriber);
     void load_directory(const wxString& dir);
 
 private:
-    hmbSubscriber* subscriber = nullptr;
+    hmbPanelView* subscriber = nullptr;
 
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);

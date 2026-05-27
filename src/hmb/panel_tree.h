@@ -5,7 +5,7 @@
 #include "wx/panel.h"
 #include "wx/sizer.h"
 
-#include "subscriber.h"
+#include "panel_view.h"
 
 class hmbTree;
 
@@ -18,7 +18,7 @@ public:
     // Регистрация подписчика на выбор файла в дереве.
     // Подписчик должен жить не меньше, чем hmbPanelTree, пока активна подписка.
     // Передача nullptr - отключение подписки.
-    void bind_subscriber(hmbSubscriber* subscriber);
+    void bind_subscriber(hmbPanelView* subscriber);
     void open_dir();
     void load_directory(const wxString& dir);
 

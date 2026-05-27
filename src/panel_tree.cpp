@@ -25,7 +25,7 @@ hmbPanelTree::~hmbPanelTree()
     }
 }
 
-void hmbPanelTree::bind_subscriber(hmbSubscriber* subscriber)
+void hmbPanelTree::bind_subscriber(hmbPanelView* subscriber)
 {
     // hmbTree будет вызывать интерфейс подписчика (при выборе файла).
     this->tree_viewer->bind_subscriber(subscriber);
