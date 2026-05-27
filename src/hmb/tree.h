@@ -23,11 +23,9 @@ public:
     explicit hmbTree(wxWindow* parent);
     void bind_subscriber(hmbSubscriber* subscriber);
     void load_directory(const wxString& dir);
-    wxString get_current_dir() const;
 
 private:
     hmbSubscriber* subscriber = nullptr;
-    wxString current_dir = wxEmptyString;
 
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);

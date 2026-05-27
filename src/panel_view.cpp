@@ -76,8 +76,3 @@ void hmbPanelView::save_file_as()
 {
     this->page_rich->save_file_as();
 }
-
-wxString hmbPanelView::get_current_file() const
-{
-    return this->page_rich->current_file;
-}

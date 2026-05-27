@@ -2,6 +2,7 @@
 
 #include "hmb/rich.h"
 #include "hmb/tree.h"
+#include "hmb/tools.h"
 
 bool isFileExist(const wxString filePath)
 {
@@ -243,6 +244,7 @@ void hmbRich::push_xml_data(const wxString& content)
 void hmbRich::load_file(const wxString filePath)
 {
     if(filePath.IsEmpty()) return;
+    HMB_FNAME = filePath;
 
     auto fileName = wxFileName(filePath);
     wxString fileExt = fileName.GetExt();
@@ -255,7 +257,6 @@ void hmbRich::load_file(const wxString filePath)
     } else {
         this->load_plain_file(filePath);
     }
-    this->current_file = filePath;
 }
 
 // --- Load the Markdown file text ---

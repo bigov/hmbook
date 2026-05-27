@@ -1,4 +1,8 @@
 #include "hmb/window.h"
+#include "hmb/tools.h"
+
+wxString HMB_FNAME = wxEmptyString;
+wxString HMB_DNAME = wxEmptyString;
 
 static const int APP_CLOSE = 1000;
 static const wxString ASSETS_DIR = "assets";
@@ -122,7 +126,7 @@ void hmbWindow::save_params()
     config.Write("/MainWindow/X", (long)pos.x);
     config.Write("/MainWindow/Y", (long)pos.y);
     config.Write("/MainWindow/span", (long)this->splitter->GetSashPosition());
-    config.Write("/MainWindow/current_dir", this->panel_tree->get_current_dir());
-    config.Write("/MainWindow/current_file", this->panel_view->get_current_file());
+    config.Write("/MainWindow/current_dir", HMB_DNAME);
+    config.Write("/MainWindow/current_file", HMB_FNAME);
     config.Flush();
 }

@@ -2,6 +2,7 @@
 #include "wx/filename.h"
 
 #include "hmb/tree.h"
+#include "hmb/tools.h"
 
 hmbTree::hmbTree(wxWindow* parent)
     : wxTreeCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
@@ -16,7 +17,7 @@ void hmbTree::load_directory(const wxString& dir)
     if(dir.IsEmpty()) return;
 
     DeleteAllItems();
-    this->current_dir = dir;
+    HMB_DNAME = dir;
 
     wxDir directory(dir);
     if (!directory.IsOpened())
@@ -25,11 +26,6 @@ void hmbTree::load_directory(const wxString& dir)
     wxTreeItemId root = AddRoot(wxFileName(dir).GetFullName());
     populate_tree(dir, root);
     Expand(root);
-}
-
-wxString hmbTree::get_current_dir() const
-{
-    return this->current_dir;
 }
 
 void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)

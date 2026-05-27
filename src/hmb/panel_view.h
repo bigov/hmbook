@@ -26,7 +26,6 @@ public:
     void load_file(const wxString& filePath) override;
     void save_file_as();
     wxMenu* get_edit_menu();
-    wxString get_current_file() const;
 
 private:
     wxAuiNotebook* nbook = nullptr;

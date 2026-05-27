@@ -36,11 +36,6 @@ void hmbPanelTree::load_directory(const wxString& dir)
     this->tree_viewer->load_directory(dir);
 }
 
-wxString hmbPanelTree::get_current_dir() const
-{
-    return this->tree_viewer->get_current_dir();
-}
-
 void hmbPanelTree::open_dir()
 {
     wxString defaultDir = wxGetHomeDir(); // начальная папка

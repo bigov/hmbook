@@ -67,7 +67,6 @@ class hmbRich: public wxRichTextCtrl
 public:
     hmbRich(wxWindow* parent);
     ~hmbRich() override;
-    wxString current_file = wxEmptyString;
     std::string file_content = "";
     void on_tree_file_selected(wxCommandEvent& event);
     wxMenu* edit_menu();

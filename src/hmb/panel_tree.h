@@ -19,7 +19,6 @@ public:
     // Подписчик должен жить не меньше, чем hmbPanelTree, пока активна подписка.
     // Передача nullptr - отключение подписки.
     void bind_subscriber(hmbSubscriber* subscriber);
-    wxString get_current_dir() const;
     void open_dir();
     void load_directory(const wxString& dir);
 
