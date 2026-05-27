@@ -75,16 +75,16 @@ void hmbTree::on_selection(wxTreeEvent& event)
     }
     
     // Проверяем, есть ли у элемента данные (это файл)
-    FileItemData* pData = static_cast<FileItemData*>(GetItemData(itemId));
+    auto pData = static_cast<FileItemData*>(this->GetItemData(itemId));
     if (pData)
     {
         // Сохраняем текущий выбранный файл в состоянии дерева.
-        this->current_file = pData->GetFilePath();
+        HMB_FNAME = pData->GetFilePath();
 
         // Вызов интерфейса подписчика
         if (this->subscriber)
         {
-            this->subscriber->load_file(this->current_file);
+            this->subscriber->load_file(HMB_FNAME);
         }
     }
 

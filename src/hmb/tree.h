@@ -3,29 +3,29 @@
 
 #include "wx/treectrl.h"
 #include "panel_view.h"
+#include "tools.h"
 
 
-// Класс для хранения пути файла в элементе дерева
+// Класс для хранения файловых путей в элементах дерева
 class FileItemData : public wxTreeItemData
 {
 public:
-    explicit FileItemData(const wxString& filePath) : m_filePath(filePath) {}
-    const wxString& GetFilePath() const { return m_filePath; }
+    explicit FileItemData(const wxString& filePath) : item_file_path(filePath) {}
+    const wxString& GetFilePath() const { return item_file_path; }
 
 private:
-    wxString m_filePath;
+    wxString item_file_path;
 };
 
 class hmbTree : public wxTreeCtrl
 {
 public:
-    wxString current_file = wxEmptyString;
     explicit hmbTree(wxWindow* parent);
     void bind_subscriber(hmbPanelView* subscriber);
     void load_directory(const wxString& dir);
 
 private:
-    hmbPanelView* subscriber = nullptr;
+    hmbPanelView* subscriber = nullptr; // Подписчик, который будет уведомляться при выборе файла
 
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);

@@ -37,10 +37,11 @@ wxMenu* hmbPanelView::get_edit_menu()
     return this->page_rich->edit_menu();
 }
 
-// Реализация интерфейса абстрактного метода hmbSubscriber. Вызывается panel_tree при выборе файла в дереве.
+// Реализация интерфейса метода "подписчик". Вызывается из panel_tree при выборе файла в дереве.
 void hmbPanelView::load_file(const wxString& filePath)
 {
     this->page_rich->load_file(filePath);
+    this->page_source->ChangeValue(wxString::FromUTF8(this->page_rich->file_content.c_str()));
     this->nbook->SetSelection(0);
 }
 

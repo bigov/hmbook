@@ -250,6 +250,8 @@ void hmbRich::load_file(const wxString filePath)
     wxString fileExt = fileName.GetExt();
     fileExt.LowerCase();
 
+    new_document();
+
     if(fileExt == RICH_BUFFER_EXT) {
         this->load_xml_file(filePath);
     } else if(fileExt == MARK_BUFFER_EXT) {
@@ -293,7 +295,6 @@ void hmbRich::load_plain_file(const wxString filePath)
     if (!isFileExist(filePath)) return;
     load_file_content(filePath, file_content);
 
-    new_document();
     this->BeginSuppressUndo();
     this->WriteText(wxString::FromUTF8(file_content.c_str()));
     this->EndSuppressUndo();
@@ -503,9 +504,8 @@ void hmbRich::display_node(cmark_node* node)
   // -- Block nodes --
   case CMARK_NODE_DOCUMENT:
     if (D) dbg_node(node, "DOCUMENT");
-    new_document();
     this->row_current = cmark_node_get_start_line(node);
-    this->row_total = cmark_node_get_end_line(node);
+    this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
     break;
   case CMARK_NODE_HEADING:
     if (D) dbg_node(node, "HEADING");
