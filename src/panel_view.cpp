@@ -13,7 +13,7 @@ hmbPanelView::hmbPanelView(wxWindow* parent)
         switch (nbook->GetSelection())
         {
         case 1:
-            this->page_source->ChangeValue(wxString::FromUTF8(this->page_rich->file_content.c_str()));
+            this->page_source->ChangeValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
             break;
         case 2:
             this->page_buffer->ChangeValue(this->page_rich->get_buffer());
@@ -41,7 +41,7 @@ wxMenu* hmbPanelView::get_edit_menu()
 void hmbPanelView::load_file(const wxString& filePath)
 {
     this->page_rich->load_file(filePath);
-    this->page_source->ChangeValue(wxString::FromUTF8(this->page_rich->file_content.c_str()));
+    this->page_source->ChangeValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
     this->nbook->SetSelection(0);
 }
 

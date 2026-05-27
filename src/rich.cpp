@@ -4,27 +4,6 @@
 #include "hmb/tree.h"
 #include "hmb/tools.h"
 
-bool isFileExist(const wxString filePath)
-{
-    if (wxFileExists(filePath)) return true;
-    wxLogError(_("Not found file '%s'."), filePath.wc_str());
-    return false;
-}
-
-void load_file_content(const wxString filePath, std::string& content)
-{
-    content.clear();
-    const wchar_t* f = filePath.wc_str();
-    if (std::ifstream reader{f}; reader)
-   {
-        std::string line;
-        while (std::getline(reader, line)) content.append(line + "\n");
-    } else {
-        wxLogError(_("Cannot read file '%s'."), filePath.wc_str());
-    }
-}
-
-
 namespace
 {
     std::string to_utf8(const wxString& value)
@@ -244,7 +223,10 @@ void hmbRich::push_xml_data(const wxString& content)
 void hmbRich::load_file(const wxString filePath)
 {
     if(filePath.IsEmpty()) return;
+    if (!isFileExist(filePath)) return;
+
     HMB_FNAME = filePath;
+    load_src_data(filePath); // загрузить исходный текст в глобальную переменную HMB_SRC_DATA
 
     auto fileName = wxFileName(filePath);
     wxString fileExt = fileName.GetExt();
@@ -253,23 +235,20 @@ void hmbRich::load_file(const wxString filePath)
     new_document();
 
     if(fileExt == RICH_BUFFER_EXT) {
-        this->load_xml_file(filePath);
+        this->push_xml_data(HMB_SRC_DATA);
     } else if(fileExt == MARK_BUFFER_EXT) {
-        this->load_md_file(filePath);
+        this->push_md_data();
     } else {
-        this->load_plain_file(filePath);
+        this->push_plain_text();
     }
 }
 
-// --- Load the Markdown file text ---
-void hmbRich::load_md_file(const wxString filePath)
+// --- Load the Markdown text ---
+void hmbRich::push_md_data()
 {
-    if (!isFileExist(filePath)) return;
-    load_file_content(filePath, file_content);
-
-    cmark_node* node = cmark_parse_document(file_content.c_str(), file_content.size(), CMARK_OPT_DEFAULT);
+    cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
     if (!node) {
-        wxLogError(_("Error parsing file '%s'."), filePath.wc_str());
+        wxLogError(_("Error parsing file '%s'."), HMB_FNAME.wc_str());
         node = nullptr;
         return;
     }
@@ -283,39 +262,19 @@ void hmbRich::load_md_file(const wxString filePath)
     }
     
     // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
-    if (file_content.size() >= 1 && file_content.substr(file_content.size()-1) == "\n") append_line();
+    if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n") append_line();
     cmark_node_free(node);
     this->EndSuppressUndo();
 
 }
 
 // --- Load the plain text content from a file ---
-void hmbRich::load_plain_file(const wxString filePath)
+void hmbRich::push_plain_text()
 {
-    if (!isFileExist(filePath)) return;
-    load_file_content(filePath, file_content);
-
     this->BeginSuppressUndo();
-    this->WriteText(wxString::FromUTF8(file_content.c_str()));
+    this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
     this->EndSuppressUndo();
     this->SetInsertionPoint(0);
-}
-
-// --- Load the XML content from a file ---
-void hmbRich::load_xml_file(const wxString filePath)
-{
-    if (!isFileExist(filePath)) return;
-    load_file_content(filePath, file_content);
-    push_xml_data(file_content);
-}
-
-void hmbRich::on_tree_file_selected(wxCommandEvent& event)
-{
-    const wxString filePath = event.GetString();
-    if (!filePath.IsEmpty())
-    {
-        load_file(filePath);
-    }
 }
 
 // Переход на следующую строку.

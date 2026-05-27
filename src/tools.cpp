@@ -1,5 +1,32 @@
 #include "hmb/tools.h"
 
+// Глобальная переменная для хранения исходного текста, загруженного из файла.
+std::string HMB_SRC_DATA = ""; 
+
+// Проверка существования файла по указанному пути. Вызывается из panel_tree при выборе файла в дереве.
+bool isFileExist(const wxString filePath)
+{
+    if (wxFileExists(filePath)) return true;
+    wxLogError(_("Not found file '%s'."), filePath.wc_str());
+    return false;
+}
+
+// Чтение исходного текста из файла. Вызывается из panel_tree при выборе файла в дереве.
+void load_src_data(const wxString filePath)
+{
+    HMB_SRC_DATA.clear();
+    const wchar_t* f = filePath.wc_str();
+    if (std::ifstream reader{f}; reader)
+   {
+        std::string line;
+        while (std::getline(reader, line)) HMB_SRC_DATA.append(line + "\n");
+    } else {
+        wxLogError(_("Cannot read file '%s'."), filePath.wc_str());
+    }
+}
+
+// Перекодирование символов вида &#xNNNN; или &#DDDD; в соответствующие Unicode символы.
+// Вызывается при загрузке текста в редактор и при сохранении текста из редактора.
 wxString hmb_decode_xml(const wxString& text)
 {
     wxString out;

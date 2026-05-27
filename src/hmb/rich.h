@@ -13,25 +13,6 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
     Dialog classes: wxRichTextStyleOrganiserDialog, wxRichTextFormattingDialog, wxSymbolPickerDialog
 */
 
-#include <memory>
-
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <sstream>
-#include <cstring>
-
-#include "wx/menu.h"
-#include "wx/richtext/richtextctrl.h"
-#include "wx/richtext/richtextxml.h"
-#include "wx/wfstream.h"
-#include "wx/sstream.h"
-#include "wx/colordlg.h"
-#include "wx/fontdlg.h"
-#include "wx/textdlg.h"
-#include "wx/tokenzr.h"
-#include "wx/log.h"
-
 #include "tools.h"
 
 extern "C" {
@@ -55,20 +36,13 @@ enum
     RICHTEXT_TAB_STOPS
 };
 
-static const wxString RICH_BUFFER_EXT = "wxrt";
-static const wxString TEXT_BUFFER_EXT = "txt";
-static const wxString MARK_BUFFER_EXT = "md";
-
-bool isFileExist(const wxString filePath);
-void load_file_content(const wxString filePath, std::string& content);
 
 class hmbRich: public wxRichTextCtrl
 {
 public:
     hmbRich(wxWindow* parent);
     ~hmbRich() override;
-    std::string file_content = "";
-    void on_tree_file_selected(wxCommandEvent& event);
+
     wxMenu* edit_menu();
     void load_file(const wxString filePath);
     void save_file_as();
@@ -141,9 +115,8 @@ private:
     void OnRightIndent(wxCommandEvent& event);
     void OnTabStops(wxCommandEvent& event);
     void load_xml_handler();
-    void load_xml_file(const wxString filePath);
-    void load_md_file(const wxString filePath);
-    void load_plain_file(const wxString filePath);
+    void push_md_data();
+    void push_plain_text();
 };
 
 #endif // HMB_RICH_H
