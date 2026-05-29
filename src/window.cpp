@@ -4,6 +4,12 @@
 wxString HMB_FNAME = wxEmptyString;
 wxString HMB_DNAME = wxEmptyString;
 
+wxFont HMB_FONT_BASE = wxFontInfo(11).FaceName("Adwaita Sans Text");
+wxFont HMB_FONT_MONO = wxFontInfo(11).FaceName("Adwaita Mono");
+
+wxColor HMB_COLOR_BASE_FG = "#444444";
+wxColor HMB_COLOR_BASE_BG = "#ffffff";
+
 static const int APP_CLOSE = 1000;
 static const wxString ASSETS_DIR = "assets";
 static const wxString APP_ICON_FNAME = "icon.png";

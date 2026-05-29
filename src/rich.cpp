@@ -4,33 +4,11 @@
 #include "hmb/tree.h"
 #include "hmb/tools.h"
 
-namespace
-{
-    std::string to_utf8(const wxString& value)
-    {
-        const wxScopedCharBuffer utf8 = value.ToUTF8();
-        return utf8.data() ? std::string(utf8.data()) : std::string();
-    }
-
-    std::string replace_placeholder(std::string tpl, const std::string& placeholder, const std::string& content)
-    {
-        size_t pos = 0;
-        while ((pos = tpl.find(placeholder, pos)) != std::string::npos)
-        {
-            tpl.replace(pos, placeholder.size(), content);
-            pos += content.size();
-        }
-        return tpl;
-    }
-
-} // namespace
-
 // Конструктор класса
 hmbRich::hmbRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-                    wxBORDER_NONE | wxWANTS_CHARS)
+                    wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL| wxALWAYS_SHOW_SB)
 {
-    
     this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
 
     // Base character style
@@ -38,18 +16,18 @@ hmbRich::hmbRich(wxWindow* parent)
     auto style_base = &defCharBase->GetStyle();
     style_base->SetFlags(wxTEXT_ATTR_FONT_POINT_SIZE | wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
     //style_base->SetFont(wxFontInfo(14).FaceName("Adwaita Sans Text"));
-    style_base->SetFont(this->font_base);
-    style_base->SetTextColour(this->color_base_fg);
-    style_base->SetBackgroundColour(this->color_base_bg);
-    style_base->SetLeftIndent(20);
-    style_base->SetRightIndent(10);
+    style_base->SetFont(HMB_FONT_BASE);
+    style_base->SetTextColour(HMB_COLOR_BASE_FG);
+    style_base->SetBackgroundColour(HMB_COLOR_BASE_BG);
+    style_base->SetLeftIndent(10);
+    style_base->SetRightIndent(8);
     style_base->SetCharacterStyleName("CharBase");
     this->style_sheet->AddCharacterStyle(this->defCharBase);
 
     // Basic style defines the document-wide baseline appearance.
     // SetDefaultStyle влияет только на последующий ввод, а за стиль всего буфера отвечает SetBasicStyle.
     // Рекомендуемая схема:
-    //  - сначала SetFont(font_base),
+    //  - сначала SetFont(HMB_FONT_BASE),
     //  - затем SetBasicStyle с нужными цветами,
     //  - отдельно формировать default стиль для ввода как объединение char+paragraph атрибутов.
     this->SetBasicStyle(this->defCharBase->GetStyle());  // стиль буфера по-умолчанию
@@ -59,7 +37,7 @@ hmbRich::hmbRich(wxWindow* parent)
     this->defCharCoBl = new wxRichTextCharacterStyleDefinition("CharCoBl");
     auto style_code_block = &defCharCoBl->GetStyle();
     style_code_block->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_code_block->SetFont(this->font_mono);
+    style_code_block->SetFont(HMB_FONT_MONO);
     style_code_block->SetTextColour(this->color_code_fg);
     this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
@@ -67,7 +45,7 @@ hmbRich::hmbRich(wxWindow* parent)
     this->defCharCoLn = new wxRichTextCharacterStyleDefinition("CharCoLn");
     auto style_code_inline = &defCharCoLn->GetStyle();
     style_code_inline->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_code_inline->SetFont(this->font_mono);
+    style_code_inline->SetFont(HMB_FONT_MONO);
     style_code_inline->SetTextColour(this->color_code_fg);
     style_code_inline->SetBackgroundColour(this->color_gray_bg);
     this->style_sheet->AddCharacterStyle(this->defCharCoLn);
@@ -76,7 +54,7 @@ hmbRich::hmbRich(wxWindow* parent)
     this->defCharLink = new wxRichTextCharacterStyleDefinition("CharLink");
     auto style_link = &defCharLink->GetStyle();
     style_link->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_link->SetFont(this->font_base);
+    style_link->SetFont(HMB_FONT_BASE);
     style_link->SetTextColour(this->color_urls_fg);
     style_link->SetFontUnderlined(true);
     this->style_sheet->AddCharacterStyle(this->defCharLink);
@@ -88,8 +66,8 @@ hmbRich::hmbRich(wxWindow* parent)
          wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
          wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
     style_para_base->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    style_para_base->SetLeftIndent(0);
-    style_para_base->SetRightIndent(0);
+    style_para_base->SetLeftIndent(10);
+    style_para_base->SetRightIndent(8);
     style_para_base->SetParagraphSpacingBefore(0);
     style_para_base->SetParagraphSpacingAfter(0);
     this->style_sheet->AddParagraphStyle(this->defParaBase);
@@ -102,9 +80,9 @@ hmbRich::hmbRich(wxWindow* parent)
          wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
          wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
     style_heading->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    style_heading->SetLeftIndent(20);
-    style_heading->SetRightIndent(10);
-    style_heading->SetParagraphSpacingBefore(20);
+    style_heading->SetLeftIndent(10);
+    style_heading->SetRightIndent(8);
+    style_heading->SetParagraphSpacingBefore(10);
     style_heading->SetParagraphSpacingAfter(0);
     style_heading->SetCharacterStyleName("CharBase");
     //this->defParaHead->SetStyle(*style_heading);
@@ -226,7 +204,7 @@ void hmbRich::load_file(const wxString filePath)
     if (!isFileExist(filePath)) return;
 
     HMB_FNAME = filePath;
-    load_src_data(filePath); // загрузить исходный текст в глобальную переменную HMB_SRC_DATA
+    file_read(HMB_FNAME, HMB_SRC_DATA); // загрузить исходный текст в глобальную переменную
 
     auto fileName = wxFileName(filePath);
     wxString fileExt = fileName.GetExt();

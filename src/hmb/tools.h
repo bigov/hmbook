@@ -24,12 +24,21 @@ extern wxString HMB_FNAME;
 extern wxString HMB_DNAME;
 extern std::string HMB_SRC_DATA;
 
+extern wxColor HMB_COLOR_BASE_FG;
+extern wxColor HMB_COLOR_BASE_BG;
+extern wxFont HMB_FONT_BASE;
+extern wxFont HMB_FONT_MONO;
+
 static const wxString RICH_BUFFER_EXT = "wxrt";
 static const wxString TEXT_BUFFER_EXT = "txt";
 static const wxString MARK_BUFFER_EXT = "md";
 
 bool isFileExist(const wxString filePath);
-void load_src_data(const wxString filePath);
+void file_read(const wxString filePath, std::string &target_string);
 wxString hmb_decode_xml(const wxString& text);
+std::string to_utf8(const wxString& value);
+std::string replace_placeholder(std::string tpl,
+                          const std::string& placeholder,
+                          const std::string& content);
 
 #endif // HMB_TOOLS_H

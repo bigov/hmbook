@@ -7,8 +7,9 @@
 #include "wx/panel.h"
 
 #include "rich.h"
+#include "text.h"
+//#include "panel_tree.h"
 
-class hmbRich;
 class hmbPanelTree;
 class wxAuiNotebook;
 class wxTextCtrl;
@@ -29,7 +30,7 @@ public:
 private:
     wxAuiNotebook* nbook = nullptr;
     hmbRich* page_rich = nullptr;
-    wxTextCtrl* page_source = nullptr;
+    hmbText* page_source = nullptr;
     wxTextCtrl* page_buffer = nullptr;
 
     void init_pages();

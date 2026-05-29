@@ -1,6 +1,4 @@
 #include "hmb/panel_view.h"
-#include "hmb/panel_tree.h"
-
 
 hmbPanelView::hmbPanelView(wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
@@ -48,29 +46,12 @@ void hmbPanelView::load_file(const wxString& filePath)
 void hmbPanelView::init_pages()
 {
     this->page_rich = new hmbRich(nbook);
-
-    this->page_source = new wxTextCtrl(
-        nbook,
-        wxID_ANY,
-        wxEmptyString,
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxTE_MULTILINE | wxBORDER_NONE | wxTE_NO_VSCROLL
-    );
-
-    this->page_buffer = new wxTextCtrl(
-        nbook,
-        wxID_ANY,
-        wxEmptyString,
-        wxDefaultPosition,
-        wxDefaultSize,
-        wxTE_MULTILINE | wxBORDER_NONE | wxTE_NO_VSCROLL
-    );
+    this->page_source = new hmbText(nbook);
+    this->page_buffer = new hmbText(nbook, wxTE_DONTWRAP | wxTE_READONLY);
 
     this->nbook->AddPage(page_rich, "txt_rich", true);
     this->nbook->AddPage(page_source, "source", false);
     this->nbook->AddPage(page_buffer, "buffer", false);
-
 }
 
 void hmbPanelView::save_file_as()

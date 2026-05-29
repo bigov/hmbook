@@ -40,7 +40,7 @@ enum
 class hmbRich: public wxRichTextCtrl
 {
 public:
-    hmbRich(wxWindow* parent);
+    explicit hmbRich(wxWindow* parent);
     ~hmbRich() override;
 
     wxMenu* edit_menu();
@@ -52,15 +52,10 @@ public:
 
 private:
     
-    wxColor color_base_fg = "#444444";
     wxColor color_urls_fg = "#25A4D1"; 
     wxColor color_code_fg = "#0954b8";
-    wxColor color_base_bg = "#ffffff";
     wxColor color_gray_bg = "#f0f0f0";
     
-    wxFont font_base = wxFontInfo(11).FaceName("Adwaita Sans Text");
-    wxFont font_mono = wxFontInfo(11).FaceName("Adwaita Mono");
-
     wxRichTextCharacterStyleDefinition* defCharBase = nullptr; // базовый стиль
     wxRichTextCharacterStyleDefinition* defCharLink = nullptr; // ссылки
     wxRichTextCharacterStyleDefinition* defCharCoBl = nullptr; // code block

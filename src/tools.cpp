@@ -12,14 +12,14 @@ bool isFileExist(const wxString filePath)
 }
 
 // Чтение исходного текста из файла. Вызывается из panel_tree при выборе файла в дереве.
-void load_src_data(const wxString filePath)
+void file_read(const wxString filePath, std::string &target_string)
 {
-    HMB_SRC_DATA.clear();
+    target_string.clear();
     const wchar_t* f = filePath.wc_str();
     if (std::ifstream reader{f}; reader)
    {
         std::string line;
-        while (std::getline(reader, line)) HMB_SRC_DATA.append(line + "\n");
+        while (std::getline(reader, line)) target_string.append(line + "\n");
     } else {
         wxLogError(_("Cannot read file '%s'."), filePath.wc_str());
     }
@@ -72,3 +72,29 @@ wxString hmb_decode_xml(const wxString& text)
 
     return out;
 }
+
+
+// Замена всех вхождений подстроки placeholder в строке tpl на строку content.
+// Вызывается при сохранении текста из редактора.
+std::string to_utf8(const wxString& value)
+{
+    const wxScopedCharBuffer utf8 = value.ToUTF8();
+    return utf8.data() ? std::string(utf8.data()) : std::string();
+}
+
+
+// Замена всех вхождений подстроки placeholder в строке tpl на строку content.
+// Вызывается при сохранении текста из редактора.
+std::string replace_placeholder(std::string tpl,
+                          const std::string& placeholder,
+                          const std::string& content)
+{
+    size_t pos = 0;
+    while ((pos = tpl.find(placeholder, pos)) != std::string::npos)
+    {
+        tpl.replace(pos, placeholder.size(), content);
+        pos += content.size();
+    }
+    return tpl;
+}
+

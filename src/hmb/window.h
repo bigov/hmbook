@@ -20,8 +20,8 @@
 #include "wx/config.h"
 #include "wx/dir.h"
 
-#include "panel_view.h"
 #include "panel_tree.h"
+#include "panel_view.h"
 #include "rich.h"
 
 class hmbTree;
