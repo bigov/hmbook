@@ -31,7 +31,7 @@ private:
     wxAuiNotebook* nbook = nullptr;
     hmbRich* page_rich = nullptr;
     hmbText* page_source = nullptr;
-    wxTextCtrl* page_buffer = nullptr;
+    hmbText* page_buffer = nullptr;
 
     void init_pages();
 };

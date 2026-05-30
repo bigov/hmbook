@@ -2,13 +2,13 @@
 #define HMB_TEXT_H
 
 #include "wx/textctrl.h"
+#include "wx/stc/stc.h"
 #include "tools.h"
 
-class hmbText: public wxTextCtrl
+class hmbText: public wxStyledTextCtrl
 {
     public:
-    explicit hmbText(wxWindow* parent, long extraStyle = 0);
-        //~hmbText() override;
+    explicit hmbText(wxWindow* parent);
 };
 
 #endif // HMB_TEXT_H

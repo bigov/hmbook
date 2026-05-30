@@ -7,21 +7,22 @@
 // Конструктор класса
 hmbRich::hmbRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-                    wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL| wxALWAYS_SHOW_SB)
+                    wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL)
 {
     this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
 
     // Base character style
     this->defCharBase = new wxRichTextCharacterStyleDefinition("CharBase");
     auto style_base = &defCharBase->GetStyle();
-    style_base->SetFlags(wxTEXT_ATTR_FONT_POINT_SIZE | wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    //style_base->SetFont(wxFontInfo(14).FaceName("Adwaita Sans Text"));
+    style_base->SetFlags(wxTEXT_ATTR_ALL);
+    style_base->SetCharacterStyleName("CharBase");
     style_base->SetFont(HMB_FONT_BASE);
+    style_base->SetFontEncoding(wxFONTENCODING_UTF8);
     style_base->SetTextColour(HMB_COLOR_BASE_FG);
     style_base->SetBackgroundColour(HMB_COLOR_BASE_BG);
     style_base->SetLeftIndent(10);
     style_base->SetRightIndent(8);
-    style_base->SetCharacterStyleName("CharBase");
+    style_base->SetLineSpacing(0);
     this->style_sheet->AddCharacterStyle(this->defCharBase);
 
     // Basic style defines the document-wide baseline appearance.
@@ -440,7 +441,10 @@ void hmbRich::display_node(cmark_node* node)
     break;
   // -- Block nodes --
   case CMARK_NODE_DOCUMENT:
-    if (D) dbg_node(node, "DOCUMENT");
+    if (D) {
+        std::cerr << std::endl << "--- " << HMB_FNAME << " ---" << std::endl;
+        dbg_node(node, "DOCUMENT");
+    }
     this->row_current = cmark_node_get_start_line(node);
     this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
     break;

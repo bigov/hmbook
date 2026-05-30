@@ -11,7 +11,8 @@ hmbPanelView::hmbPanelView(wxWindow* parent)
         switch (nbook->GetSelection())
         {
         case 1:
-            this->page_source->ChangeValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+            this->page_source->ClearAll();
+            this->page_source->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
             break;
         case 2:
             this->page_buffer->ChangeValue(this->page_rich->get_buffer());
@@ -35,23 +36,28 @@ wxMenu* hmbPanelView::get_edit_menu()
     return this->page_rich->edit_menu();
 }
 
-// Реализация интерфейса метода "подписчик". Вызывается из panel_tree при выборе файла в дереве.
-void hmbPanelView::load_file(const wxString& filePath)
-{
-    this->page_rich->load_file(filePath);
-    this->page_source->ChangeValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
-    this->nbook->SetSelection(0);
-}
-
 void hmbPanelView::init_pages()
 {
     this->page_rich = new hmbRich(nbook);
     this->page_source = new hmbText(nbook);
-    this->page_buffer = new hmbText(nbook, wxTE_DONTWRAP | wxTE_READONLY);
+    this->page_buffer = new hmbText(nbook);
 
     this->nbook->AddPage(page_rich, "txt_rich", true);
     this->nbook->AddPage(page_source, "source", false);
+    this->page_source->SetWrapMode(wxSTC_WRAP_WORD);
     this->nbook->AddPage(page_buffer, "buffer", false);
+}
+
+// Реализация интерфейса метода "подписчик". Вызывается из panel_tree при выборе файла в дереве.
+void hmbPanelView::load_file(const wxString& filePath)
+{
+    this->page_rich->load_file(filePath);
+
+    //this->page_source->ChangeValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    this->page_source->ClearAll();
+    this->page_source->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    
+    this->nbook->SetSelection(0);
 }
 
 void hmbPanelView::save_file_as()
