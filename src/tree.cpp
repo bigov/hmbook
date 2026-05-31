@@ -4,6 +4,32 @@
 #include "hmb/tree.h"
 #include "hmb/tools.h"
 
+namespace
+{
+wxTreeItemId find_item_by_path(wxTreeCtrl* tree, const wxTreeItemId& parent, const wxString& filePath)
+{
+    if (!parent.IsOk()) return wxTreeItemId();
+
+    wxTreeItemIdValue cookie = nullptr;
+    wxTreeItemId child = tree->GetFirstChild(parent, cookie);
+
+    while (child.IsOk())
+    {
+        auto* data = dynamic_cast<FileItemData*>(tree->GetItemData(child));
+        if (data && data->GetFilePath() == filePath)
+            return child;
+
+        wxTreeItemId nested = find_item_by_path(tree, child, filePath);
+        if (nested.IsOk())
+            return nested;
+
+        child = tree->GetNextChild(parent, cookie);
+    }
+
+    return wxTreeItemId();
+}
+}
+
 hmbTree::hmbTree(wxWindow* parent)
     : wxTreeCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                  wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE | wxBORDER_NONE)
@@ -12,17 +38,15 @@ hmbTree::hmbTree(wxWindow* parent)
     Bind(wxEVT_TREE_SEL_CHANGED, &hmbTree::on_selection, this);
 }
 
-void hmbTree::load_directory(const wxString& dir)
+void hmbTree::set_root_dir(const wxString& dir)
 {
     if(dir.IsEmpty()) return;
+    wxDir directory(dir);
+    if (!directory.IsOpened()) return;
 
     DeleteAllItems();
     HMB_DNAME = dir;
 
-    wxDir directory(dir);
-    if (!directory.IsOpened())
-        return;
-    
     wxTreeItemId root = AddRoot(wxFileName(dir).GetFullName());
     populate_tree(dir, root);
     Expand(root);
@@ -44,14 +68,14 @@ void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
         if (wxDir::Exists(fullPath))
         {
             // Это директория - добавляем как ветку и рекурсивно заполняем
-            wxTreeItemId folder = AppendItem(parent, filename);
+            wxTreeItemId folder = this->AppendItem(parent, filename);
             populate_tree(fullPath, folder);
         }
         else
         {
             // Это файл - добавляем как лист с полным путем в данных
-            wxTreeItemId fileItem = AppendItem(parent, filename);
-            SetItemData(fileItem, new FileItemData(fullPath));
+            wxTreeItemId fileItem = this->AppendItem(parent, filename);
+            this->SetItemData(fileItem, new FileItemData(fullPath));
         }
         
         cont = directory.GetNext(&filename);
@@ -63,6 +87,17 @@ void hmbTree::bind_subscriber(hmbPanelView* subscriber)
 {
     this->subscriber = subscriber;
 }
+
+// Выбор элемента в дереве по полному пути к файлу. Если файл найден, он будет выбран, иначе - ничего не произойдет.
+// Если файл найден и выбран, это вызовет событие выбора, которое загрузит файл в панель просмотра.
+void hmbTree::select_item(const wxString& filePath)
+{
+    if (filePath.IsEmpty()) return;
+    wxTreeItemId item = find_item_by_path(this, this->GetRootItem(), filePath);
+    if (item.IsOk())
+        this->SelectItem(item);
+}
+
 
 void hmbTree::on_selection(wxTreeEvent& event)
 {

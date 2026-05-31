@@ -116,9 +116,11 @@ void hmbWindow::load_params()
 
     this->SetSize(win_x, win_y, win_width, win_height);
     this->splitter->SetSashPosition(span); // позиция разделителя
-    this->panel_tree->load_directory(config.Read("/MainWindow/current_dir", wxEmptyString));
-    this->panel_view->load_file(config.Read("/MainWindow/current_file", wxEmptyString));
-}
+    this->panel_tree->set_root_dir(config.Read("/MainWindow/current_dir", wxEmptyString));
+    auto current_file = config.Read("/MainWindow/current_file", wxEmptyString);
+    // Установка курсора на указанный файл (если он существует) автоматически приведет к его загрузке в панель просмотра.
+    this->panel_tree->set_cursor_to(current_file);
+}   
 
 void hmbWindow::save_params()
 {

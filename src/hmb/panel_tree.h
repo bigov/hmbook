@@ -20,7 +20,8 @@ public:
     // Передача nullptr - отключение подписки.
     void bind_subscriber(hmbPanelView* subscriber);
     void open_dir();
-    void load_directory(const wxString& dir);
+    void set_root_dir(const wxString& dir);
+    void set_cursor_to(const wxString& current_file);
 
 private:
     // Внутренний контрол дерева файлов.

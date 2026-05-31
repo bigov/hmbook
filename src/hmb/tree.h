@@ -22,7 +22,8 @@ class hmbTree : public wxTreeCtrl
 public:
     explicit hmbTree(wxWindow* parent);
     void bind_subscriber(hmbPanelView* subscriber);
-    void load_directory(const wxString& dir);
+    void set_root_dir(const wxString& dir);
+    void select_item(const wxString& filePath);
 
 private:
     hmbPanelView* subscriber = nullptr; // Подписчик, который будет уведомляться при выборе файла

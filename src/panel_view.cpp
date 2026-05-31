@@ -42,13 +42,16 @@ void hmbPanelView::init_pages()
     this->page_source = new hmbText(nbook);
     this->page_buffer = new hmbText(nbook);
 
-    this->nbook->AddPage(page_rich, "txt_rich", true);
-    this->nbook->AddPage(page_source, "source", false);
+    this->nbook->AddPage(this->page_rich, "Rich", true);
+    this->nbook->AddPage(this->page_source, "Source", false);
+    this->nbook->AddPage(this->page_buffer, "Buffer", false);
+
     this->page_source->SetWrapMode(wxSTC_WRAP_WORD);
-    this->nbook->AddPage(page_buffer, "buffer", false);
+    this->page_buffer->SetWrapMode(wxSTC_WRAP_NONE);
+
 }
 
-// Реализация интерфейса метода "подписчик". Вызывается из panel_tree при выборе файла в дереве.
+// Загрузка содержимого из файла.
 void hmbPanelView::load_file(const wxString& filePath)
 {
     this->page_rich->load_file(filePath);

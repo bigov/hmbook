@@ -31,17 +31,29 @@ void hmbPanelTree::bind_subscriber(hmbPanelView* subscriber)
     this->tree_viewer->bind_subscriber(subscriber);
 }
 
-void hmbPanelTree::load_directory(const wxString& dir)
+void hmbPanelTree::set_root_dir(const wxString& dir)
 {
-    this->tree_viewer->load_directory(dir);
+    this->tree_viewer->set_root_dir(dir);
 }
 
+// Установка курсора на указанный файл в дереве, если он существует
+void hmbPanelTree::set_cursor_to(const wxString& current_file)
+{
+    if (!current_file.empty() && wxFileExists(current_file))
+    {
+        this->tree_viewer->select_item(current_file);
+    }
+}
+
+// Диалог выбора начальной директории для панели навигации
 void hmbPanelTree::open_dir()
 {
-    wxString defaultDir = wxGetHomeDir(); // начальная папка
-    wxDirDialog dlg(this, "Select directory", defaultDir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    wxString dir = HMB_DNAME;
+    if (dir.empty()) dir = wxGetHomeDir();
+    
+    wxDirDialog dlg(this, "Select directory", dir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
     if (dlg.ShowModal() == wxID_OK) {
         wxString path = dlg.GetPath();
-        this->tree_viewer->load_directory(path);
+        this->tree_viewer->set_root_dir(path);
     }
 }
