@@ -44,10 +44,9 @@ public:
     ~hmbRich() override;
 
     wxMenu* edit_menu();
-    void load_file(const wxString filePath);
+    void load_document();
     void save_file_as();
     void save_plain_file(const wxString filePath);
-    void save_xml_file(const wxString filePath);
     wxString get_buffer();
 
 private:
@@ -73,8 +72,6 @@ private:
     void dbg_node(cmark_node* node, const char* info);
     
     void new_document();
-    void push_xml_data(const wxString& xml_data);
-
     void display_node(cmark_node* node);
     void append_line();
     void row_check(cmark_node* node);
@@ -109,9 +106,8 @@ private:
     void OnLeftIndent(wxCommandEvent& event);
     void OnRightIndent(wxCommandEvent& event);
     void OnTabStops(wxCommandEvent& event);
-    void load_xml_handler();
-    void push_md_data();
-    void push_plain_text();
+    void load_markdown();
+    void load_plain();
 };
 
 #endif // HMB_RICH_H

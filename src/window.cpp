@@ -55,7 +55,7 @@ hmbWindow::hmbWindow(const wxString& title)
     
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(fileMenu, _("File"));
-    menuBar->Append(panel_view->get_edit_menu(), _("Edit"));
+    menuBar->Append(panel_view->edit_menu(), _("Edit"));
     SetMenuBar(menuBar);
 
 #if wxUSE_STATUSBAR

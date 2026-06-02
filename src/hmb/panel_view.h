@@ -25,13 +25,15 @@ public:
     // Вызывается panel_tree при выборе файла в дереве.
     void load_file(const wxString& filePath);
     void save_file_as();
-    wxMenu* get_edit_menu();
+    wxMenu* edit_menu();
 
 private:
     wxAuiNotebook* nbook = nullptr;
     hmbRich* page_rich = nullptr;
     hmbText* page_source = nullptr;
     hmbText* page_buffer = nullptr;
+
+    void bind_events();
 
     void init_pages();
 };

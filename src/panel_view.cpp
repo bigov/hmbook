@@ -7,31 +7,40 @@ hmbPanelView::hmbPanelView(wxWindow* parent)
         wxAUI_NB_BOTTOM | wxAUI_NB_RIGHT | wxBORDER_NONE);
     init_pages();
 
-    auto refreshActivePageContent = [this]() {
+    SetSizer(new wxBoxSizer(wxVERTICAL));
+    GetSizer()->Add(nbook, 1, wxEXPAND | wxALL, 0);
+}
+
+
+// Пример перехвата перехвата события (переключения страниц) в панели
+void hmbPanelView::bind_events()
+{
+    auto action = [this]() {
         switch (nbook->GetSelection())
         {
+        case 0:
+            //page_rich action    
+            break;
         case 1:
-            this->page_source->ClearAll();
-            this->page_source->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+            //page_source action    
             break;
         case 2:
-            this->page_buffer->ChangeValue(this->page_rich->get_buffer());
+            //page_buffer action    
             break;
         default:
             break;
         }
     };
 
-    nbook->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, [refreshActivePageContent](wxAuiNotebookEvent& event) {
-        refreshActivePageContent();
+    nbook->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, [action](wxAuiNotebookEvent& event)
+    {
+        action();
         event.Skip();
     });
 
-    SetSizer(new wxBoxSizer(wxVERTICAL));
-    GetSizer()->Add(nbook, 1, wxEXPAND | wxALL, 0);
 }
 
-wxMenu* hmbPanelView::get_edit_menu()
+wxMenu* hmbPanelView::edit_menu()
 {
     return this->page_rich->edit_menu();
 }
@@ -54,13 +63,16 @@ void hmbPanelView::init_pages()
 // Загрузка содержимого из файла.
 void hmbPanelView::load_file(const wxString& filePath)
 {
-    this->page_rich->load_file(filePath);
+    if(filePath.IsEmpty()) return;
+    if (!isFileExist(filePath)) return;
 
-    //this->page_source->ChangeValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    HMB_FNAME = filePath;
+    file_read(HMB_FNAME, HMB_SRC_DATA); // загрузить исходный текст в глобальную переменную
+
+    this->page_rich->load_document();
     this->page_source->ClearAll();
     this->page_source->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
-    
-    this->nbook->SetSelection(0);
+    this->page_buffer->ChangeValue(this->page_rich->get_buffer());    
 }
 
 void hmbPanelView::save_file_as()

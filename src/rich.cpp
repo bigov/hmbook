@@ -14,15 +14,18 @@ hmbRich::hmbRich(wxWindow* parent)
     // Base character style
     this->defCharBase = new wxRichTextCharacterStyleDefinition("CharBase");
     auto style_base = &defCharBase->GetStyle();
-    style_base->SetFlags(wxTEXT_ATTR_ALL);
+
+    style_base->SetFlags(wxTEXT_ATTR_CHARACTER_STYLE_NAME|wxTEXT_ATTR_TEXT_COLOUR|wxTEXT_ATTR_BACKGROUND_COLOUR|\
+                wxTEXT_ATTR_FONT_POINT_SIZE|wxTEXT_ATTR_FONT_FACE|\
+                wxTEXT_ATTR_LEFT_INDENT|wxTEXT_ATTR_RIGHT_INDENT|wxTEXT_ATTR_LINE_SPACING);
     style_base->SetCharacterStyleName("CharBase");
-    style_base->SetFont(HMB_FONT_BASE);
-    style_base->SetFontEncoding(wxFONTENCODING_UTF8);
     style_base->SetTextColour(HMB_COLOR_BASE_FG);
     style_base->SetBackgroundColour(HMB_COLOR_BASE_BG);
+    style_base->SetFont(HMB_FONT_BASE);
     style_base->SetLeftIndent(10);
     style_base->SetRightIndent(8);
     style_base->SetLineSpacing(0);
+
     this->style_sheet->AddCharacterStyle(this->defCharBase);
 
     // Basic style defines the document-wide baseline appearance.
@@ -32,6 +35,7 @@ hmbRich::hmbRich(wxWindow* parent)
     //  - затем SetBasicStyle с нужными цветами,
     //  - отдельно формировать default стиль для ввода как объединение char+paragraph атрибутов.
     this->SetBasicStyle(this->defCharBase->GetStyle());  // стиль буфера по-умолчанию
+    
     this->SetDefaultStyle(this->defCharBase->GetStyle());
         
     // Style for code blocks
@@ -111,34 +115,17 @@ void hmbRich::new_document()
     this->row_total = 0;
 }
 
-void hmbRich::load_xml_handler()
-{
-    if (!wxRichTextBuffer::FindHandler(wxRICHTEXT_TYPE_XML))
-    {
-        wxRichTextBuffer::AddHandler(new wxRichTextXMLHandler);
-    }
-}
-
 
 void hmbRich::save_file_as(void)
 {
     wxFileDialog saveFileDialog(this, _("Save file as"), "", "",
-                      "Plain text files (*.txt)|*.txt|Rich text XML (*.wxrt)|*.wxrt",
+                      "Plain text files (*.txt)|*.txt",
                        wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
     if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
     
-    const int fileType = saveFileDialog.GetFilterIndex();
     wxFileName fileName(saveFileDialog.GetPath());
-    if (fileName.GetExt().IsEmpty())
-    {
-        fileName.SetExt(fileType == 1 ? RICH_BUFFER_EXT : TEXT_BUFFER_EXT);
-    }
-    
-    const wxString filePath = fileName.GetFullPath();
-
-    if (fileType == 0) this->save_plain_file(filePath);
-    if (fileType == 1) this->save_xml_file(filePath);
-
+    if (fileName.GetExt().IsEmpty()) fileName.SetExt(TEXT_BUFFER_EXT);
+    this->save_plain_file(fileName.GetFullPath());
 }
 
 // --- Save the buffer content as plain text ---
@@ -156,21 +143,14 @@ void hmbRich::save_plain_file(const wxString filePath)
     }
 }
 
-void hmbRich::save_xml_file(const wxString filePath)
-{
-    wxRichTextBuffer& buffer = this->GetBuffer();
-    load_xml_handler();
-    if (!buffer.SaveFile(filePath, wxRICHTEXT_TYPE_XML))
-    {
-        wxLogError(_("Cannot save rich buffer file '%s'."), filePath.wc_str());
-    }
-    return;
-}
-
 wxString hmbRich::get_buffer()
 {
     wxRichTextBuffer& buffer = this->GetBuffer();
-    load_xml_handler();
+
+    if (!wxRichTextBuffer::FindHandler(wxRICHTEXT_TYPE_XML))
+    {
+        wxRichTextBuffer::AddHandler(new wxRichTextXMLHandler);
+    }
 
     wxString xml_text;
     wxStringOutputStream xml_stream(&xml_text);
@@ -183,52 +163,21 @@ wxString hmbRich::get_buffer()
     return hmb_decode_xml(xml_text);
 }
 
-// --- Load the prepared XML data into the control's buffer ---
-void hmbRich::push_xml_data(const wxString& content)
-{
-    wxStringInputStream xml_stream(content);
-    wxRichTextBuffer& buffer = this->GetBuffer();
-    load_xml_handler();
-    if (!buffer.LoadFile(xml_stream, wxRICHTEXT_TYPE_XML))
-    {
-        wxLogWarning(_("Cannot load XML from string."));
-        SetValue(content);
-        return;
-    }
-    this->Refresh();
-}
-
 // --- Load files with any formats ---
-void hmbRich::load_file(const wxString filePath)
+void hmbRich::load_document()
 {
-    if(filePath.IsEmpty()) return;
-    if (!isFileExist(filePath)) return;
-
-    HMB_FNAME = filePath;
-    file_read(HMB_FNAME, HMB_SRC_DATA); // загрузить исходный текст в глобальную переменную
-
-    auto fileName = wxFileName(filePath);
-    wxString fileExt = fileName.GetExt();
-    fileExt.LowerCase();
-
     new_document();
-
-    if(fileExt == RICH_BUFFER_EXT) {
-        this->push_xml_data(HMB_SRC_DATA);
-    } else if(fileExt == MARK_BUFFER_EXT) {
-        this->push_md_data();
-    } else {
-        this->push_plain_text();
-    }
+    this->load_markdown();
 }
 
 // --- Load the Markdown text ---
-void hmbRich::push_md_data()
+void hmbRich::load_markdown()
 {
     cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
     if (!node) {
         wxLogError(_("Error parsing file '%s'."), HMB_FNAME.wc_str());
         node = nullptr;
+        this->load_plain();
         return;
     }
 
@@ -248,7 +197,7 @@ void hmbRich::push_md_data()
 }
 
 // --- Load the plain text content from a file ---
-void hmbRich::push_plain_text()
+void hmbRich::load_plain()
 {
     this->BeginSuppressUndo();
     this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
@@ -521,6 +470,7 @@ void hmbRich::display_node(cmark_node* node)
   case CMARK_NODE_STRONG:
     if (D) dbg_node(node, "STRONG");
     md_strong(node);
+    node = nullptr;
     break;
   case CMARK_NODE_LINK:
     if (D) dbg_node(node, "LINK");
