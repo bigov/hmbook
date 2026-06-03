@@ -69,14 +69,17 @@ private:
     int row_current = 0;
     int row_total = 0;
 
-    void dbg_node(cmark_node* node, const char* info);
+    void debug_node(cmark_node* node);
     
     void new_document();
-    void display_node(cmark_node* node);
-    void append_line();
+    void load_as_plain_text();
+    void node_iterator(cmark_node* node);
+    void node_dispatcher(cmark_node* node);
+
+    void new_line();
+    void line_break();
     void row_check(cmark_node* node);
     void md_paragraph(cmark_node* node);
-    void show_literal(cmark_node* node);
     void md_none(cmark_node* node);
     void md_blockquote(cmark_node* node);
     void md_list(cmark_node* node);
@@ -106,8 +109,6 @@ private:
     void OnLeftIndent(wxCommandEvent& event);
     void OnRightIndent(wxCommandEvent& event);
     void OnTabStops(wxCommandEvent& event);
-    void load_markdown();
-    void load_plain();
 };
 
 #endif // HMB_RICH_H

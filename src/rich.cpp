@@ -163,51 +163,15 @@ wxString hmbRich::get_buffer()
     return hmb_decode_xml(xml_text);
 }
 
-// --- Load files with any formats ---
-void hmbRich::load_document()
-{
-    new_document();
-    this->load_markdown();
+// Вствка нового абзаца
+void hmbRich::new_line() {
+    this->Newline();
+    this->row_current++;
 }
 
-// --- Load the Markdown text ---
-void hmbRich::load_markdown()
-{
-    cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
-    if (!node) {
-        wxLogError(_("Error parsing file '%s'."), HMB_FNAME.wc_str());
-        node = nullptr;
-        this->load_plain();
-        return;
-    }
-
-    this->BeginSuppressUndo();
-    display_node(node);
-    
-    // Дополнить пустые строки до конца документа.
-    while (this->row_current < this->row_total) {
-        append_line();
-    }
-    
-    // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
-    if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n") append_line();
-    cmark_node_free(node);
-    this->EndSuppressUndo();
-
-}
-
-// --- Load the plain text content from a file ---
-void hmbRich::load_plain()
-{
-    this->BeginSuppressUndo();
-    this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
-    this->EndSuppressUndo();
-    this->SetInsertionPoint(0);
-}
-
-// Переход на следующую строку.
-void hmbRich::append_line() {
-    Newline();
+// Вставка переноса строки
+void hmbRich::line_break() {
+    this->LineBreak();
     this->row_current++;
 }
 
@@ -216,16 +180,8 @@ void hmbRich::row_check(cmark_node* node) {
     int row_begin = cmark_node_get_start_line(node);
     while (row_begin > this->row_current)
     {
-        Newline();
-        this->row_current++;
+        this->new_line();
     }
-}
-
-// Содержимое текстовых узлов, code, html_inline и т.д.
-// rtc->SetValue(wxString::FromUTF8(u8"äöü — пример"));
-void hmbRich::show_literal(cmark_node* node) {
-    const char* lit = cmark_node_get_literal(node);
-    if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
 }
 
 void hmbRich::md_none(cmark_node* node) {
@@ -285,13 +241,9 @@ void hmbRich::md_custom_block(cmark_node* node) {
 void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
     wxFont f(wxFontInfo(font_size).Weight(wxFONTWEIGHT_BOLD));
-
     this->BeginParagraphStyle("ParaHead");
     this->BeginFont(f);
-
-    // Текст заголовка — в первой дочерней текстовой ноде
-    display_node(cmark_node_first_child(node));
-    
+    node_dispatcher(cmark_node_first_child(node)); // Текст заголовка — в первой дочерней текстовой ноде
     this->EndFont();
     this->WriteText("\n");
     this->row_current++;
@@ -302,45 +254,47 @@ void hmbRich::md_thematic_break(cmark_node* node) {
     this->WriteText("Thematic break\n");
 }
 
+// Содержимое текстовых узлов, code, html_inline и т.д.
 void hmbRich::md_text(cmark_node* node) {
-    show_literal(node);
+    const char* lit = cmark_node_get_literal(node);
+    if (lit && *lit) this->WriteText(wxString::FromUTF8(lit));
 }
 
 void hmbRich::md_code_inline(cmark_node* node) {
-    if (this->defCharCoLn)
-    {
-        this->BeginStyle(this->defCharCoLn->GetStyle());
-    }
-    this->WriteText(" ");
-    show_literal(node);
-    this->WriteText(" ");
-    if (this->defCharCoLn)
-    {
-        this->EndStyle();
-    }
+    this->BeginStyle(this->defCharCoLn->GetStyle());
+    this->WriteText("\'");
+    this->md_text(node);
+    this->WriteText("\'");
+    this->EndStyle();
 }
+
 void hmbRich::md_html_inline(cmark_node* node) {
     this->WriteText("HTML inline\n");
 }
+
 void hmbRich::md_custom_inline(cmark_node* node) {
     this->WriteText("Custom inline\n");
 }
+
 void hmbRich::md_emph(cmark_node* node) {
     this->BeginItalic();
-    display_node(cmark_node_first_child(node));
+    node_dispatcher(cmark_node_first_child(node));
     this->EndItalic();
 }
+
 void hmbRich::md_strong(cmark_node* node) {
     this->BeginBold();
-    display_node(cmark_node_first_child(node));
+    node_dispatcher(cmark_node_first_child(node));
     this->EndBold();
+    node = nullptr;
 }
+
 void hmbRich::md_link(cmark_node* node) {
     const char *url = cmark_node_get_url(node);
     //const char *title = cmark_node_get_title(node);
     //const char *text = cmark_node_get_literal(cmark_node_first_child(node));
-    this->BeginURL(url, "style_urls");
-    display_node(cmark_node_first_child(node));
+    this->BeginURL(url, "CharLink");
+    node_dispatcher(cmark_node_first_child(node));
     //this->WriteText(wxString::FromUTF8(text));
     this->EndURL();
 }
@@ -357,141 +311,154 @@ void hmbRich::md_paragraph(cmark_node* node) {
     node = cmark_node_first_child(node);
     while (node)
     {
-      display_node(node);
+      node_dispatcher(node);
       node = cmark_node_next(node);
     }
     this->EndParagraphStyle();
+    //node = nullptr;
 }
 
 // ---------------------------------------------
 // --- диапазон строк ноды (для отладки) ---
-void hmbRich::dbg_node(cmark_node* node, const char* info) {
+void hmbRich::debug_node(cmark_node* node) {
     int start_line = 0;
     int end_line = 0;
+    cmark_node_type t = cmark_node_get_type(node);
     if (node) 
     { 
         start_line = cmark_node_get_start_line(node);
         end_line = cmark_node_get_end_line(node);
     }
-    std::cerr << "[" << start_line << " - " << end_line << "] " << info << "\n";
+    std::cerr << "[" << start_line << " - " << end_line << "] " << t << "\n";
 }
 
-void hmbRich::display_node(cmark_node* node)
+
+void hmbRich::node_dispatcher(cmark_node* node)
 {
   if (!node) return;
-  cmark_node_type t = cmark_node_get_type(node);
+  debug_node(node);  //!!DEBUG!!
 
- bool D = true;
+  cmark_node_type t = cmark_node_get_type(node);
 
   switch (t) {
   case CMARK_NODE_NONE:
-    if (D) dbg_node(node, "NONE");
     md_none(node);
     break;
   // -- Block nodes --
-  case CMARK_NODE_DOCUMENT:
-    if (D) {
-        std::cerr << std::endl << "--- " << HMB_FNAME << " ---" << std::endl;
-        dbg_node(node, "DOCUMENT");
-    }
-    this->row_current = cmark_node_get_start_line(node);
-    this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
-    break;
   case CMARK_NODE_HEADING:
-    if (D) dbg_node(node, "HEADING");
     md_header(node);
-    node = nullptr;
     break;
   case CMARK_NODE_PARAGRAPH:
-    if (D) dbg_node(node, "PARAGRAPH");
     md_paragraph(node);
-    node = nullptr;
     break;
   case CMARK_NODE_BLOCK_QUOTE:
-    if (D) dbg_node(node, "BLOCK_QUOTE");
     md_blockquote(node);
     break;
   case CMARK_NODE_LIST:
-    if (D) dbg_node(node, "LIST");
     md_list(node);
     break;
   case CMARK_NODE_ITEM:
-    if (D) dbg_node(node, "ITEM");
     md_item(node);
     break;
   case CMARK_NODE_CODE_BLOCK:
-    if (D) dbg_node(node, "CODE_BLOCK");
     md_code_block(node);
     break;
   case CMARK_NODE_HTML_BLOCK:
-    if (D) dbg_node(node, "HTML_BLOCK");
     md_html_block(node);
     break;
   case CMARK_NODE_CUSTOM_BLOCK:
-    if (D) dbg_node(node, "CUSTOM_BLOCK");
     md_custom_block(node);
     break;
   case CMARK_NODE_THEMATIC_BREAK:
-    if (D) dbg_node(node, "THEMATIC_BREAK");
     md_thematic_break(node);
-    break;
     break;
   // -- Inline nodes --
   case CMARK_NODE_TEXT:
-    if (D) dbg_node(node, "TEXT");
     md_text(node);
     break;
   case CMARK_NODE_SOFTBREAK:
-    if (D) dbg_node(node, "SOFTBREAK");
-    this->WriteText("\n");
-    this->row_current++;
+    this->line_break();
     break;
   case CMARK_NODE_LINEBREAK:
-    if (D) dbg_node(node, "LINEBREAK");
-    this->WriteText("\n");
-    this->row_current++;
+    this->line_break();
     break;
   case CMARK_NODE_CODE:
-    if (D) dbg_node(node, "CODE");
     md_code_inline(node);
     break;
   case CMARK_NODE_HTML_INLINE:
-    if (D) dbg_node(node, "HTML_INLINE");
     md_html_inline(node);
     break;
   case CMARK_NODE_CUSTOM_INLINE:
-    if (D) dbg_node(node, "CUSTOM_INLINE");
     md_custom_inline(node);
     break;
   case CMARK_NODE_EMPH:
-    if (D) dbg_node(node, "EMPH");
     md_emph(node);
     break;
   case CMARK_NODE_STRONG:
-    if (D) dbg_node(node, "STRONG");
     md_strong(node);
-    node = nullptr;
     break;
   case CMARK_NODE_LINK:
-    if (D) dbg_node(node, "LINK");
     md_link(node);
     break;
   case CMARK_NODE_IMAGE:
-    if (D) dbg_node(node, "IMAGE");
     md_image(node);
     break;
   default:
-    if (D) dbg_node(node, "UNKNOWN");
     md_unknown(node);
     break;
   }
+}
 
-    // Рекурсивный обход
+void hmbRich::node_iterator(cmark_node* node)
+{
+    // последовательный обход дерева
     cmark_node* child = cmark_node_first_child(node);
     while (child) {
-        display_node(child);
+        node_dispatcher(child);
         child = cmark_node_next(child);
     }
+}
+
+// --- Load the Markdown text ---
+void hmbRich::load_document()
+{
+    new_document();
+    cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
+    if (!node) {
+        this->load_as_plain_text();
+        return;
+    }
+
+    if(cmark_node_get_type(node) == CMARK_NODE_DOCUMENT) {
+        this->row_current = cmark_node_get_start_line(node);
+        this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
+    } else {
+        cmark_node_free(node);
+        this->load_as_plain_text();
+        return;
+    }
+
+    this->BeginSuppressUndo();
+    node_iterator(node);
+    
+    // Дополнить пустые строки до конца документа.
+    while (this->row_current < this->row_total) {
+        this->new_line();
+    }
+    
+    // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
+    if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n") this->new_line();
+    cmark_node_free(node);
+    this->EndSuppressUndo();
+}
+
+
+void hmbRich::load_as_plain_text()
+{
+    wxLogError(_("Error parsing file '%s'."), HMB_FNAME.wc_str());
+    this->BeginSuppressUndo();
+    this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    this->EndSuppressUndo();
 }
 
 wxMenu* hmbRich::edit_menu()
