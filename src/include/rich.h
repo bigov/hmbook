@@ -13,6 +13,7 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
     Dialog classes: wxRichTextStyleOrganiserDialog, wxRichTextFormattingDialog, wxSymbolPickerDialog
 */
 
+#include "status_bar.h"
 #include "tools.h"
 
 class wxMenu;
@@ -44,9 +45,9 @@ public:
     void save_file_as();
     void save_plain_file(const wxString filePath);
     wxString get_buffer();
+    void bind_subscriber(hmbStatusBar* status_bar);
 
 private:
-    
     wxColor color_urls_fg = "#25A4D1"; 
     wxColor color_code_fg = "#0954b8";
     wxColor color_gray_bg = "#f0f0f0";
@@ -62,13 +63,16 @@ private:
     // Таблица стилей для всего документа
     std::unique_ptr<wxRichTextStyleSheet> style_sheet = nullptr;
 
+    hmbStatusBar* subscriber = nullptr;
     int row_current = 0;
     int row_total = 0;
 
+    void bind_mouse_events();
     void new_document();
     void load_as_plain_text();
     void node_iterator(cmark_node* node);
     void node_dispatcher(cmark_node* node);
+    void show_url(const wxString& url);
 
     void new_line();
     void line_break();

@@ -53,21 +53,22 @@ hmbWindow::hmbWindow(const wxString& title)
     Bind(wxEVT_MENU, &hmbWindow::OnClose, this, APP_CLOSE);
     Bind(wxEVT_CLOSE_WINDOW, &hmbWindow::OnWindowClose, this);
     
-    wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(fileMenu, _("File"));
-    menuBar->Append(panel_view->edit_menu(), _("Edit"));
-    SetMenuBar(menuBar);
+    this->menuBar = new wxMenuBar;
+    this->menuBar->Append(fileMenu, _("File"));
+    this->menuBar->Append(panel_view->edit_menu(), _("Edit"));
+    this->SetMenuBar(this->menuBar);
 
-#if wxUSE_STATUSBAR
-    CreateStatusBar();
-#endif // wxUSE_STATUSBAR
+    this->statusBar = new hmbStatusBar(this);
+    this->SetStatusBar(this->statusBar);
+    this->statusBar->set_text_2(title);
+    this->panel_view->bind_subscriber(this->statusBar);
 
     load_params();
 }
 
+// Set the application icon from the specified path if it exists and is a valid icon file.
 void hmbWindow::SetAppIcon(const wxString& iconPath)
 {
-    // Set the application icon
     if (wxFileExists(iconPath))
     {
         wxIcon appIcon;

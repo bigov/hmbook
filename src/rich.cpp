@@ -9,6 +9,8 @@ hmbRich::hmbRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                     wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL)
 {
+    bind_mouse_events();
+
     this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
 
     // Base character style
@@ -107,6 +109,32 @@ hmbRich::~hmbRich()
     this->GetBuffer().SetStyleSheet(nullptr);
 }
 
+void hmbRich::bind_mouse_events()
+{
+    this->Bind(wxEVT_MOTION, [this](wxMouseEvent& event)
+    {
+        long pos = wxNOT_FOUND;
+        wxString url = wxEmptyString;
+        wxTextAttr attr;
+
+        this->HitTest(event.GetPosition(), &pos);
+        if (pos != wxNOT_FOUND && this->GetStyle(pos, attr) && attr.HasFlag(wxTEXT_ATTR_URL))
+        {
+            url = attr.GetURL();
+        }
+
+        this->show_url(url);
+        event.Skip();
+    });
+
+    this->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& event)
+    {
+        this->show_url(wxEmptyString);
+        event.Skip();
+    });
+}
+
+
 void hmbRich::new_document()
 {
     this->Clear();
@@ -163,6 +191,17 @@ wxString hmbRich::get_buffer()
     return hmb_decode_xml(xml_text);
 }
 
+void hmbRich::bind_subscriber(hmbStatusBar* status_bar)
+{
+    this->subscriber = status_bar;
+}
+
+void hmbRich::show_url(const wxString& url) {
+    if (this->subscriber) {
+        this->subscriber->show_url(url);
+    }
+}
+
 // Вствка нового абзаца
 void hmbRich::new_line() {
     this->Newline();
@@ -195,7 +234,63 @@ void hmbRich::md_blockquote(cmark_node* node) {
 }
 
 void hmbRich::md_list(cmark_node* node) {
-    this->WriteText("List\n");
+    if (!node) return;
+
+    const bool is_ordered = cmark_node_get_list_type(node) == CMARK_ORDERED_LIST;
+    int item_index = cmark_node_get_list_start(node);
+
+    cmark_node* item = cmark_node_first_child(node);
+    while (item)
+    {
+        if (cmark_node_get_type(item) != CMARK_NODE_ITEM)
+        {
+            item = cmark_node_next(item);
+            continue;
+        }
+
+        row_check(item);
+
+        this->BeginParagraphStyle("ParaBase");
+        if (is_ordered)
+        {
+            this->WriteText(wxString::Format("%d. ", item_index++));
+        }
+        else
+        {
+            this->WriteText("- ");
+        }
+
+        cmark_node* item_child = cmark_node_first_child(item);
+        bool first_block = true;
+        while (item_child)
+        {
+            if (!first_block)
+            {
+                this->line_break();
+            }
+
+            if (cmark_node_get_type(item_child) == CMARK_NODE_PARAGRAPH)
+            {
+                this->node_iterator(item_child);
+            }
+            else
+            {
+                this->node_dispatcher(item_child);
+            }
+
+            first_block = false;
+            item_child = cmark_node_next(item_child);
+        }
+
+        this->EndParagraphStyle();
+
+        if (cmark_node_next(item))
+        {
+            this->new_line();
+        }
+
+        item = cmark_node_next(item);
+    }
 }
 
 void hmbRich::md_item(cmark_node* node) {

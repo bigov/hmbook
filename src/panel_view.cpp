@@ -60,6 +60,11 @@ void hmbPanelView::init_pages()
 
 }
 
+void hmbPanelView::bind_subscriber(hmbStatusBar* status_bar)
+{
+    this->page_rich->bind_subscriber(status_bar);
+}
+
 // Загрузка содержимого из файла.
 void hmbPanelView::load_file(const wxString& filePath)
 {

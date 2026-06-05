@@ -65,7 +65,6 @@ SET(wxBUILD_MONOLITHIC "ON")
 FetchContent_GetProperties(wxWidgets)
 FetchContent_MakeAvailable(wxWidgets)
 
-
 # Библиотека парсера Markdown - cmark
 SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark.git")
 if(EXISTS "${HMBOOK_CMARK_SOURCE_DIR}/CMakeLists.txt")
@@ -106,7 +105,7 @@ add_executable(${HMBOOK} ${SOURCE} ${CMAKE_BINARY_DIR}/app.rc)
 target_include_directories(${HMBOOK} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 target_compile_definitions(${HMBOOK} PRIVATE WXUSINGDLL __WXMSW__)
 # Скрыть консоль
-#target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
+target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
 target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets cmark)
 
 # Добавление .dll библиотеки в каталог запуска

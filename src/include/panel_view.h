@@ -26,6 +26,7 @@ public:
     void load_file(const wxString& filePath);
     void save_file_as();
     wxMenu* edit_menu();
+    void bind_subscriber(hmbStatusBar* status_bar);
 
 private:
     wxAuiNotebook* nbook = nullptr;
@@ -34,7 +35,6 @@ private:
     hmbText* page_buffer = nullptr;
 
     void bind_events();
-
     void init_pages();
 };
 
