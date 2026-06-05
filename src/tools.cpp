@@ -1,4 +1,4 @@
-#include "hmb/tools.h"
+#include "tools.h"
 
 // Глобальная переменная для хранения исходного текста, загруженного из файла.
 std::string HMB_SRC_DATA = ""; 

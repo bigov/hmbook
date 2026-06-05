@@ -1,7 +1,7 @@
 #ifndef HMB_TREE_H
 #define HMB_TREE_H
 
-#include "wx/treectrl.h"
+#include <wx/treectrl.h>
 #include "panel_view.h"
 #include "tools.h"
 

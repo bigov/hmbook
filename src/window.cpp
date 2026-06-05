@@ -1,5 +1,5 @@
-#include "hmb/window.h"
-#include "hmb/tools.h"
+#include "window.h"
+#include "tools.h"
 
 wxString HMB_FNAME = wxEmptyString;
 wxString HMB_DNAME = wxEmptyString;

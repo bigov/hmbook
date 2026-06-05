@@ -1,4 +1,4 @@
-#include "hmb/panel_view.h"
+#include "panel_view.h"
 
 hmbPanelView::hmbPanelView(wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)

@@ -1,8 +1,8 @@
-#include "wx/dir.h"
-#include "wx/filename.h"
+#include <wx/dir.h>
+#include <wx/filename.h>
 
-#include "hmb/tree.h"
-#include "hmb/tools.h"
+#include "tree.h"
+#include "tools.h"
 
 namespace
 {

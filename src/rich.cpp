@@ -1,8 +1,8 @@
-#include "wx/filedlg.h"
+#include <wx/filedlg.h>
 
-#include "hmb/rich.h"
-#include "hmb/tree.h"
-#include "hmb/tools.h"
+#include "rich.h"
+#include "tree.h"
+#include "tools.h"
 
 // Конструктор класса
 hmbRich::hmbRich(wxWindow* parent)

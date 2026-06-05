@@ -19,31 +19,24 @@ cmake_minimum_required(VERSION 4.2.0)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
-## Работать без установки программы
-SET(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # Данные проекта
 project(HMBOOK LANGUAGES CXX)
 SET(HMBOOK "hmbook")
-set(PROJECT_AUTHOR "bigov")
-set(PROJECT_AUTHOR_EMAIL "bigov@yandex.ru")
-set(OperatingSystem "MS Windows")
-set(HMBOOK_VERSION_MAJOR 0)
-set(HMBOOK_VERSION_MINOR 2)
+#SET(PROJECT_AUTHOR "bigov")
+#SET(PROJECT_AUTHOR_EMAIL "bigov@yandex.ru")
+#SET(OperatingSystem "MS Windows")
+#SET(HMBOOK_VERSION_MAJOR 0)
+#SET(HMBOOK_VERSION_MINOR 2)
 
-option(HMBOOK_BUILD_APP "Build GUI app target hmbook" ON)
-
-set(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/.deps-src" CACHE PATH
+SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/.deps-src" CACHE PATH
   "Shared directory for downloaded third-party sources")
-
-set(HMBOOK_NEEDS_WX OFF)
-set(HMBOOK_NEEDS_CMARK OFF)
 
 # Базовая GUI библиотека - wxWidgets
 include(FetchContent)
 
-set(HMBOOK_WX_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets.git")
+SET(HMBOOK_WX_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets.git")
 if(EXISTS "${HMBOOK_WX_SOURCE_DIR}/CMakeLists.txt")
     FetchContent_Declare(
       wxWidgets
@@ -64,17 +57,17 @@ endif()
 
 message(STATUS "wxWidgets source cache: ${HMBOOK_WX_SOURCE_DIR}")
 
-set(wxUSE_WEBVIEW "OFF")
-set(wxWidgets_USE_STATIC "OFF")
-set(wxBUILD_SHARED "ON")
-set(wxBUILD_MONOLITHIC "ON")
+SET(wxUSE_WEBVIEW "OFF")
+SET(wxWidgets_USE_STATIC "OFF")
+SET(wxBUILD_SHARED "ON")
+SET(wxBUILD_MONOLITHIC "ON")
 
 FetchContent_GetProperties(wxWidgets)
 FetchContent_MakeAvailable(wxWidgets)
 
 
 # Библиотека парсера Markdown - cmark
-set(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark.git")
+SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark.git")
 if(EXISTS "${HMBOOK_CMARK_SOURCE_DIR}/CMakeLists.txt")
     FetchContent_Declare(
       cmark
@@ -98,8 +91,6 @@ message(STATUS "cmark source cache: ${HMBOOK_CMARK_SOURCE_DIR}")
 FetchContent_GetProperties(cmark)
 FetchContent_MakeAvailable(cmark)
 
-
-
 # Ресурсный файл Windows (манифест, DPI и пр.)
 enable_language(RC)
 configure_file(
@@ -107,11 +98,12 @@ configure_file(
     ${CMAKE_BINARY_DIR}/app.rc
     COPYONLY
 )
-set(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I\"${wxwidgets_SOURCE_DIR}/include\"")
+SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I\"${wxwidgets_SOURCE_DIR}/include\"")
 
 # Сборка приложения
 AUX_SOURCE_DIRECTORY("src" SOURCE)
 add_executable(${HMBOOK} ${SOURCE} ${CMAKE_BINARY_DIR}/app.rc)
+target_include_directories(${HMBOOK} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 target_compile_definitions(${HMBOOK} PRIVATE WXUSINGDLL __WXMSW__)
 # Скрыть консоль
 #target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
@@ -119,9 +111,13 @@ target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets cmark)
 
 # Добавление .dll библиотеки в каталог запуска
 SET(BIN_LIB "${CMAKE_BINARY_DIR}/_deps/wxwidgets-build/lib/gcc_x64_dll")
+set(WX_DLL_SUFFIX "")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(WX_DLL_SUFFIX "d")
+endif()
 add_custom_command( TARGET "${HMBOOK}" POST_BUILD
   COMMAND ${CMAKE_COMMAND}
-    -E copy "${BIN_LIB}/wxmsw332ud_gcc_x64_custom.dll" "${CMAKE_BINARY_DIR}/"
+    -E copy "${BIN_LIB}/wxmsw332u${WX_DLL_SUFFIX}_gcc_x64_custom.dll" "${CMAKE_BINARY_DIR}/"
   COMMAND ${CMAKE_COMMAND}
     -E make_directory "${CMAKE_BINARY_DIR}/assets"
   COMMAND ${CMAKE_COMMAND}

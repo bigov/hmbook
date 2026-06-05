@@ -1,10 +1,10 @@
 #ifndef HMB_PANEL_VIEW_H
 #define HMB_PANEL_VIEW_H
 
-#include "wx/aui/auibook.h"
-#include "wx/sizer.h"
-#include "wx/textctrl.h"
-#include "wx/panel.h"
+#include <wx/aui/auibook.h>
+#include <wx/sizer.h>
+#include <wx/textctrl.h>
+#include <wx/panel.h>
 
 #include "rich.h"
 #include "text.h"

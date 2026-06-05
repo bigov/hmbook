@@ -1,5 +1,5 @@
-#include "hmb/panel_tree.h"
-#include "hmb/tree.h"
+#include "panel_tree.h"
+#include "tree.h"
 
 hmbPanelTree::hmbPanelTree(wxWindow* parent) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME)

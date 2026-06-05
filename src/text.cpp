@@ -1,4 +1,4 @@
-#include "hmb/text.h"
+#include "text.h"
 
 hmbText::hmbText(wxWindow* parent)
     : wxStyledTextCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 

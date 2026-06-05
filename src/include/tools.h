@@ -8,17 +8,17 @@
 #include <sstream>
 #include <cstring>
 
-#include "wx/menu.h"
-#include "wx/richtext/richtextctrl.h"
-#include "wx/richtext/richtextxml.h"
-#include "wx/wfstream.h"
-#include "wx/string.h"
-#include "wx/sstream.h"
-#include "wx/colordlg.h"
-#include "wx/fontdlg.h"
-#include "wx/textdlg.h"
-#include "wx/tokenzr.h"
-#include "wx/log.h"
+#include <wx/menu.h>
+#include <wx/richtext/richtextctrl.h>
+#include <wx/richtext/richtextxml.h>
+#include <wx/wfstream.h>
+#include <wx/string.h>
+#include <wx/sstream.h>
+#include <wx/colordlg.h>
+#include <wx/fontdlg.h>
+#include <wx/textdlg.h>
+#include <wx/tokenzr.h>
+#include <wx/log.h>
 
 extern wxString HMB_FNAME;
 extern wxString HMB_DNAME;

@@ -1,10 +1,10 @@
-#include "wx/wxprec.h"
+#include <wx/wxprec.h>
 #ifndef WX_PRECOMP
-    #include "wx/wx.h"
+    #include <wx/wx.h>
 #endif
-#include "wx/config.h"
+#include <wx/config.h>
 
-#include "hmb/window.h"
+#include "window.h"
 
 class MyApp: public wxApp
 {

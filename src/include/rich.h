@@ -16,7 +16,7 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 #include "tools.h"
 
 extern "C" {
-#include "cmark.h"
+#include <cmark.h>
 }
 
 class wxMenu;

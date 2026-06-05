@@ -20,37 +20,45 @@
       "name": "dev-app",
       "inherits": "base-debug",
       "displayName": "Dev: App",
-      "description": "Сборка только GUI-приложения hmbook",
+      "description": "Сборка GUI-приложения hmbook"
+    },
+    {
+      "name": "base-relwithdebinfo",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "HMBOOK_BUILD_APP": "ON",
-        "HMBOOK_BUILD_TESTS": "OFF"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
+    },
+    {
+      "name": "dev-app-debug-symbols",
+      "inherits": "base-relwithdebinfo",
+      "displayName": "Dev: App (Debug Symbols)",
+      "description": "Сборка GUI-приложения hmbook с символами отладки (RelWithDebInfo)"
     },
     {
       "name": "dev-tests",
       "inherits": "base-debug",
       "displayName": "Dev: Tests",
-      "description": "Сборка только тестовых утилит из tests",
-      "cacheVariables": {
-        "HMBOOK_BUILD_APP": "OFF",
-        "HMBOOK_BUILD_TESTS": "ON"
-      }
+      "description": "Сборка (без дополнительных cache-переключателей)"
     },
     {
       "name": "dev-all",
       "inherits": "base-debug",
       "displayName": "Dev: All",
-      "description": "Сборка приложения и тестов",
-      "cacheVariables": {
-        "HMBOOK_BUILD_APP": "ON",
-        "HMBOOK_BUILD_TESTS": "ON"
-      }
+      "description": "Сборка (без дополнительных cache-переключателей)"
     }
   ],
   "buildPresets": [
     {
       "name": "build-app",
       "configurePreset": "dev-app"
+    },
+    {
+      "name": "build-app-debug-symbols",
+      "configurePreset": "dev-app-debug-symbols"
     },
     {
       "name": "build-tests",

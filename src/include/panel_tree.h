@@ -1,9 +1,9 @@
 #ifndef HMB_PANEL_TREE_H
 #define HMB_PANEL_TREE_H
 
-#include "wx/dirdlg.h"
-#include "wx/panel.h"
-#include "wx/sizer.h"
+#include <wx/dirdlg.h>
+#include <wx/panel.h>
+#include <wx/sizer.h>
 
 #include "panel_view.h"
 
