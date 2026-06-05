@@ -20,6 +20,10 @@
 #include <wx/tokenzr.h>
 #include <wx/log.h>
 
+extern "C" {
+#include <cmark.h>
+}
+
 extern wxString HMB_FNAME;
 extern wxString HMB_DNAME;
 extern std::string HMB_SRC_DATA;
@@ -40,5 +44,8 @@ std::string to_utf8(const wxString& value);
 std::string replace_placeholder(std::string tpl,
                           const std::string& placeholder,
                           const std::string& content);
+
+void debug_node(cmark_node* node);
+static const char* cmark_type_to_const_name(cmark_node_type t);
 
 #endif // HMB_TOOLS_H

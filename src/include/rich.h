@@ -15,10 +15,6 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 
 #include "tools.h"
 
-extern "C" {
-#include <cmark.h>
-}
-
 class wxMenu;
 class wxCommandEvent;
 
@@ -69,8 +65,6 @@ private:
     int row_current = 0;
     int row_total = 0;
 
-    void debug_node(cmark_node* node);
-    
     void new_document();
     void load_as_plain_text();
     void node_iterator(cmark_node* node);

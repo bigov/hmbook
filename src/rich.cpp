@@ -175,6 +175,8 @@ void hmbRich::line_break() {
     this->row_current++;
 }
 
+// В cmark пустые строки между block-нодами не представлены отдельными узлами.
+// Восстанавливаем их по source positions текущей block-ноды.
 void hmbRich::row_check(cmark_node* node) {
     if(!node) return;
     int row_begin = cmark_node_get_start_line(node);
@@ -243,10 +245,8 @@ void hmbRich::md_header(cmark_node* node) {
     wxFont f(wxFontInfo(font_size).Weight(wxFONTWEIGHT_BOLD));
     this->BeginParagraphStyle("ParaHead");
     this->BeginFont(f);
-    node_dispatcher(cmark_node_first_child(node)); // Текст заголовка — в первой дочерней текстовой ноде
+    this->node_iterator(node);
     this->EndFont();
-    this->WriteText("\n");
-    this->row_current++;
     this->EndParagraphStyle();
 }
 
@@ -278,96 +278,44 @@ void hmbRich::md_custom_inline(cmark_node* node) {
 
 void hmbRich::md_emph(cmark_node* node) {
     this->BeginItalic();
-    node_dispatcher(cmark_node_first_child(node));
+    this->node_iterator(node);
     this->EndItalic();
 }
 
 void hmbRich::md_strong(cmark_node* node) {
     this->BeginBold();
-    node_dispatcher(cmark_node_first_child(node));
+    this->node_iterator(node);
     this->EndBold();
-    node = nullptr;
 }
 
 void hmbRich::md_link(cmark_node* node) {
     const char *url = cmark_node_get_url(node);
     //const char *title = cmark_node_get_title(node);
-    //const char *text = cmark_node_get_literal(cmark_node_first_child(node));
     this->BeginURL(url, "CharLink");
-    node_dispatcher(cmark_node_first_child(node));
-    //this->WriteText(wxString::FromUTF8(text));
+    this->node_iterator(node);
     this->EndURL();
 }
+
 void hmbRich::md_image(cmark_node* node) {
     this->WriteText("Image\n");
 }
+
 void hmbRich::md_unknown(cmark_node* node) {
     this->WriteText("Unknown\n");
 }
 
 void hmbRich::md_paragraph(cmark_node* node) {
-    row_check(node);
     this->BeginParagraphStyle("ParaBase");
-    node = cmark_node_first_child(node);
-    while (node)
-    {
-      node_dispatcher(node);
-      node = cmark_node_next(node);
-    }
+    this->node_iterator(node);
     this->EndParagraphStyle();
-    //node = nullptr;
 }
-
-// ---------------------------------------------
-// --- диапазон строк ноды (для отладки) ---
-static const char* cmark_type_to_const_name(cmark_node_type t)
-{
-    switch (t)
-    {
-    case CMARK_NODE_NONE: return "NONE";
-    case CMARK_NODE_DOCUMENT: return "DOCUMENT";
-    case CMARK_NODE_BLOCK_QUOTE: return "BLOCK_QUOTE";
-    case CMARK_NODE_LIST: return "LIST";
-    case CMARK_NODE_ITEM: return "ITEM";
-    case CMARK_NODE_CODE_BLOCK: return "CODE_BLOCK";
-    case CMARK_NODE_HTML_BLOCK: return "HTML_BLOCK";
-    case CMARK_NODE_CUSTOM_BLOCK: return "CUSTOM_BLOCK";
-    case CMARK_NODE_PARAGRAPH: return "PARAGRAPH";
-    case CMARK_NODE_HEADING: return "HEADING";
-    case CMARK_NODE_THEMATIC_BREAK: return "THEMATIC_BREAK";
-    case CMARK_NODE_TEXT: return "TEXT";
-    case CMARK_NODE_SOFTBREAK: return "SOFTBREAK";
-    case CMARK_NODE_LINEBREAK: return "LINEBREAK";
-    case CMARK_NODE_CODE: return "CODE";
-    case CMARK_NODE_HTML_INLINE: return "HTML_INLINE";
-    case CMARK_NODE_CUSTOM_INLINE: return "CUSTOM_INLINE";
-    case CMARK_NODE_EMPH: return "EMPH";
-    case CMARK_NODE_STRONG: return "STRONG";
-    case CMARK_NODE_LINK: return "LINK";
-    case CMARK_NODE_IMAGE: return "IMAGE";
-    default: return "UNKNOWN";
-    }
-}
-
-void hmbRich::debug_node(cmark_node* node) {
-    int start_line = 0;
-    int end_line = 0;
-    cmark_node_type t = CMARK_NODE_NONE;
-    if (node) 
-    { 
-        start_line = cmark_node_get_start_line(node);
-        end_line = cmark_node_get_end_line(node);
-        t = cmark_node_get_type(node);
-    }
-    std::cerr << "[" << start_line << " - " << end_line << "] " << cmark_type_to_const_name(t) << "\n";
-}
-
 
 void hmbRich::node_dispatcher(cmark_node* node)
 {
-  if (!node) return;
-  debug_node(node);  //!!DEBUG!!
+  //debug_node(node);  //!!DEBUG!!
+  //return;  //!!DEBUG!!
 
+  if (!node) return;
   cmark_node_type t = cmark_node_get_type(node);
 
   switch (t) {
@@ -439,11 +387,13 @@ void hmbRich::node_dispatcher(cmark_node* node)
   }
 }
 
+// Последовательный обход ветвей дерева нод
 void hmbRich::node_iterator(cmark_node* node)
 {
-    // последовательный обход дерева
+    if (!node) return;
     cmark_node* child = cmark_node_first_child(node);
     while (child) {
+        if (cmark_node_is_block(child)) row_check(child);
         node_dispatcher(child);
         child = cmark_node_next(child);
     }
