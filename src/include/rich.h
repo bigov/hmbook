@@ -81,6 +81,8 @@ private:
     void md_none(cmark_node* node);
     void md_blockquote(cmark_node* node);
     void md_list(cmark_node* node);
+    void md_num_list(cmark_node* node);
+    void md_bul_list(cmark_node* node);
     void md_item(cmark_node* node);
     void md_code_block(cmark_node* node);
     void md_html_block(cmark_node* node);
