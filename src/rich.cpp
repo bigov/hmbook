@@ -317,11 +317,13 @@ void hmbRich::md_custom_block(cmark_node* node) {
 
 void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
-    wxFont f(wxFontInfo(font_size).Weight(wxFONTWEIGHT_BOLD));
     this->BeginParagraphStyle("ParaHead");
+    wxFont f = HMB_FONT_BASE;
+    f.SetPointSize(font_size);
     this->BeginFont(f);
     this->node_iterator(node);
     this->EndFont();
+    this->new_line();
     this->EndParagraphStyle();
 }
 
@@ -382,6 +384,7 @@ void hmbRich::md_unknown(cmark_node* node) {
 void hmbRich::md_paragraph(cmark_node* node) {
     this->BeginParagraphStyle("ParaBase");
     this->node_iterator(node);
+    //this->new_line();
     this->EndParagraphStyle();
 }
 
