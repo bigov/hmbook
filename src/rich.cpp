@@ -1,4 +1,5 @@
 #include <wx/filedlg.h>
+#include <wx/filename.h>
 
 #include "rich.h"
 #include "tree.h"
@@ -377,7 +378,32 @@ void hmbRich::md_link(cmark_node* node) {
 }
 
 void hmbRich::md_image(cmark_node* node) {
-    this->WriteText("Image\n");
+    const char* image_url = cmark_node_get_url(node);
+    if (!image_url || !*image_url) return;
+
+    wxString filepath = wxString::FromUTF8(image_url);
+    wxFileName image_path(filepath);
+    if (!image_path.IsAbsolute()) {
+        wxString base_dir = HMB_DNAME;
+
+        if (!HMB_FNAME.IsEmpty()) {
+            wxFileName md_file(HMB_FNAME);
+            if (!md_file.GetPath().IsEmpty()) {
+                base_dir = md_file.GetPath();
+            }
+        }
+
+        if (!base_dir.IsEmpty()) {
+            filepath = wxFileName(base_dir, filepath).GetFullPath();
+        }
+    }
+
+    // Вставка PNG
+    wxImage imgPng(filepath, wxBITMAP_TYPE_PNG);
+        if (imgPng.IsOk()) {
+            wxBitmap bmpPng(imgPng);
+            this->WriteImage(bmpPng);
+        }
 }
 
 void hmbRich::md_unknown(cmark_node* node) {
