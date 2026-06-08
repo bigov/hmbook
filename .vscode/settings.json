@@ -8,13 +8,9 @@
   "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
   "C_Cpp.default.intelliSenseMode": "windows-gcc-x64",
   "C_Cpp.files.exclude": {
-    "**/.deps-str/**": true,
-    "**/.deps-src/**": true,
-    "**/_deps/**": true
+    "**/third_party/**": true
   },
   "search.exclude": {
-    "**/.deps-str/**": true,
-    "**/.deps-src/**": true,
-    "**/_deps/**": true
+    "**/third_party/**": true
   }
 }
