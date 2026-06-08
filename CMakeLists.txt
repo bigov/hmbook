@@ -30,7 +30,7 @@ SET(HMBOOK "hmbook")
 #SET(HMBOOK_VERSION_MAJOR 0)
 #SET(HMBOOK_VERSION_MINOR 2)
 
-SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/.deps-src" CACHE PATH
+SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/third_party" CACHE PATH
   "Shared directory for downloaded third-party sources")
 
 # Базовая GUI библиотека - wxWidgets
@@ -105,7 +105,7 @@ add_executable(${HMBOOK} ${SOURCE} ${CMAKE_BINARY_DIR}/app.rc)
 target_include_directories(${HMBOOK} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 target_compile_definitions(${HMBOOK} PRIVATE WXUSINGDLL __WXMSW__)
 # Скрыть консоль
-#target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
+target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
 target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets cmark)
 
 # Добавление .dll библиотеки в каталог запуска

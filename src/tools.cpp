@@ -3,6 +3,12 @@
 // Глобальная переменная для хранения исходного текста, загруженного из файла.
 std::string HMB_SRC_DATA = ""; 
 
+// Количество разрядов в числе
+int digits(long long n) {
+    if (n < 10) return 1;
+    n = llabs(n);
+    return (int)floor(log10((long double)n)) + 1;
+}
 
 bool isFileExist(const wxString filePath)
 {

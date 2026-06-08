@@ -92,7 +92,7 @@ hmbRich::hmbRich(wxWindow* parent)
     style_heading->SetParagraphSpacingBefore(10);
     style_heading->SetParagraphSpacingAfter(0);
     style_heading->SetCharacterStyleName("CharBase");
-    //this->defParaHead->SetStyle(*style_heading);
+    style_heading->SetTextColour("#404040");
     this->style_sheet->AddParagraphStyle(this->defParaHead);
 
     this->GetBuffer().SetStyleSheet(this->style_sheet.get());
@@ -235,35 +235,37 @@ void hmbRich::md_blockquote(cmark_node* node) {
 
 
 void hmbRich::md_num_list(cmark_node* node) {
-    int i = cmark_node_get_list_start(node);
+    int n_start = cmark_node_get_list_start(node);
     cmark_node* item = cmark_node_first_child(node);
-
-    auto l = i;
-    int d = 0;
-    while (l >= 10) { l /= 10; ++d; }
-    d = d*30 + 50;
-
+    int indent = 40;
+    int sub_indent = indent * (digits(n_start) - 1) + 50;
+    this->is_paragraph_open = true;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
-        this->BeginNumberedBullet(i++, 40, d);
+        this->BeginNumberedBullet(n_start++, indent, sub_indent);
         this->node_iterator(item);
         this->new_line();
         this->EndNumberedBullet();
         item = cmark_node_next(item);
     }
+    this->is_paragraph_open = false;
 }
 
 
 void hmbRich::md_bul_list(cmark_node* node) {
     cmark_node* item = cmark_node_first_child(node);
-    this->BeginStandardBullet("-", 40, 40);
+    int indent = 40;
+    int sub_indent = indent;
+    this->is_paragraph_open = true;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
+        this->BeginStandardBullet("-", indent, sub_indent);
         this->node_iterator(item);
+        this->new_line();
+        this->EndStandardBullet();
         item = cmark_node_next(item);
     }
-    this->new_line();
-    this->EndStandardBullet();
+    this->is_paragraph_open = false;
 }
 
 
@@ -320,6 +322,7 @@ void hmbRich::md_header(cmark_node* node) {
     this->BeginParagraphStyle("ParaHead");
     wxFont f = HMB_FONT_BASE;
     f.SetPointSize(font_size);
+    f.SetWeight(wxFONTWEIGHT_BOLD);
     this->BeginFont(f);
     this->node_iterator(node);
     this->EndFont();
@@ -381,11 +384,18 @@ void hmbRich::md_unknown(cmark_node* node) {
     this->WriteText("Unknown\n");
 }
 
+// Стандартный абзац.
 void hmbRich::md_paragraph(cmark_node* node) {
-    this->BeginParagraphStyle("ParaBase");
+    // Нумерованные и маркированные списки в wxWidgets отображаются как строки
+    // со своим стилем параграфа, но парсер 'cmark' для каждой строки списка
+    // определяет вложенную ноду параграфа. Поэтому для списков ее пропускать.
+    if(!this->is_paragraph_open) this->BeginParagraphStyle("ParaBase");
     this->node_iterator(node);
-    //this->new_line();
-    this->EndParagraphStyle();
+    if(!this->is_paragraph_open)
+    {
+        this->new_line();
+        this->EndParagraphStyle();
+    }
 }
 
 void hmbRich::node_dispatcher(cmark_node* node)
@@ -504,7 +514,7 @@ void hmbRich::load_document()
         this->new_line();
     }
     
-    // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки.
+    // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки, если она есть в исходных данных.
     if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n") this->new_line();
     cmark_node_free(node);
     this->EndSuppressUndo();

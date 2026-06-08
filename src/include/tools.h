@@ -8,6 +8,8 @@
 #include <sstream>
 #include <cstring>
 
+//#include <bits/stdc++.h>
+
 #include <wx/menu.h>
 #include <wx/richtext/richtextctrl.h>
 #include <wx/richtext/richtextxml.h>
@@ -45,6 +47,7 @@ std::string replace_placeholder(std::string tpl,
                           const std::string& placeholder,
                           const std::string& content);
 
+int digits(long long n); // Количество разрядов в числе
 void debug_node(cmark_node* node);
 static const char* cmark_type_to_const_name(cmark_node_type t);
 

@@ -66,6 +66,7 @@ private:
     hmbStatusBar* subscriber = nullptr;
     int row_current = 0;
     int row_total = 0;
+    bool is_paragraph_open = false;
 
     void bind_mouse_events();
     void new_document();
