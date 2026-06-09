@@ -380,30 +380,19 @@ void hmbRich::md_link(cmark_node* node) {
 void hmbRich::md_image(cmark_node* node) {
     const char* image_url = cmark_node_get_url(node);
     if (!image_url || !*image_url) return;
+    
+    auto filepath = wxString::FromUTF8(image_url);
+    filepath.Replace("\\", "/");
+    if (filepath.StartsWith("/")) filepath = filepath.Mid(1);
 
-    wxString filepath = wxString::FromUTF8(image_url);
-    wxFileName image_path(filepath);
-    if (!image_path.IsAbsolute()) {
-        wxString base_dir = HMB_DNAME;
+    auto base_dir = wxFileName(HMB_FNAME).GetPath();
+    base_dir.Replace("\\", "/");
+    if (!base_dir.EndsWith("/")) base_dir += "/";
 
-        if (!HMB_FNAME.IsEmpty()) {
-            wxFileName md_file(HMB_FNAME);
-            if (!md_file.GetPath().IsEmpty()) {
-                base_dir = md_file.GetPath();
-            }
-        }
+    filepath = base_dir + filepath;
 
-        if (!base_dir.IsEmpty()) {
-            filepath = wxFileName(base_dir, filepath).GetFullPath();
-        }
-    }
-
-    // Вставка PNG
-    wxImage imgPng(filepath, wxBITMAP_TYPE_PNG);
-        if (imgPng.IsOk()) {
-            wxBitmap bmpPng(imgPng);
-            this->WriteImage(bmpPng);
-        }
+    wxImage img(filepath, wxBITMAP_TYPE_ANY); // Вставка PNG
+    if (img.IsOk()) this->WriteImage(wxBitmap(img));
 }
 
 void hmbRich::md_unknown(cmark_node* node) {
