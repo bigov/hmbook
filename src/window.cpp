@@ -34,13 +34,6 @@ hmbWindow::hmbWindow(const wxString& title)
     
     this->splitter->SplitVertically(panel_tree, panel_view);
 
-    // Корневой компоновщик фрейма: размещает splitter на все окно
-    wxBoxSizer* frameSizer = new wxBoxSizer(wxHORIZONTAL);
-    frameSizer->Add(this->splitter, 1, wxEXPAND | wxLEFT | wxRIGHT, 3); // боковые внешние поля
-    
-    this->SetSizer(frameSizer);
-    this->SetBackgroundColour(this->splitter->GetBackgroundColour());
-
     wxMenu* fileMenu = new wxMenu;
 
     fileMenu->Append(wxID_OPEN, _("Open Dir\tCtrl+O"));
@@ -57,6 +50,16 @@ hmbWindow::hmbWindow(const wxString& title)
     this->menuBar->Append(fileMenu, _("File"));
     this->menuBar->Append(panel_view->edit_menu(), _("Edit"));
     this->SetMenuBar(this->menuBar);
+
+    this->toolsBar = new hmbToolsBar(this);
+
+    // Корневой компоновщик фрейма: панель инструментов под меню и splitter на оставшееся место.
+    wxBoxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);
+    frameSizer->Add(this->toolsBar, 0, wxEXPAND);
+    frameSizer->Add(this->splitter, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 1);
+
+    this->SetSizer(frameSizer);
+    this->SetBackgroundColour(this->splitter->GetBackgroundColour());
 
     this->statusBar = new hmbStatusBar(this);
     this->SetStatusBar(this->statusBar);

@@ -23,6 +23,7 @@
 #include "panel_tree.h"
 #include "panel_view.h"
 #include "rich.h"
+#include "tools_bar.h"
 #include "status_bar.h"
 
 class hmbTree;
@@ -37,6 +38,7 @@ public:
 
 private:
     wxMenuBar* menuBar = nullptr;
+    hmbToolsBar* toolsBar = nullptr;
     hmbStatusBar* statusBar = nullptr;
 
     wxSplitterWindow* splitter = nullptr;
