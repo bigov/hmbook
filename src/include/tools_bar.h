@@ -8,6 +8,7 @@ class hmbToolsBar : public wxPanel
 {
 public:
     explicit hmbToolsBar(wxWindow* parent);
+    void save_btn_enable(bool enable) { toolbar->EnableTool(wxID_SAVE, enable); }
 
 private:
     wxToolBar* toolbar = nullptr;

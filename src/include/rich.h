@@ -41,9 +41,7 @@ public:
     ~hmbRich() override;
 
     wxMenu* edit_menu();
-    void load_document();
-    void save_file_as();
-    void save_plain_file(const wxString filePath);
+    void load_src_data();
     wxString get_buffer();
     void bind_subscriber(hmbStatusBar* status_bar);
 

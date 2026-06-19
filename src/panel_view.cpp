@@ -6,6 +6,7 @@ hmbPanelView::hmbPanelView(wxWindow* parent)
     nbook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxAUI_NB_BOTTOM | wxAUI_NB_RIGHT | wxBORDER_NONE);
     init_pages();
+    bind_events();
 
     SetSizer(new wxBoxSizer(wxVERTICAL));
     GetSizer()->Add(nbook, 1, wxEXPAND | wxALL, 0);
@@ -19,13 +20,17 @@ void hmbPanelView::bind_events()
         switch (nbook->GetSelection())
         {
         case 0:
-            //page_rich action    
+            // При активации вкладки Rich передаем фокус в STC.
+            this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
+            this->page_rich->SetFocus();
             break;
         case 1:
-            //page_source action    
+            // При активации вкладки Source передаем фокус в STC.
+            this->page_source->SetFocus();
             break;
         case 2:
-            //page_buffer action    
+            // При активации вкладки Buffer передаем фокус в STC.
+            this->page_buffer->SetFocus();
             break;
         default:
             break;
@@ -65,6 +70,12 @@ void hmbPanelView::bind_subscriber(hmbStatusBar* status_bar)
     this->page_rich->bind_subscriber(status_bar);
 }
 
+
+void hmbPanelView::bind_toolsbar(hmbToolsBar* tools_bar)
+{
+    this->page_source->toolsbar = tools_bar;
+}
+
 // Загрузка содержимого из файла.
 void hmbPanelView::load_file(const wxString& filePath)
 {
@@ -74,13 +85,12 @@ void hmbPanelView::load_file(const wxString& filePath)
     HMB_FNAME = filePath;
     file_read(HMB_FNAME, HMB_SRC_DATA); // загрузить исходный текст в глобальную переменную
 
-    this->page_rich->load_document();
-    this->page_source->ClearAll();
-    this->page_source->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    this->page_rich->load_src_data();
+    this->page_source->load_src_data();
     this->page_buffer->ChangeValue(this->page_rich->get_buffer());    
 }
 
-void hmbPanelView::save_file_as()
+void hmbPanelView::save_file()
 {
-    this->page_rich->save_file_as();
+    file_write(HMB_SRC_DATA, HMB_FNAME);
 }

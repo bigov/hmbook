@@ -13,6 +13,7 @@
 class hmbPanelTree;
 class wxAuiNotebook;
 class wxTextCtrl;
+class hmbToolsBar;
 
 // Панель вида реализует интерфейс подписчика,
 // чтобы напрямую получать уведомления о выборе файла из panel_tree.
@@ -24,9 +25,10 @@ public:
     // Реализация абстрактного метода hmbSubscriber.
     // Вызывается panel_tree при выборе файла в дереве.
     void load_file(const wxString& filePath);
-    void save_file_as();
+    void save_file();
     wxMenu* edit_menu();
     void bind_subscriber(hmbStatusBar* status_bar);
+    void bind_toolsbar(hmbToolsBar* tools_bar);
 
 private:
     wxAuiNotebook* nbook = nullptr;

@@ -7,7 +7,8 @@
 hmbToolsBar::hmbToolsBar(wxWindow* parent)
     : wxPanel(parent, wxID_ANY)
 {
-    init_toolsbar();
+    this->init_toolsbar();
+    this->save_btn_enable(false);
 }
 
 void hmbToolsBar::init_toolsbar()
@@ -22,7 +23,7 @@ void hmbToolsBar::init_toolsbar()
     toolbar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxTB_HORIZONTAL | wxTB_FLAT | wxTB_TEXT | wxTB_NODIVIDER);
     toolbar->SetBackgroundColour(*wxWHITE);
-    toolbar->AddTool(wxID_SAVEAS, wxEmptyString, wxBitmap(save_xpm), _("Save"));
+    toolbar->AddTool(wxID_SAVE, wxEmptyString, wxBitmap(save_xpm), _("Save"));
     toolbar->Realize();
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

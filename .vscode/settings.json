@@ -12,5 +12,8 @@
   },
   "search.exclude": {
     "**/third_party/**": true
+  },
+  "files.readonlyInclude": {
+    "**/third_party/**": true
   }
 }

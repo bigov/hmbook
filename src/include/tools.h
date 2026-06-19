@@ -41,6 +41,7 @@ static const wxString MARK_BUFFER_EXT = "md";
 
 bool isFileExist(const wxString filePath);
 void file_read(const wxString filePath, std::string &target_string);
+void file_write(const std::string &plain_text, const wxString &file_path);
 wxString hmb_decode_xml(const wxString& text);
 std::string to_utf8(const wxString& value);
 std::string replace_placeholder(std::string tpl,

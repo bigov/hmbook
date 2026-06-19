@@ -39,8 +39,8 @@ hmbWindow::hmbWindow(const wxString& title)
     fileMenu->Append(wxID_OPEN, _("Open Dir\tCtrl+O"));
     Bind(wxEVT_MENU, [this](wxCommandEvent& WXUNUSED(event)) {this->panel_tree->open_dir();}, wxID_OPEN);
 
-    fileMenu->Append(wxID_SAVEAS, _("Save As...\tCtrl+S"));
-    Bind(wxEVT_MENU, [this](wxCommandEvent& WXUNUSED(event)) {this->panel_view->save_file_as();}, wxID_SAVEAS);
+    fileMenu->Append(wxID_SAVE, _("Save file\tCtrl+S"));
+    Bind(wxEVT_MENU, [this](wxCommandEvent& WXUNUSED(event)) {this->save_file_data();}, wxID_SAVE);
 
     fileMenu->Append(APP_CLOSE, _("Exit\tCtrl+W"));
     Bind(wxEVT_MENU, &hmbWindow::OnClose, this, APP_CLOSE);
@@ -65,6 +65,7 @@ hmbWindow::hmbWindow(const wxString& title)
     this->SetStatusBar(this->statusBar);
     this->statusBar->set_text_2(title);
     this->panel_view->bind_subscriber(this->statusBar);
+    this->panel_view->bind_toolsbar(this->toolsBar);
 
     load_params();
 }
@@ -81,6 +82,13 @@ void hmbWindow::SetAppIcon(const wxString& iconPath)
             SetIcon(appIcon);
         }
     }
+}
+
+void hmbWindow::save_file_data()
+{
+    this->panel_view->save_file();
+    this->toolsBar->save_btn_enable(false);
+    this->statusBar->set_text_2("File saved");
 }
 
 void hmbWindow::OnClose(wxCommandEvent& WXUNUSED(event))

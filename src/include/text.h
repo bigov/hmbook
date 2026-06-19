@@ -4,11 +4,19 @@
 #include <wx/textctrl.h>
 #include <wx/stc/stc.h>
 #include "tools.h"
+#include "tools_bar.h"
 
 class hmbText: public wxStyledTextCtrl
 {
-    public:
+  public:
     explicit hmbText(wxWindow* parent);
+    void load_src_data();
+    hmbToolsBar* toolsbar = nullptr;
+
+  private:
+    static bool on_loading_text;
+    void bind_events();
+    void on_text_change(wxStyledTextEvent& event);
 };
 
 #endif // HMB_TEXT_H

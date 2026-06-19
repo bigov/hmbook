@@ -145,33 +145,6 @@ void hmbRich::new_document()
 }
 
 
-void hmbRich::save_file_as(void)
-{
-    wxFileDialog saveFileDialog(this, _("Save file as"), "", "",
-                      "Plain text files (*.txt)|*.txt",
-                       wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
-    if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
-    
-    wxFileName fileName(saveFileDialog.GetPath());
-    if (fileName.GetExt().IsEmpty()) fileName.SetExt(TEXT_BUFFER_EXT);
-    this->save_plain_file(fileName.GetFullPath());
-}
-
-// --- Save the buffer content as plain text ---
-void hmbRich::save_plain_file(const wxString filePath)
-{
-    wxRichTextBuffer& buffer = this->GetBuffer();
-    const wxString plain_text = buffer.GetText().utf8_str();
-    wxFileOutputStream output_stream(filePath);
-    output_stream.Write(plain_text.data(), plain_text.length());
-
-    if (output_stream.GetLastError() != wxSTREAM_NO_ERROR)
-    {
-        wxLogError(_("Error while writing to file '%s'."), filePath.wc_str());
-        return;
-    }
-}
-
 wxString hmbRich::get_buffer()
 {
     wxRichTextBuffer& buffer = this->GetBuffer();
@@ -503,7 +476,7 @@ void hmbRich::node_iterator(cmark_node* node)
 }
 
 // --- Load the Markdown text ---
-void hmbRich::load_document()
+void hmbRich::load_src_data()
 {
     new_document();
     cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);

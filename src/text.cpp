@@ -1,9 +1,13 @@
 #include "text.h"
 
+bool hmbText::on_loading_text = false;
+
 hmbText::hmbText(wxWindow* parent)
     : wxStyledTextCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
         wxBORDER_NONE | wxVSCROLL )
 {
+    this->on_loading_text = false;
+
     // Базовый стиль текста для всего буфера STC.
     this->StyleSetFont(wxSTC_STYLE_DEFAULT, HMB_FONT_BASE);
     this->StyleSetForeground(wxSTC_STYLE_DEFAULT, HMB_COLOR_BASE_FG);
@@ -36,5 +40,35 @@ hmbText::hmbText(wxWindow* parent)
     this->StyleSetForeground(wxSTC_MARKDOWN_CODE,    wxColour("#8B5A2B"));
     this->StyleSetForeground(wxSTC_MARKDOWN_CODEBK,  wxColour("#8B5A2B"));
 
+    this->bind_events();
     this->Colourise(0, -1);
+}
+
+void hmbText::bind_events()
+{
+    this->Bind(wxEVT_STC_CHANGE, &hmbText::on_text_change, this);
+}
+
+void hmbText::on_text_change(wxStyledTextEvent& event)
+{
+    if(this->on_loading_text)
+    {   
+        event.Skip();
+        return;
+    }
+    
+    if(this->toolsbar) this->toolsbar->save_btn_enable(true);
+    HMB_SRC_DATA = to_utf8(this->GetText());
+    event.Skip();
+}
+
+void hmbText::load_src_data()
+{
+    this->on_loading_text = true;
+    this->ClearAll();
+    //this->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    this->SetValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    this->EmptyUndoBuffer();
+    this->SetSavePoint();
+    this->on_loading_text = false;
 }

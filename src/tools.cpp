@@ -32,6 +32,19 @@ void file_read(const wxString filePath, std::string &target_string)
     }
 }
 
+
+void file_write(const std::string &plain_text, const wxString &file_path)
+{
+    wxFileOutputStream output_stream(file_path);
+    output_stream.Write(plain_text.data(), plain_text.length());
+
+    if (output_stream.GetLastError() != wxSTREAM_NO_ERROR)
+    {
+        wxLogError(_("Error while writing to file '%s'."), file_path.wc_str());
+        return;
+    }
+}
+
 // Перекодирование символов вида &#xNNNN; или &#DDDD; в соответствующие Unicode символы.
 // Вызывается при загрузке текста в редактор и при сохранении текста из редактора.
 wxString hmb_decode_xml(const wxString& text)

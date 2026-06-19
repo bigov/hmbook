@@ -47,6 +47,7 @@ private:
 
     void load_params();
     void save_params();
+    void save_file_data();
     void SetAppIcon(const wxString& iconPath);
 };
 
