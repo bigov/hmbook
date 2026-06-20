@@ -36,7 +36,7 @@ private:
     hmbText* page_source = nullptr;
     hmbText* page_buffer = nullptr;
 
-    void bind_events();
+    void page_changed(wxAuiNotebookEvent& event);
     void init_pages();
 };
 

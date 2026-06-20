@@ -58,6 +58,7 @@ void hmbText::on_text_change(wxStyledTextEvent& event)
     }
     
     if(this->toolsbar) this->toolsbar->save_btn_enable(true);
+    HMB_SRC_DATA.clear();
     HMB_SRC_DATA = to_utf8(this->GetText());
     event.Skip();
 }

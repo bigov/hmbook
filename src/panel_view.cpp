@@ -3,52 +3,15 @@
 hmbPanelView::hmbPanelView(wxWindow* parent)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 {
-    nbook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+    this->nbook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxAUI_NB_BOTTOM | wxAUI_NB_RIGHT | wxBORDER_NONE);
     init_pages();
-    bind_events();
+    this->nbook->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, &hmbPanelView::page_changed, this);
 
     SetSizer(new wxBoxSizer(wxVERTICAL));
     GetSizer()->Add(nbook, 1, wxEXPAND | wxALL, 0);
 }
 
-
-// Пример перехвата перехвата события (переключения страниц) в панели
-void hmbPanelView::bind_events()
-{
-    auto action = [this]() {
-        switch (nbook->GetSelection())
-        {
-        case 0:
-            // При активации вкладки Rich передаем фокус в STC.
-            this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
-            this->page_rich->SetFocus();
-            break;
-        case 1:
-            // При активации вкладки Source передаем фокус в STC.
-            this->page_source->SetFocus();
-            break;
-        case 2:
-            // При активации вкладки Buffer передаем фокус в STC.
-            this->page_buffer->SetFocus();
-            break;
-        default:
-            break;
-        }
-    };
-
-    nbook->Bind(wxEVT_AUINOTEBOOK_PAGE_CHANGED, [action](wxAuiNotebookEvent& event)
-    {
-        action();
-        event.Skip();
-    });
-
-}
-
-wxMenu* hmbPanelView::edit_menu()
-{
-    return this->page_rich->edit_menu();
-}
 
 void hmbPanelView::init_pages()
 {
@@ -64,6 +27,38 @@ void hmbPanelView::init_pages()
     this->page_buffer->SetWrapMode(wxSTC_WRAP_NONE);
 
 }
+
+// Обработка события переключения страниц в панели вида
+void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
+{
+    switch (this->nbook->GetSelection())
+    {
+    case 0:
+        // При активации вкладки Rich передаем фокус в STC.
+        this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
+        //this->page_rich->SetFocus();
+        break;
+    case 1:
+        // При активации вкладки Source передаем фокус в STC.
+        //this->page_source->SetFocus();
+        break;
+    case 2:
+        // При активации вкладки Buffer передаем фокус в STC.
+        this->page_buffer->ChangeValue(this->page_rich->get_buffer());    
+        //this->page_buffer->SetFocus();
+        break;
+    default:
+        break;
+    }
+    event.Skip();
+}
+
+
+wxMenu* hmbPanelView::edit_menu()
+{
+    return this->page_rich->edit_menu();
+}
+
 
 void hmbPanelView::bind_subscriber(hmbStatusBar* status_bar)
 {
@@ -87,7 +82,6 @@ void hmbPanelView::load_file(const wxString& filePath)
 
     this->page_rich->load_src_data();
     this->page_source->load_src_data();
-    this->page_buffer->ChangeValue(this->page_rich->get_buffer());    
 }
 
 void hmbPanelView::save_file()
