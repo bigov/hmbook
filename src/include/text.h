@@ -10,7 +10,7 @@ class hmbText: public wxStyledTextCtrl
 {
   public:
     explicit hmbText(wxWindow* parent);
-    void load_src_data();
+    void load_data(const std::string& data);
     hmbToolsBar* toolsbar = nullptr;
 
   private:

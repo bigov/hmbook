@@ -144,9 +144,10 @@ void hmbRich::new_document()
     this->row_total = 0;
 }
 
-
-wxString hmbRich::get_buffer()
+// чтение данных из буфера в UTF-8 строку в виде XML.
+void hmbRich::read_buffer_xml(std::string &out)
 {
+    out.clear();
     wxRichTextBuffer& buffer = this->GetBuffer();
 
     if (!wxRichTextBuffer::FindHandler(wxRICHTEXT_TYPE_XML))
@@ -159,17 +160,18 @@ wxString hmbRich::get_buffer()
     if (!buffer.SaveFile(xml_stream, wxRICHTEXT_TYPE_XML))
     {
         wxLogWarning(_("Cannot serialize rich buffer to XML string."));
-        return wxEmptyString;
+        return;
     }
-
-    return hmb_decode_xml(xml_text);
+    wx_to_utf8(hmb_decode_xml(xml_text), out);
 }
 
+// Привязка статус-бара для отображения URL при наведении мыши на ссылку.
 void hmbRich::bind_subscriber(hmbStatusBar* status_bar)
 {
     this->subscriber = status_bar;
 }
 
+// Отображение URL в статус-баре при наведении мыши на ссылку.
 void hmbRich::show_url(const wxString& url) {
     if (this->subscriber) {
         this->subscriber->show_url(url);

@@ -128,6 +128,8 @@ void hmbWindow::load_params()
 
     this->SetSize(win_x, win_y, win_width, win_height);
     this->splitter->SetSashPosition(span); // позиция разделителя
+
+    // Загрузка данных из сохраненной директории
     this->panel_tree->set_root_dir(config.Read("/MainWindow/current_dir", wxEmptyString));
     auto current_file = config.Read("/MainWindow/current_file", wxEmptyString);
     // Установка курсора на указанный файл (если он существует) автоматически приведет к его загрузке в панель просмотра.

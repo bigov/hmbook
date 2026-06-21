@@ -36,7 +36,7 @@ void hmbPanelTree::set_root_dir(const wxString& dir)
     this->tree_viewer->set_root_dir(dir);
 }
 
-// Установка курсора на указанный файл в дереве, если он существует
+// Установка курсора на указанный файл в дереве, и его загрузка в панель просмотра.
 void hmbPanelTree::set_cursor_to(const wxString& current_file)
 {
     if (!current_file.empty() && wxFileExists(current_file))

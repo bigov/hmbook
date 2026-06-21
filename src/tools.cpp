@@ -93,15 +93,13 @@ wxString hmb_decode_xml(const wxString& text)
     return out;
 }
 
-
-// Замена всех вхождений подстроки placeholder в строке tpl на строку content.
-// Вызывается при сохранении текста из редактора.
-std::string to_utf8(const wxString& value)
+// Перекодирование wxString в UTF-8 std::string.
+void wx_to_utf8(const wxString& src_data, std::string& dst_string)
 {
-    const wxScopedCharBuffer utf8 = value.ToUTF8();
-    return utf8.data() ? std::string(utf8.data()) : std::string();
+    dst_string.clear();
+    const wxScopedCharBuffer utf8 = src_data.ToUTF8();
+    dst_string = utf8.data() ? std::string(utf8.data()) : std::string();
 }
-
 
 // Замена всех вхождений подстроки placeholder в строке tpl на строку content.
 // Вызывается при сохранении текста из редактора.

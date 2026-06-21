@@ -58,17 +58,17 @@ void hmbText::on_text_change(wxStyledTextEvent& event)
     }
     
     if(this->toolsbar) this->toolsbar->save_btn_enable(true);
-    HMB_SRC_DATA.clear();
-    HMB_SRC_DATA = to_utf8(this->GetText());
+    wx_to_utf8(this->GetText(), HMB_SRC_DATA);
     event.Skip();
 }
 
-void hmbText::load_src_data()
+// Загрузка в виджет данных из текстовой строки
+void hmbText::load_data(const std::string& data)
 {
+    wxString wx_data = wxString::FromUTF8(data.data(), data.size());
     this->on_loading_text = true;
     this->ClearAll();
-    //this->AppendText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
-    this->SetValue(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
+    this->SetValue(wx_data);
     this->EmptyUndoBuffer();
     this->SetSavePoint();
     this->on_loading_text = false;

@@ -94,8 +94,7 @@ void hmbTree::select_item(const wxString& filePath)
 {
     if (filePath.IsEmpty()) return;
     wxTreeItemId item = find_item_by_path(this, this->GetRootItem(), filePath);
-    if (item.IsOk())
-        this->SelectItem(item);
+    if (item.IsOk()) this->SelectItem(item);
 }
 
 
@@ -116,11 +115,8 @@ void hmbTree::on_selection(wxTreeEvent& event)
         // Сохраняем текущий выбранный файл в состоянии дерева.
         HMB_FNAME = pData->GetFilePath();
 
-        // Вызов интерфейса подписчика
-        if (this->subscriber)
-        {
-            this->subscriber->load_file(HMB_FNAME);
-        }
+        // Вызов интерфейса подписчика для загрузки выбранного файла
+        if (this->subscriber) this->subscriber->load_file(HMB_FNAME);
     }
 
     event.Skip();

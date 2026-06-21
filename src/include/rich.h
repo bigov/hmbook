@@ -42,7 +42,7 @@ public:
 
     wxMenu* edit_menu();
     void load_src_data();
-    wxString get_buffer();
+    void read_buffer_xml(std::string& out);
     void bind_subscriber(hmbStatusBar* status_bar);
 
 private:

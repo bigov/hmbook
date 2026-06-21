@@ -31,21 +31,20 @@ void hmbPanelView::init_pages()
 // Обработка события переключения страниц в панели вида
 void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
 {
+    std::string s = "";
+
     switch (this->nbook->GetSelection())
     {
     case 0:
-        // При активации вкладки Rich передаем фокус в STC.
         this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
         //this->page_rich->SetFocus();
         break;
     case 1:
-        // При активации вкладки Source передаем фокус в STC.
         //this->page_source->SetFocus();
         break;
     case 2:
-        // При активации вкладки Buffer передаем фокус в STC.
-        this->page_buffer->ChangeValue(this->page_rich->get_buffer());    
-        //this->page_buffer->SetFocus();
+        this->page_rich->read_buffer_xml(s);
+        this->page_buffer->load_data(s);
         break;
     default:
         break;
@@ -81,7 +80,7 @@ void hmbPanelView::load_file(const wxString& filePath)
     file_read(HMB_FNAME, HMB_SRC_DATA); // загрузить исходный текст в глобальную переменную
 
     this->page_rich->load_src_data();
-    this->page_source->load_src_data();
+    this->page_source->load_data(HMB_SRC_DATA);
 }
 
 void hmbPanelView::save_file()
