@@ -16,23 +16,18 @@ hmbPanelView::hmbPanelView(wxWindow* parent)
 void hmbPanelView::init_pages()
 {
     this->page_rich = new hmbRich(nbook);
-    this->page_source = new hmbText(nbook);
-    this->page_buffer = new hmbText(nbook);
+    this->page_text = new hmbText(nbook);
 
     this->nbook->AddPage(this->page_rich, "Rich", true);
-    this->nbook->AddPage(this->page_source, "Source", false);
-    this->nbook->AddPage(this->page_buffer, "Buffer", false);
+    this->nbook->AddPage(this->page_text, "Text", false);
 
-    this->page_source->SetWrapMode(wxSTC_WRAP_WORD);
-    this->page_buffer->SetWrapMode(wxSTC_WRAP_NONE);
-
+    this->page_text->SetWrapMode(wxSTC_WRAP_WORD);
 }
+
 
 // Обработка события переключения страниц в панели вида
 void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
 {
-    std::string s = "";
-
     switch (this->nbook->GetSelection())
     {
     case 0:
@@ -42,14 +37,22 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
     case 1:
         //this->page_source->SetFocus();
         break;
-    case 2:
-        this->page_rich->read_buffer_xml(s);
-        this->page_buffer->load_data(s);
-        break;
     default:
         break;
     }
     event.Skip();
+}
+
+void hmbPanelView::show_rich_buffer()
+{
+    auto s = std::string("");
+    this->page_rich->read_buffer_xml(s);
+    this->page_text->load_data(s);
+}
+
+void hmbPanelView::show_src_buffer()
+{
+    this->page_text->load_data(HMB_SRC_DATA);
 }
 
 
@@ -67,7 +70,7 @@ void hmbPanelView::bind_subscriber(hmbStatusBar* status_bar)
 
 void hmbPanelView::bind_toolsbar(hmbToolsBar* tools_bar)
 {
-    this->page_source->toolsbar = tools_bar;
+    this->page_text->toolsbar = tools_bar;
 }
 
 // Загрузка содержимого из файла.
@@ -80,7 +83,7 @@ void hmbPanelView::load_file(const wxString& filePath)
     file_read(HMB_FNAME, HMB_SRC_DATA); // загрузить исходный текст в глобальную переменную
 
     this->page_rich->load_src_data();
-    this->page_source->load_data(HMB_SRC_DATA);
+    this->page_text->load_data(HMB_SRC_DATA);
 }
 
 void hmbPanelView::save_file()

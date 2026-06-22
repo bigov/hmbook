@@ -26,6 +26,8 @@ public:
     // Вызывается panel_tree при выборе файла в дереве.
     void load_file(const wxString& filePath);
     void save_file();
+    void show_rich_buffer();
+    void show_src_buffer();
     wxMenu* edit_menu();
     void bind_subscriber(hmbStatusBar* status_bar);
     void bind_toolsbar(hmbToolsBar* tools_bar);
@@ -33,8 +35,7 @@ public:
 private:
     wxAuiNotebook* nbook = nullptr;
     hmbRich* page_rich = nullptr;
-    hmbText* page_source = nullptr;
-    hmbText* page_buffer = nullptr;
+    hmbText* page_text = nullptr;
 
     void page_changed(wxAuiNotebookEvent& event);
     void init_pages();
