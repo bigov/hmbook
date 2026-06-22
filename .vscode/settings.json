@@ -15,5 +15,6 @@
   },
   "files.readonlyInclude": {
     "**/third_party/**": true
-  }
+  },
+  "CodeGPT.apiKey": "OpenAI"
 }

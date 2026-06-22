@@ -11,6 +11,7 @@ hmbToolsBar::hmbToolsBar(wxWindow* parent)
 {
     this->init_toolsbar();
     this->save_btn_enable(false);
+    this->text_mode_enable(false);
 }
 
 void hmbToolsBar::init_toolsbar()
@@ -50,4 +51,15 @@ void hmbToolsBar::init_toolsbar()
     sizer->Add(toolbar, 0, wxEXPAND | wxLEFT, 8);
     sizer->Add(bottomBorder, 0, wxEXPAND);
     SetSizerAndFit(sizer);
+}
+
+
+void hmbToolsBar::save_btn_enable(bool state)
+{
+     toolbar->EnableTool(wxID_SAVE, state);
+}
+
+void hmbToolsBar::text_mode_enable(bool state)
+{
+     toolbar->EnableTool(wxID_VIEW_DETAILS, state);
 }

@@ -52,11 +52,7 @@ hmbWindow::hmbWindow(const wxString& title)
     this->SetMenuBar(this->menuBar);
 
     this->toolsBar = new hmbToolsBar(this);
-    Bind(wxEVT_TOOL, [this](wxCommandEvent& event)
-    {
-        if (event.IsChecked()) this->panel_view->show_rich_buffer();
-        else this->panel_view->show_src_buffer();
-    }, wxID_VIEW_DETAILS);
+    Bind(wxEVT_TOOL, [this](wxCommandEvent& event){this->panel_view->mode_switch(event);}, wxID_VIEW_DETAILS);
 
     // Корневой компоновщик фрейма: панель инструментов под меню и splitter на оставшееся место.
     wxBoxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);

@@ -31,11 +31,11 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
     switch (this->nbook->GetSelection())
     {
     case 0:
+        this->page_text->toolsbar->text_mode_enable(false);
         this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
-        //this->page_rich->SetFocus();
         break;
     case 1:
-        //this->page_source->SetFocus();
+        this->page_text->toolsbar->text_mode_enable(true);
         break;
     default:
         break;
@@ -50,11 +50,11 @@ void hmbPanelView::show_rich_buffer()
     this->page_text->load_data(s);
 }
 
-void hmbPanelView::show_src_buffer()
+void hmbPanelView::mode_switch(wxCommandEvent& event)
 {
-    this->page_text->load_data(HMB_SRC_DATA);
+    if (event.IsChecked()) this->show_rich_buffer();
+    else this->page_text->load_data(HMB_SRC_DATA);
 }
-
 
 wxMenu* hmbPanelView::edit_menu()
 {
