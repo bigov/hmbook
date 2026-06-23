@@ -43,17 +43,20 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
     event.Skip();
 }
 
-void hmbPanelView::show_rich_buffer()
-{
-    auto s = std::string("");
-    this->page_rich->read_buffer_xml(s);
-    this->page_text->load_data(s);
-}
 
 void hmbPanelView::mode_switch(wxCommandEvent& event)
 {
-    if (event.IsChecked()) this->show_rich_buffer();
-    else this->page_text->load_data(HMB_SRC_DATA);
+    auto s = std::string("");
+
+    if (event.IsChecked())
+    {
+        //this->page_text->set_lexer(wxSTC_LEX_XML);
+        this->page_rich->read_buffer_xml(s);
+        this->page_text->load_data(s);
+    } else {   
+        //this->page_text->set_lexer(wxSTC_LEX_MARKDOWN);
+        this->page_text->load_data(HMB_SRC_DATA);
+    }
 }
 
 wxMenu* hmbPanelView::edit_menu()

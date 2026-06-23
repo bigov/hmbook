@@ -26,7 +26,6 @@ public:
     // Вызывается panel_tree при выборе файла в дереве.
     void load_file(const wxString& filePath);
     void save_file();
-    void show_rich_buffer();
     void mode_switch(wxCommandEvent& event);
     wxMenu* edit_menu();
     void bind_subscriber(hmbStatusBar* status_bar);
