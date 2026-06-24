@@ -1,13 +1,9 @@
 #include "text.h"
 
-bool hmbText::on_loading_text = false;
-
 hmbText::hmbText(wxWindow* parent)
     : wxStyledTextCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
         wxBORDER_NONE | wxVSCROLL )
 {
-    this->on_loading_text = false;
-
     // Базовый стиль текста для всего буфера STC.
     this->StyleSetFont(wxSTC_STYLE_DEFAULT, HMB_FONT_BASE);
     this->StyleSetForeground(wxSTC_STYLE_DEFAULT, HMB_COLOR_BASE_FG);
@@ -30,8 +26,8 @@ hmbText::hmbText(wxWindow* parent)
     this->SetMarginWidth(2, 0);
 
     this->set_lexer(wxSTC_LEX_MARKDOWN);
-
-    this->bind_events();
+    this->on_edit = false;
+    this->Bind(wxEVT_STC_CHANGE, &hmbText::on_text_change, this);
 }
 
 // Переключить лексер подсветки и применить соответствующее оформление.
@@ -90,38 +86,26 @@ void hmbText::set_lexer(int lexer)
     this->Colourise(0, -1);
 }
 
-void hmbText::bind_events()
-{
-    this->Bind(wxEVT_STC_MODIFIED, &hmbText::on_text_change, this);
-}
-
 void hmbText::on_text_change(wxStyledTextEvent& event)
 {
-    int mt = event.GetModificationType();
-
-    // Реагируем только на интерактивную правку: вставка ИЛИ удаление,
-    // выполненные именно пользователем (не программно, не undo/redo).
-    bool user_edit =
-        //(mt & (wxSTC_MOD_INSERTTEXT | wxSTC_MOD_DELETETEXT)) &&
-        (mt & wxSTC_PERFORMED_USER);
-
-    if(!user_edit)
+    if(this->on_edit)
     {
-        event.Skip();
-        return;
+        if(this->toolsbar) this->toolsbar->save_btn_enable(true);
+        wx_to_utf8(this->GetText(), HMB_SRC_DATA);
     }
-
-    if(this->toolsbar) this->toolsbar->save_btn_enable(true);
-    wx_to_utf8(this->GetText(), HMB_SRC_DATA);
     event.Skip();
 }
 
 // Загрузка в виджет данных из текстовой строки
 void hmbText::load_data(const std::string& data)
 {
+    bool t = this->on_edit;
     wxString wx_data = wxString::FromUTF8(data.data(), data.size());
+    
+    this->on_edit = false;
     this->ClearAll();
     this->SetValue(wx_data);
     this->EmptyUndoBuffer();
     this->SetSavePoint();
+    this->on_edit = t;
 }

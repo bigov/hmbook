@@ -11,6 +11,7 @@ class hmbText: public wxStyledTextCtrl
   public:
     explicit hmbText(wxWindow* parent);
     void load_data(const std::string& data);
+    bool on_edit = false;
 
     // Переключить используемый лексер подсветки синтаксиса (wxSTC_LEX_*)
     // и применить соответствующее ему оформление стилей.
@@ -19,8 +20,6 @@ class hmbText: public wxStyledTextCtrl
     hmbToolsBar* toolsbar = nullptr;
 
   private:
-    static bool on_loading_text;
-    void bind_events();
     void on_text_change(wxStyledTextEvent& event);
 };
 

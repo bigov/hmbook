@@ -31,11 +31,13 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
     switch (this->nbook->GetSelection())
     {
     case 0:
+        this->page_text->on_edit = false;
         this->page_text->toolsbar->text_mode_enable(false);
         this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
         break;
     case 1:
         this->page_text->toolsbar->text_mode_enable(true);
+        this->page_text->on_edit = true;
         break;
     default:
         break;
@@ -47,14 +49,15 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
 void hmbPanelView::mode_switch(wxCommandEvent& event)
 {
     auto s = std::string("");
+    this->page_text->on_edit = false;
 
     if (event.IsChecked())
     {
-        //this->page_text->set_lexer(wxSTC_LEX_XML);
+        this->page_text->set_lexer(wxSTC_LEX_XML);
         this->page_rich->read_buffer_xml(s);
         this->page_text->load_data(s);
     } else {   
-        //this->page_text->set_lexer(wxSTC_LEX_MARKDOWN);
+        this->page_text->set_lexer(wxSTC_LEX_MARKDOWN);
         this->page_text->load_data(HMB_SRC_DATA);
     }
 }
