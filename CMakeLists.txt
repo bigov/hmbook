@@ -30,19 +30,20 @@ SET(HMBOOK "hmbook")
 #SET(HMBOOK_VERSION_MAJOR 0)
 #SET(HMBOOK_VERSION_MINOR 2)
 
-SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/third_party" CACHE PATH
+SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rdparty" CACHE PATH
   "Shared directory for downloaded third-party sources")
 
 # Базовая GUI библиотека - wxWidgets
 include(FetchContent)
 
 SET(HMBOOK_WX_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets.git")
+SET(HMBOOK_WX_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets-build")
+
 if(EXISTS "${HMBOOK_WX_SOURCE_DIR}/CMakeLists.txt")
     FetchContent_Declare(
       wxWidgets
       SOURCE_DIR "${HMBOOK_WX_SOURCE_DIR}"
-      BINARY_DIR "${CMAKE_BINARY_DIR}/_deps/wxwidgets-build"
-      SUBBUILD_DIR "${CMAKE_BINARY_DIR}/_deps/wxwidgets-subbuild"
+      BINARY_DIR "${HMBOOK_WX_BINARY_DIR}"
     )
 else()
     FetchContent_Declare(
@@ -50,8 +51,7 @@ else()
       GIT_REPOSITORY "https://github.com/wxWidgets/wxWidgets.git"
       GIT_TAG "v3.3.2"
       SOURCE_DIR "${HMBOOK_WX_SOURCE_DIR}"
-      BINARY_DIR "${CMAKE_BINARY_DIR}/_deps/wxwidgets-build"
-      SUBBUILD_DIR "${CMAKE_BINARY_DIR}/_deps/wxwidgets-subbuild"
+      BINARY_DIR "${HMBOOK_WX_BINARY_DIR}"
     )
 endif()
 
@@ -67,12 +67,13 @@ FetchContent_MakeAvailable(wxWidgets)
 
 # Библиотека парсера Markdown - cmark
 SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark.git")
+SET(HMBOOK_CMARK_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-build")
+
 if(EXISTS "${HMBOOK_CMARK_SOURCE_DIR}/CMakeLists.txt")
     FetchContent_Declare(
       cmark
       SOURCE_DIR "${HMBOOK_CMARK_SOURCE_DIR}"
-      BINARY_DIR "${CMAKE_BINARY_DIR}/_deps/cmark-build"
-      SUBBUILD_DIR "${CMAKE_BINARY_DIR}/_deps/cmark-subbuild"
+      BINARY_DIR "${HMBOOK_CMARK_BINARY_DIR}"
     )
 else()
     FetchContent_Declare(
@@ -80,8 +81,7 @@ else()
       GIT_REPOSITORY "https://github.com/commonmark/cmark.git"
       GIT_TAG "0.31.2"
       SOURCE_DIR "${HMBOOK_CMARK_SOURCE_DIR}"
-      BINARY_DIR "${CMAKE_BINARY_DIR}/_deps/cmark-build"
-      SUBBUILD_DIR "${CMAKE_BINARY_DIR}/_deps/cmark-subbuild"
+      BINARY_DIR "${HMBOOK_CMARK_BINARY_DIR}"
     )
 endif()
 
@@ -111,7 +111,7 @@ target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
 target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets cmark)
 
 # Добавление .dll библиотеки в каталог запуска
-SET(BIN_LIB "${CMAKE_BINARY_DIR}/_deps/wxwidgets-build/lib/gcc_x64_dll")
+SET(BIN_LIB "${HMBOOK_WX_BINARY_DIR}/lib/gcc_x64_dll")
 set(WX_DLL_SUFFIX "")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(WX_DLL_SUFFIX "d")
