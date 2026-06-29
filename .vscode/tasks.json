@@ -11,12 +11,27 @@
       "detail": "Конфигурация проекта (Ninja, Debug) в каталог build/debug."
     },
     {
+      "label": "CMake: sync compile_commands → .vscode",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-E", "copy",
+        "${workspaceFolder}/build/debug/compile_commands.json",
+        "${workspaceFolder}/.vscode/compile_commands.json"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: configure (debug)"],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "detail": "Копирует build/debug/compile_commands.json в .vscode для IntelliSense (после конфигурации Debug)."
+    },
+    {
       "label": "CMake: build hmbook",
       "type": "shell",
       "command": "cmake",
       "args": ["--build", "--preset", "debug", "--target", "hmbook"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: configure (debug)"],
+      "dependsOn": ["CMake: sync compile_commands → .vscode"],
       "dependsOrder": "sequence",
       "problemMatcher": ["$gcc"],
       "group": {

@@ -3,6 +3,36 @@
 #include <wx/sizer.h>
 #include <wx/artprov.h>
 #include <wx/bmpbndl.h>
+#include <wx/image.h>
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
+
+namespace
+{
+// Возвращает набор изображений из файла, путь к которому задан относительно
+// каталога с исполняемым модулем приложения (куда сборка копирует ресурсы).
+wxBitmapBundle icon_from_file(const wxString& relativePath)
+{
+    // Однократная регистрация обработчика PNG.
+    if ( !wxImage::FindHandler(wxBITMAP_TYPE_PNG) )
+        wxImage::AddHandler(new wxPNGHandler);
+
+    const wxFileName exeDir(wxStandardPaths::Get().GetExecutablePath());
+    wxFileName file(relativePath);
+    file.MakeAbsolute(exeDir.GetPath());   // относительно каталога exe
+
+    return wxBitmapBundle::FromBitmap(
+        wxBitmap(file.GetFullPath(), wxBITMAP_TYPE_PNG));
+}
+
+// Возвращает осветлённую (приглушённую) версию значка для неактивного
+// состояния кнопки. Чем больше brightness, тем светлее результат.
+wxBitmapBundle dimmed_icon(const wxBitmapBundle& src, unsigned char brightness = 255)
+{
+    wxImage img = src.GetBitmap(wxSize(16, 16)).ConvertToImage();
+    return wxBitmapBundle::FromBitmap(wxBitmap(img.ConvertToDisabled(brightness)));
+}
+} // namespace
 
 
 hmbToolsBar::hmbToolsBar(wxWindow* parent)
@@ -26,12 +56,17 @@ void hmbToolsBar::init_toolsbar()
     toolbar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxTB_HORIZONTAL | wxTB_FLAT | wxTB_TEXT | wxTB_NODIVIDER);
     toolbar->SetBackgroundColour(*wxWHITE);
+    toolbar->SetToolBitmapSize(wxSize(16, 16));
 
     toolbar->AddTool(wxID_OPEN, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_FOLDER_OPEN, wxART_TOOLBAR),
         _("Open dir [Ctrl+O]"), wxITEM_NORMAL);
 
-    toolbar->AddTool(wxID_SAVE, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_FILE_SAVE, wxART_TOOLBAR),
-        _("Save file [Ctrl+S]"), wxITEM_NORMAL);
+    const wxBitmapBundle saveIcon = icon_from_file("images/icons16/wxID_SAVE.png");
+    toolbar->AddTool(wxID_SAVE, wxEmptyString,
+        saveIcon,                 // активная — контрастная
+        dimmed_icon(saveIcon),    // неактивная — осветлённая
+        wxITEM_NORMAL,
+        _("Save file [Ctrl+S]"));
 
     toolbar->AddSeparator();
 
