@@ -33,11 +33,13 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
     case 0:
         this->page_text->on_edit = false;
         this->page_text->toolsbar->text_mode_enable(false);
+        this->page_text->toolsbar->wrap_btn_enable(false);
         this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
         break;
     case 1:
-        this->page_text->toolsbar->text_mode_enable(true);
         this->page_text->on_edit = true;
+        this->page_text->toolsbar->text_mode_enable(true);
+        this->page_text->toolsbar->wrap_btn_enable(true);
         break;
     default:
         break;
@@ -46,6 +48,7 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
 }
 
 
+// Переключение источника текста - исходный файл или XML буфер
 void hmbPanelView::mode_switch(wxCommandEvent& event)
 {
     auto s = std::string("");
@@ -60,6 +63,12 @@ void hmbPanelView::mode_switch(wxCommandEvent& event)
         this->page_text->set_lexer(wxSTC_LEX_MARKDOWN);
         this->page_text->load_data(HMB_SRC_DATA);
     }
+}
+
+// Переключить режим переноса слов на вкладке "Text".
+void hmbPanelView::toggle_wrap(wxCommandEvent& event)
+{
+    this->page_text->SetWrapMode(event.IsChecked() ? wxSTC_WRAP_WORD : wxSTC_WRAP_NONE);
 }
 
 wxMenu* hmbPanelView::edit_menu()
@@ -96,3 +105,4 @@ void hmbPanelView::save_file()
 {
     file_write(HMB_SRC_DATA, HMB_FNAME);
 }
+

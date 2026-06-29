@@ -12,6 +12,7 @@ hmbToolsBar::hmbToolsBar(wxWindow* parent)
     this->init_toolsbar();
     this->save_btn_enable(false);
     this->text_mode_enable(false);
+    this->wrap_btn_enable(false);
 }
 
 void hmbToolsBar::init_toolsbar()
@@ -38,6 +39,10 @@ void hmbToolsBar::init_toolsbar()
     toolbar->AddTool(wxID_VIEW_DETAILS, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_HELP_PAGE, wxART_TOOLBAR),
         _("Debug biffer [Ctrl+D]"), wxITEM_CHECK);
 
+    toolbar->AddTool(HMB_ID_WRAP, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_LIST_VIEW, wxART_TOOLBAR),
+        _("Word wrap"), wxITEM_CHECK);
+    toolbar->ToggleTool(HMB_ID_WRAP, true); // перенос слов включён по умолчанию
+
     toolbar->AddSeparator();
 
     toolbar->AddTool(wxID_EXIT, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_QUIT, wxART_TOOLBAR),
@@ -62,4 +67,9 @@ void hmbToolsBar::save_btn_enable(bool state)
 void hmbToolsBar::text_mode_enable(bool state)
 {
      toolbar->EnableTool(wxID_VIEW_DETAILS, state);
+}
+
+void hmbToolsBar::wrap_btn_enable(bool state)
+{
+     toolbar->EnableTool(HMB_ID_WRAP, state);
 }

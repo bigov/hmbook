@@ -27,6 +27,7 @@ public:
     void load_file(const wxString& filePath);
     void save_file();
     void mode_switch(wxCommandEvent& event);
+    void toggle_wrap(wxCommandEvent& event);
     wxMenu* edit_menu();
     void bind_subscriber(hmbStatusBar* status_bar);
     void bind_toolsbar(hmbToolsBar* tools_bar);
