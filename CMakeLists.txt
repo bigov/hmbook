@@ -36,7 +36,7 @@ SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rdparty" CACHE PATH
 # Базовая GUI библиотека - wxWidgets
 include(FetchContent)
 
-SET(HMBOOK_WX_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets.git")
+SET(HMBOOK_WX_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets-src")
 SET(HMBOOK_WX_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets-build")
 
 if(EXISTS "${HMBOOK_WX_SOURCE_DIR}/CMakeLists.txt")
@@ -66,7 +66,7 @@ FetchContent_GetProperties(wxWidgets)
 FetchContent_MakeAvailable(wxWidgets)
 
 # Библиотека парсера Markdown - cmark
-SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark.git")
+SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-src")
 SET(HMBOOK_CMARK_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-build")
 
 if(EXISTS "${HMBOOK_CMARK_SOURCE_DIR}/CMakeLists.txt")
@@ -122,7 +122,7 @@ add_custom_command( TARGET "${HMBOOK}" POST_BUILD
   COMMAND ${CMAKE_COMMAND}
     -E make_directory "${CMAKE_BINARY_DIR}/assets"
   COMMAND ${CMAKE_COMMAND}
-    -E copy "${CMAKE_SOURCE_DIR}/resources/icon.png" "${CMAKE_BINARY_DIR}/assets/"
+    -E copy_directory "${CMAKE_SOURCE_DIR}/resources/images" "${CMAKE_BINARY_DIR}/images"
 )
 
 

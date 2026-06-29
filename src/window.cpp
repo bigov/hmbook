@@ -11,8 +11,8 @@ wxColor HMB_COLOR_BASE_FG = "#444444";
 wxColor HMB_COLOR_BASE_BG = "#ffffff";
 
 static const int APP_CLOSE = 1000;
-static const wxString ASSETS_DIR = "assets";
-static const wxString APP_ICON_FNAME = "icon.png";
+static const wxString IMAGES_DIR = "images";
+static const wxString APP_ICON_FNAME = "hmb_icon.png";
 
 hmbWindow::hmbWindow(const wxString& title)
     : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxTAB_TRAVERSAL)
@@ -21,7 +21,7 @@ hmbWindow::hmbWindow(const wxString& title)
     
     // Настройка иконки приложения
     const wxString iconPath = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPathWithSep() 
-        + ASSETS_DIR + wxFileName::GetPathSeparator() + APP_ICON_FNAME;
+        + IMAGES_DIR + wxFileName::GetPathSeparator() + APP_ICON_FNAME;
     SetAppIcon(iconPath);
 
     this->splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_NO_XP_THEME);

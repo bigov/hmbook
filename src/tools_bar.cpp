@@ -1,5 +1,4 @@
 #include "tools_bar.h"
-#include "bitmaps/save.xpm"
 #include <wx/settings.h>
 #include <wx/sizer.h>
 #include <wx/artprov.h>
