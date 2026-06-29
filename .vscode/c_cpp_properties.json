@@ -7,6 +7,7 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",
+            "compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
             "defines": [
                 "WXUSINGDLL",
                 "__WXMSW__",
@@ -17,8 +18,8 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/src/include",
-                "${workspaceFolder}/third_party/wxwidgets.git/include",
-                "${workspaceFolder}/third_party/cmark.git/src",
+                "${workspaceFolder}/3rdparty/wxwidgets-src/include",
+                "${workspaceFolder}/3rdparty/cmark-src/src"
             ]
         }
     ]

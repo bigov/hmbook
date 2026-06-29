@@ -1,168 +1,50 @@
 {
-	"tasks": [
-		{
-			"label": "CMake: configure app",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--preset",
-				"dev-app"
-			],
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": "build"
-		},
-		{
-			"label": "CMake: build hmbook",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"--preset",
-				"build-app",
-				"--target",
-				"hmbook"
-			],
-			"dependsOn": [
-				"CMake: configure app"
-			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"detail": "Инкрементальная сборка цели hmbook в каталоге build."
-		},
-		{
-			"label": "CMake: configure tests",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--preset",
-				"dev-tests"
-			],
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": "build"
-		},
-		{
-			"label": "CMake: build tests",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"--preset",
-				"build-tests"
-			],
-			"dependsOn": [
-				"CMake: configure tests"
-			],
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": "build"
-		},
-		{
-			"label": "CMake: configure parser",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--preset",
-				"dev-parser"
-			],
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": "build"
-		},
-		{
-			"label": "CMake: build parser utility",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"--preset",
-				"build-parser",
-				"--target",
-				"parser"
-			],
-			"dependsOn": [
-				"CMake: configure parser"
-			],
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": "build"
-		},
-		{
-			"type": "cppbuild",
-			"label": "C/C++: g++.exe сборка активного файла",
-			"command": "C:/msys64/ucrt64/bin/g++.exe",
-			"args": [
-				"-fdiagnostics-color=always",
-				"-g",
-				"${file}",
-				"-o",
-				"${fileDirname}\\${fileBasenameNoExtension}.exe"
-			],
-			"options": {
-				"cwd": "C:/msys64/ucrt64/bin"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": "none",
-			"detail": "Задача создана отладчиком."
-		},
-		{
-			"label": "Run test_parser dump",
-			"type": "shell",
-			"command": ".\\build\\dev-tests\\test_parser.exe",
-			"args": [],
-			"dependsOn": [
-				"CMake: build tests"
-			],
-			"isBackground": false
-		},
-		{
-			"label": "Build test_inline_styles",
-			"type": "shell",
-			"command": "cmake",
-			"args": [
-				"--build",
-				"--preset",
-				"build-tests",
-				"--target",
-				"test_inline_styles"
-			],
-			"dependsOn": [
-				"CMake: configure tests"
-			],
-			"isBackground": false
-		},
-		{
-			"label": "Run inline styles test",
-			"type": "shell",
-			"command": "ctest",
-			"args": [
-				"--test-dir",
-				"${workspaceFolder}/build/dev-tests",
-				"-R",
-				"parser_inline_styles_test",
-				"--output-on-failure"
-			],
-			"dependsOn": [
-				"Build test_inline_styles"
-			],
-			"isBackground": false
-		}
-	],
-	"version": "2.0.0"
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: configure (debug)",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "debug"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$gcc"],
+      "detail": "Конфигурация проекта (Ninja, Debug) в каталог build/debug."
+    },
+    {
+      "label": "CMake: build hmbook",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "--preset", "debug", "--target", "hmbook"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: configure (debug)"],
+      "dependsOrder": "sequence",
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Сборка цели hmbook с символами отладки в build/debug. Используется как preLaunchTask для F5 и Ctrl+F5."
+    },
+    {
+      "label": "CMake: configure (release)",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "release"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": ["$gcc"],
+      "detail": "Конфигурация проекта (Ninja, Release) в каталог build/release."
+    },
+    {
+      "label": "CMake: build hmbook (release)",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "--preset", "release", "--target", "hmbook"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: configure (release)"],
+      "dependsOrder": "sequence",
+      "problemMatcher": ["$gcc"],
+      "group": "build",
+      "detail": "Полная сборка hmbook в режиме Release (с оптимизацией, без символов отладки) в build/release."
+    }
+  ]
 }

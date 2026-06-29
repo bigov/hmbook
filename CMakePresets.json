@@ -1,72 +1,47 @@
 {
   "version": 6,
-  "cmakeMinimumRequired": {
-    "major": 4,
-    "minor": 2,
-    "patch": 0
-  },
+  "cmakeMinimumRequired": { "major": 4, "minor": 2, "patch": 0 },
   "configurePresets": [
     {
-      "name": "base-debug",
+      "name": "base",
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe"
       }
     },
     {
-      "name": "dev-app",
-      "inherits": "base-debug",
-      "displayName": "Dev: App",
-      "description": "Сборка GUI-приложения hmbook"
-    },
-    {
-      "name": "base-relwithdebinfo",
-      "hidden": true,
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/${presetName}",
+      "name": "debug",
+      "inherits": "base",
+      "displayName": "Debug",
+      "description": "Сборка hmbook и зависимостей (wxWidgets, cmark) с символами отладки (Debug) в каталог build/debug. Конфигурация по умолчанию.",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "dev-app-debug-symbols",
-      "inherits": "base-relwithdebinfo",
-      "displayName": "Dev: App (Debug Symbols)",
-      "description": "Сборка GUI-приложения hmbook с символами отладки (RelWithDebInfo)"
-    },
-    {
-      "name": "dev-tests",
-      "inherits": "base-debug",
-      "displayName": "Dev: Tests",
-      "description": "Сборка (без дополнительных cache-переключателей)"
-    },
-    {
-      "name": "dev-all",
-      "inherits": "base-debug",
-      "displayName": "Dev: All",
-      "description": "Сборка (без дополнительных cache-переключателей)"
+      "name": "release",
+      "inherits": "base",
+      "displayName": "Release",
+      "description": "Полная сборка hmbook и зависимостей (wxWidgets, cmark) в режиме Release (с оптимизацией, без символов отладки) в каталог build/release.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     }
   ],
   "buildPresets": [
     {
-      "name": "build-app",
-      "configurePreset": "dev-app"
+      "name": "debug",
+      "displayName": "Build: Debug",
+      "configurePreset": "debug"
     },
     {
-      "name": "build-app-debug-symbols",
-      "configurePreset": "dev-app-debug-symbols"
-    },
-    {
-      "name": "build-tests",
-      "configurePreset": "dev-tests"
-    },
-    {
-      "name": "build-all",
-      "configurePreset": "dev-all"
+      "name": "release",
+      "displayName": "Build: Release",
+      "configurePreset": "release"
     }
   ]
 }

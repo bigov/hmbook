@@ -1,59 +1,32 @@
 {
-    "version": "0.2.0",
-    "configurations": [
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "hmbook (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/hmbook.exe",
+      "cwd": "${workspaceFolder}/build/debug",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+
+      "preLaunchTask": "CMake: build hmbook",
+
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+      "setupCommands": [
         {
-            "name": "Debug hmbook",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/dev-app/hmbook.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/dev-app",
-            "preLaunchTask": "CMake: build hmbook",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
-            "setupCommands": [
-                {
-                    "description": "Включить автоматическое форматирование для gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Задать для варианта приложения дизассемблирования значение Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ]
+          "description": "Включить pretty-printing для gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
         },
         {
-            "name": "Debug parser",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/parser.exe",
-            "args": [
-                "${workspaceFolder}/tests/docs-tests/test.md"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build",
-            "preLaunchTask": "CMake: build parser utility",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
-            "setupCommands": [
-                {
-                    "description": "Включить автоматическое форматирование для gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Задать для варианта приложения дизассемблирования значение Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ]
+          "description": "Задать стиль дизассемблирования Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
         }
-    ]
+      ]
+    }
+  ]
 }

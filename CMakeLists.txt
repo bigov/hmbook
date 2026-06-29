@@ -33,11 +33,20 @@ SET(HMBOOK "hmbook")
 SET(HMBOOK_DEPS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rdparty" CACHE PATH
   "Shared directory for downloaded third-party sources")
 
+# Каталоги сборки зависимостей разделяются по типу сборки, чтобы Debug и Release
+# не пересекались в одном дереве (это и приводило к рассинхрону имён библиотек).
+# Для Debug сохраняется прежний путь без суффикса (используется готовая сборка),
+# для остальных конфигураций добавляется суффикс "-<Тип>" (напр. "-Release").
+SET(HMBOOK_DEPS_BUILD_SUFFIX "")
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+  SET(HMBOOK_DEPS_BUILD_SUFFIX "-${CMAKE_BUILD_TYPE}")
+endif()
+
 # Базовая GUI библиотека - wxWidgets
 include(FetchContent)
 
 SET(HMBOOK_WX_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets-src")
-SET(HMBOOK_WX_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets-build")
+SET(HMBOOK_WX_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/wxwidgets-build${HMBOOK_DEPS_BUILD_SUFFIX}")
 
 if(EXISTS "${HMBOOK_WX_SOURCE_DIR}/CMakeLists.txt")
     FetchContent_Declare(
@@ -67,7 +76,7 @@ FetchContent_MakeAvailable(wxWidgets)
 
 # Библиотека парсера Markdown - cmark
 SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-src")
-SET(HMBOOK_CMARK_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-build")
+SET(HMBOOK_CMARK_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-build${HMBOOK_DEPS_BUILD_SUFFIX}")
 
 if(EXISTS "${HMBOOK_CMARK_SOURCE_DIR}/CMakeLists.txt")
     FetchContent_Declare(

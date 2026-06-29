@@ -3,7 +3,6 @@
     #include <wx/wx.h>
 #endif
 #include <wx/config.h>
-
 #include "window.h"
 
 class MyApp: public wxApp
