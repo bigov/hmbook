@@ -1,4 +1,5 @@
 #include "tools_bar.h"
+#include "tools.h"
 #include <wx/settings.h>
 #include <wx/sizer.h>
 #include <wx/artprov.h>
@@ -9,29 +10,35 @@
 
 namespace
 {
-// Возвращает набор изображений из файла, путь к которому задан относительно
+typedef  struct {
+    wxBitmapBundle normal;
+    wxBitmapBundle dimmed;
+} icons_array;
+
+// Возвращает набор изображений из SVG-файла, путь к которому задан относительно
 // каталога с исполняемым модулем приложения (куда сборка копирует ресурсы).
-wxBitmapBundle icon_from_file(const wxString& relativePath)
+icons_array get_icon(const wxString& relativePath)
 {
-    // Однократная регистрация обработчика PNG.
-    if ( !wxImage::FindHandler(wxBITMAP_TYPE_PNG) )
-        wxImage::AddHandler(new wxPNGHandler);
+    icons_array result;
+    wxString color_normal = "stroke=\"#0078d4\"";
+    wxString color_dimmed = "stroke=\"#BCBCBC\"";
 
     const wxFileName exeDir(wxStandardPaths::Get().GetExecutablePath());
     wxFileName file(relativePath);
     file.MakeAbsolute(exeDir.GetPath());   // относительно каталога exe
 
-    return wxBitmapBundle::FromBitmap(
-        wxBitmap(file.GetFullPath(), wxBITMAP_TYPE_PNG));
+    std::string svg = "";
+    file_read(file.GetFullPath(), svg);
+    wxString data = wxString::FromUTF8(svg);
+    
+    data.Replace("stroke=\"currentColor\"", color_normal);
+    result.normal = wxBitmapBundle::FromSVG(data, wxSize(16, 16));
+    data.Replace(color_normal, color_dimmed);
+    result.dimmed = wxBitmapBundle::FromSVG(data, wxSize(16, 16));
+    
+    return result;
 }
 
-// Возвращает осветлённую (приглушённую) версию значка для неактивного
-// состояния кнопки. Чем больше brightness, тем светлее результат.
-wxBitmapBundle dimmed_icon(const wxBitmapBundle& src, unsigned char brightness = 255)
-{
-    wxImage img = src.GetBitmap(wxSize(16, 16)).ConvertToImage();
-    return wxBitmapBundle::FromBitmap(wxBitmap(img.ConvertToDisabled(brightness)));
-}
 } // namespace
 
 
@@ -61,20 +68,16 @@ void hmbToolsBar::init_toolsbar()
     toolbar->AddTool(wxID_OPEN, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_FOLDER_OPEN, wxART_TOOLBAR),
         _("Open dir [Ctrl+O]"), wxITEM_NORMAL);
 
-    const wxBitmapBundle saveIcon = icon_from_file("images/icons16/wxID_SAVE.png");
-    toolbar->AddTool(wxID_SAVE, wxEmptyString,
-        saveIcon,                 // активная — контрастная
-        dimmed_icon(saveIcon),    // неактивная — осветлённая
-        wxITEM_NORMAL,
-        _("Save file [Ctrl+S]"));
+    auto icon = get_icon("images/svg/save.svg");
+    toolbar->AddTool(wxID_SAVE, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Save file [Ctrl+S]"));
 
     toolbar->AddSeparator();
 
     toolbar->AddTool(wxID_VIEW_DETAILS, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_HELP_PAGE, wxART_TOOLBAR),
         _("Debug biffer [Ctrl+D]"), wxITEM_CHECK);
 
-    toolbar->AddTool(HMB_ID_WRAP, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_LIST_VIEW, wxART_TOOLBAR),
-        _("Word wrap"), wxITEM_CHECK);
+    icon = get_icon("images/svg/words-wrap.svg");
+    toolbar->AddTool(HMB_ID_WRAP, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Word wrap"));
     toolbar->ToggleTool(HMB_ID_WRAP, true); // перенос слов включён по умолчанию
 
     toolbar->AddSeparator();
