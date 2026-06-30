@@ -65,32 +65,40 @@ void hmbToolsBar::init_toolsbar()
     toolbar->SetBackgroundColour(*wxWHITE);
     toolbar->SetToolBitmapSize(wxSize(16, 16));
 
-    toolbar->AddTool(wxID_OPEN, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_FOLDER_OPEN, wxART_TOOLBAR),
-        _("Open dir [Ctrl+O]"), wxITEM_NORMAL);
+    // Разделитель для кнопок (по горизонтали)
+    auto* spacer = new wxControl(toolbar, wxID_ANY, wxDefaultPosition, wxSize(1, 1), wxBORDER_NONE);
+    spacer->SetBackgroundColour(*wxWHITE);
 
-    auto icon = get_icon("images/svg/save.svg");
+
+    auto icon = get_icon("images/svg/book-pages.svg");
+    toolbar->AddTool(wxID_OPEN, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Open dir [Ctrl+O]"));
+    toolbar->AddControl(spacer);
+
+    icon = get_icon("images/svg/save.svg");
     toolbar->AddTool(wxID_SAVE, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Save file [Ctrl+S]"));
+    toolbar->AddControl(spacer);
 
-    toolbar->AddSeparator();
-
-    toolbar->AddTool(wxID_VIEW_DETAILS, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_HELP_PAGE, wxART_TOOLBAR),
-        _("Debug biffer [Ctrl+D]"), wxITEM_CHECK);
+    icon = get_icon("images/svg/file-code.svg");
+    toolbar->AddTool(wxID_VIEW_DETAILS, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Debug biffer [Ctrl+D]"));
+    toolbar->AddControl(spacer);
 
     icon = get_icon("images/svg/words-wrap.svg");
     toolbar->AddTool(HMB_ID_WRAP, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Word wrap"));
     toolbar->ToggleTool(HMB_ID_WRAP, true); // перенос слов включён по умолчанию
 
-    toolbar->AddSeparator();
+    // Растягивающийся разделитель: занимает всё свободное место и
+    // прижимает следующую за ним кнопку (Exit) к правому краю панели.
+    toolbar->AddStretchableSpace();
 
-    toolbar->AddTool(wxID_EXIT, wxEmptyString, wxArtProvider::GetBitmapBundle(wxART_QUIT, wxART_TOOLBAR),
-        _("CLose app [Ctrl+W]"), wxITEM_NORMAL);
-
+    icon = get_icon("images/svg/exit.svg");
+    toolbar->AddTool(wxID_EXIT, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("CLose app [Ctrl+W]"));
 
     toolbar->Realize();
 
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(topBorder, 0, wxEXPAND);
-    sizer->Add(toolbar, 0, wxEXPAND | wxLEFT, 8);
+    sizer->AddSpacer(2);   // зазор 2px между верхней границей и кнопками
+    sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, 8);
     sizer->Add(bottomBorder, 0, wxEXPAND);
     SetSizerAndFit(sizer);
 }
