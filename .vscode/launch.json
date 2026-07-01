@@ -5,8 +5,8 @@
       "name": "hmbook (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/debug/hmbook.exe",
-      "cwd": "${workspaceFolder}/build/debug",
+      "program": "${workspaceFolder}/build/Debug/hmbook.exe",
+      "cwd": "${workspaceFolder}/build/Debug",
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
@@ -14,7 +14,7 @@
       "preLaunchTask": "CMake: build hmbook",
 
       "MIMode": "gdb",
-      "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+      "miDebuggerPath": "gdb.exe",
       "setupCommands": [
         {
           "description": "Включить pretty-printing для gdb",

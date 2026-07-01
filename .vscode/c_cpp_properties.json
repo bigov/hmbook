@@ -3,11 +3,10 @@
     "configurations": [
         {
             "name": "Win32-UCRT64",
-            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "compilerPath": "g++.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",
-            "compileCommands": "${workspaceFolder}/.vscode/compile_commands.json",
             "defines": [
                 "WXUSINGDLL",
                 "__WXMSW__",

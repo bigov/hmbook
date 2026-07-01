@@ -2,64 +2,48 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "CMake: configure (debug)",
+      "label": "CMake: configure (Debug)",
       "type": "shell",
       "command": "cmake",
-      "args": ["--preset", "debug"],
+      "args": ["--preset", "Debug"],
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": ["$gcc"],
-      "detail": "Конфигурация проекта (Ninja, Debug) в каталог build/debug."
-    },
-    {
-      "label": "CMake: sync compile_commands → .vscode",
-      "type": "shell",
-      "command": "cmake",
-      "args": [
-        "-E", "copy",
-        "${workspaceFolder}/build/debug/compile_commands.json",
-        "${workspaceFolder}/.vscode/compile_commands.json"
-      ],
-      "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: configure (debug)"],
-      "dependsOrder": "sequence",
-      "problemMatcher": [],
-      "detail": "Копирует build/debug/compile_commands.json в .vscode для IntelliSense (после конфигурации Debug)."
+      "detail": "Конфигурация проекта (Ninja, Debug) в каталог build/Debug."
     },
     {
       "label": "CMake: build hmbook",
       "type": "shell",
       "command": "cmake",
-      "args": ["--build", "--preset", "debug", "--target", "hmbook"],
+      "args": ["--build", "--preset", "Debug", "--target", "hmbook"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: sync compile_commands → .vscode"],
       "dependsOrder": "sequence",
       "problemMatcher": ["$gcc"],
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "detail": "Сборка цели hmbook с символами отладки в build/debug. Используется как preLaunchTask для F5 и Ctrl+F5."
+      "detail": "Сборка цели hmbook с символами отладки в build/Debug."
     },
     {
-      "label": "CMake: configure (release)",
+      "label": "CMake: configure (Release)",
       "type": "shell",
       "command": "cmake",
-      "args": ["--preset", "release"],
+      "args": ["--preset", "Release"],
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": ["$gcc"],
-      "detail": "Конфигурация проекта (Ninja, Release) в каталог build/release."
+      "detail": "Конфигурация проекта (Ninja, Release) в каталог build/Release."
     },
     {
-      "label": "CMake: build hmbook (release)",
+      "label": "CMake: build hmbook (Release)",
       "type": "shell",
       "command": "cmake",
-      "args": ["--build", "--preset", "release", "--target", "hmbook"],
+      "args": ["--build", "--preset", "Release", "--target", "hmbook"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: configure (release)"],
+      "dependsOn": ["CMake: configure (Release)"],
       "dependsOrder": "sequence",
       "problemMatcher": ["$gcc"],
       "group": "build",
-      "detail": "Полная сборка hmbook в режиме Release (с оптимизацией, без символов отладки) в build/release."
+      "detail": "Полная сборка hmbook в режиме Release (с оптимизацией, без символов отладки) в build/Release."
     }
   ]
 }
