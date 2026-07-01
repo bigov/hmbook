@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
-   sodipodi:docname="save.svg"
+   sodipodi:docname="SAVE.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -40,8 +40,8 @@
      inkscape:cy="10.609375"
      inkscape:window-width="1633"
      inkscape:window-height="1221"
-     inkscape:window-x="2529"
-     inkscape:window-y="32"
+     inkscape:window-x="2383"
+     inkscape:window-y="74"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1">
     <inkscape:grid
@@ -65,7 +65,7 @@
      id="defs1">
     <color-profile
        name="sRGB-display-profile-with-display-hardware-configuration-data-derived-from-calibration"
-       xlink:href="../../../../../../../../../WINDOWS/system32/spool/drivers/color/CalibratedDisplayProfile-2.icc"
+       xlink:href="file:///WINDOWS/system32/spool/drivers/color/CalibratedDisplayProfile-2.icc"
        id="color-profile1" />
   </defs>
   <g
@@ -88,7 +88,7 @@
        id="path3"
        sodipodi:nodetypes="cccccc" />
     <path
-       style="fill:#9b9b9b;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#9a9a9a;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1"
        d="M 7,2 H 9 V 4 H 7 Z"
        id="path4" />
   </g>

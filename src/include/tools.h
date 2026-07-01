@@ -26,6 +26,12 @@ extern "C" {
 #include <cmark.h>
 }
 
+// Идентификатор кнопки переключения переноса слов на вкладке "Text".
+enum {
+    hmbID_LINE_WRAPPING = wxID_HIGHEST + 1,
+    hmbID_SHOW_BUFFER_XML
+};
+
 extern wxString HMB_FNAME;
 extern wxString HMB_DNAME;
 extern std::string HMB_SRC_DATA;

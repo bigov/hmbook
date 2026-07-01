@@ -1,5 +1,4 @@
 #include "tools_bar.h"
-#include "tools.h"
 #include <wx/settings.h>
 #include <wx/sizer.h>
 #include <wx/artprov.h>
@@ -15,25 +14,30 @@ typedef  struct {
     wxBitmapBundle dimmed;
 } icons_array;
 
+const wxString icons_dir = "images/svg/";
+
 // Возвращает набор изображений из SVG-файла, путь к которому задан относительно
 // каталога с исполняемым модулем приложения (куда сборка копирует ресурсы).
-icons_array get_icon(const wxString& relativePath)
+icons_array get_icon(const wxString& fname)
 {
     icons_array result;
-    wxString color_normal = "stroke=\"#0078d4\"";
-    wxString color_dimmed = "stroke=\"#BCBCBC\"";
-
     const wxFileName exeDir(wxStandardPaths::Get().GetExecutablePath());
-    wxFileName file(relativePath);
-    file.MakeAbsolute(exeDir.GetPath());   // относительно каталога exe
+
+    wxString color_9b = "#9a9a9a";
+    wxString color_4b = "#4b4b4b";
+    wxString color_dimmed = "#ccccff";
+
+    wxFileName file(icons_dir + fname + ".svg");
+    file.MakeAbsolute(exeDir.GetPath());
 
     std::string svg = "";
     file_read(file.GetFullPath(), svg);
     wxString data = wxString::FromUTF8(svg);
-    
-    data.Replace("stroke=\"currentColor\"", color_normal);
+
     result.normal = wxBitmapBundle::FromSVG(data, wxSize(16, 16));
-    data.Replace(color_normal, color_dimmed);
+
+    data.Replace(color_9b, color_dimmed);
+    data.Replace(color_4b, color_dimmed);
     result.dimmed = wxBitmapBundle::FromSVG(data, wxSize(16, 16));
     
     return result;
@@ -70,27 +74,32 @@ void hmbToolsBar::init_toolsbar()
     spacer->SetBackgroundColour(*wxWHITE);
 
 
-    auto icon = get_icon("images/svg/book-pages.svg");
+    auto icon = get_icon("OPEN");
     toolbar->AddTool(wxID_OPEN, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Open dir [Ctrl+O]"));
     toolbar->AddControl(spacer);
 
-    icon = get_icon("images/svg/save.svg");
+    icon = get_icon("SAVE");
     toolbar->AddTool(wxID_SAVE, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Save file [Ctrl+S]"));
     toolbar->AddControl(spacer);
 
-    icon = get_icon("images/svg/file-code.svg");
-    toolbar->AddTool(wxID_VIEW_DETAILS, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Debug biffer [Ctrl+D]"));
+    icon = get_icon("SHOW_BUFFER_XML");
+    toolbar->AddTool(hmbID_SHOW_BUFFER_XML, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Debug biffer [Ctrl+D]"));
     toolbar->AddControl(spacer);
 
-    icon = get_icon("images/svg/words-wrap.svg");
-    toolbar->AddTool(HMB_ID_WRAP, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Word wrap"));
-    toolbar->ToggleTool(HMB_ID_WRAP, true); // перенос слов включён по умолчанию
+    icon = get_icon("LINE_WRAPPING");
+    toolbar->AddTool(hmbID_LINE_WRAPPING, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Word wrap"));
+
+
+    toolbar->EnableTool(wxID_SAVE, false);
+    toolbar->EnableTool(hmbID_SHOW_BUFFER_XML, false);
+    toolbar->EnableTool(hmbID_LINE_WRAPPING, false);
+    toolbar->ToggleTool(hmbID_LINE_WRAPPING, false);
 
     // Растягивающийся разделитель: занимает всё свободное место и
     // прижимает следующую за ним кнопку (Exit) к правому краю панели.
     toolbar->AddStretchableSpace();
 
-    icon = get_icon("images/svg/exit.svg");
+    icon = get_icon("EXIT");
     toolbar->AddTool(wxID_EXIT, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("CLose app [Ctrl+W]"));
 
     toolbar->Realize();
@@ -111,10 +120,10 @@ void hmbToolsBar::save_btn_enable(bool state)
 
 void hmbToolsBar::text_mode_enable(bool state)
 {
-     toolbar->EnableTool(wxID_VIEW_DETAILS, state);
+     toolbar->EnableTool(hmbID_SHOW_BUFFER_XML, state);
 }
 
 void hmbToolsBar::wrap_btn_enable(bool state)
 {
-     toolbar->EnableTool(HMB_ID_WRAP, state);
+     toolbar->EnableTool(hmbID_LINE_WRAPPING, state);
 }

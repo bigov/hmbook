@@ -3,9 +3,7 @@
 
 #include <wx/panel.h>
 #include <wx/toolbar.h>
-
-// Идентификатор кнопки переключения переноса слов на вкладке "Text".
-enum { HMB_ID_WRAP = wxID_HIGHEST + 1 };
+#include "tools.h"
 
 class hmbToolsBar : public wxPanel
 {
