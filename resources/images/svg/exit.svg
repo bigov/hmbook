@@ -1,6 +1,116 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16" id="Delete-2--Streamline-Block-Free" height="16" width="16">
-  <desc>
-    Delete 2 Streamline Icon: https://streamlinehq.com
-  </desc>
-  <path fill="currentColor" fill-rule="evenodd" d="M8 16c4.4183 0 8 -3.5817 8 -8 0 -4.41828 -3.5817 -8 -8 -8 -4.41828 0 -8 3.58172 -8 8 0 4.4183 3.58172 8 8 8ZM6 4 4 6l2 2 -2 2 2 2 2 -2 2 2 2 -2 -2 -2 2 -2 -2 -2 -2 2 -2 -2Z" clip-rule="evenodd" stroke-width="1"></path>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   sodipodi:docname="exit.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title2">image</title>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="false"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#939393"
+     inkscape:document-units="px"
+     showborder="true"
+     borderlayer="true"
+     inkscape:antialias-rendering="true"
+     inkscape:clip-to-page="false"
+     showgrid="true"
+     showguides="false"
+     inkscape:zoom="45.254834"
+     inkscape:cx="6.8611455"
+     inkscape:cy="8.1648736"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="4"
+       enabled="true"
+       visible="true"
+       dotted="false"
+       snapvisiblegridlinesonly="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <color-profile
+       name="sRGB-display-profile-with-display-hardware-configuration-data-derived-from-calibration"
+       xlink:href="../../../../../../../../../WINDOWS/system32/spool/drivers/color/CalibratedDisplayProfile-2.icc"
+       id="color-profile1" />
+  </defs>
+  <g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="display:inline;fill:none;stroke:#4b4b4b;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+       d="m 8.999987,10.5 3,-3 -3,-3"
+       id="path7-8"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#4b4b4b;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       d="M 12,7.5 H 0"
+       id="path14"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#9b9b9b;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       d="m 2.5,12 v 2.5 l 1,1 h 11 l 1,-1 v -13 l -1.000034,-1 H 3.5 l -1,1 V 4"
+       id="path16"
+       sodipodi:nodetypes="cccccccccc" />
+  </g>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Igor aka bigov</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Igor aka bigov</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Igor aka bigov</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>image</dc:title>
+        <dc:description>icon</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
 </svg>

@@ -1,6 +1,136 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16" id="Down-Left-Chevron-Circle--Streamline-Block-Free" height="16" width="16">
-  <desc>
-    Down Left Chevron Circle Streamline Icon: https://streamlinehq.com
-  </desc>
-  <path fill="currentColor" fill-rule="evenodd" d="M13.6569 13.6569c3.1241 -3.1242 3.1241 -8.18956 0 -11.31375 -3.1242 -3.124199 -8.18956 -3.124199 -11.31375 0 -3.124199 3.12419 -3.124199 8.18955 0 11.31375 3.12419 3.1241 8.18955 3.1241 11.31375 0ZM8.00012 3.05018 4.81813 6.23216l0.00001 4.94974 4.94965 -0.0001 3.18201 -3.18197 -4.94968 0.00009 0 -4.94974Z" clip-rule="evenodd" stroke-width="1"></path>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   sodipodi:docname="words-wrap.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title2">image</title>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="false"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#939393"
+     inkscape:document-units="px"
+     showborder="true"
+     borderlayer="true"
+     inkscape:antialias-rendering="true"
+     inkscape:clip-to-page="false"
+     showgrid="true"
+     showguides="false"
+     inkscape:zoom="32"
+     inkscape:cx="7.078125"
+     inkscape:cy="10.609375"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="4"
+       enabled="true"
+       visible="true"
+       dotted="false"
+       snapvisiblegridlinesonly="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <color-profile
+       name="sRGB-display-profile-with-display-hardware-configuration-data-derived-from-calibration"
+       xlink:href="../../../../../../../../../WINDOWS/system32/spool/drivers/color/CalibratedDisplayProfile-2.icc"
+       id="color-profile1" />
+  </defs>
+  <g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;stroke:#4b4b4b;stroke-linecap:butt;stroke-opacity:1"
+       d="M 2,3.5 H 5"
+       id="path4"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#4b4b4b;stroke-opacity:1"
+       d="M 2,13.5 H 6"
+       id="path4-23"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#4b4b4b;stroke-opacity:1"
+       d="m 6,3.5 h 4"
+       id="path4-2"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#4b4b4b;stroke-opacity:1"
+       d="m 11,3.5 h 3"
+       id="path4-1"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="display:inline;fill:none;stroke:#4b4b4b;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 9.5,11.5 h -4 v -4"
+       id="path7"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#4b4b4b;stroke-linecap:round;stroke-opacity:1;paint-order:normal"
+       d="M 12,5 5.5,11.5"
+       id="path6"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#9a9a9a;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:1;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       d="m 15.5,14.5 v -13 l -1.000034,-1 H 1.5 l -1,1 v 13 l 1,1 h 13 z"
+       id="path13"
+       sodipodi:nodetypes="ccccccccc" />
+  </g>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Igor aka bigov</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Igor aka bigov</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Igor aka bigov</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>image</dc:title>
+        <dc:description>icon</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
 </svg>
