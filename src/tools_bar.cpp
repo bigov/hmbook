@@ -15,6 +15,7 @@ typedef  struct {
 } icons_array;
 
 const wxString icons_dir = "images/svg/";
+const wxSize tools_size(16, 16);
 
 // Возвращает набор изображений из SVG-файла, путь к которому задан относительно
 // каталога с исполняемым модулем приложения (куда сборка копирует ресурсы).
@@ -23,7 +24,7 @@ icons_array get_icon(const wxString& fname)
     icons_array result;
     const wxFileName exeDir(wxStandardPaths::Get().GetExecutablePath());
 
-    wxString color_9b = "#9a9a9a";
+    wxString color_9a = "#9a9a9a";
     wxString color_4b = "#4b4b4b";
     wxString color_dimmed = "#ccccff";
 
@@ -34,11 +35,11 @@ icons_array get_icon(const wxString& fname)
     file_read(file.GetFullPath(), svg);
     wxString data = wxString::FromUTF8(svg);
 
-    result.normal = wxBitmapBundle::FromSVG(data, wxSize(16, 16));
+    result.normal = wxBitmapBundle::FromSVG(data, tools_size);
 
-    data.Replace(color_9b, color_dimmed);
+    data.Replace(color_9a, color_dimmed);
     data.Replace(color_4b, color_dimmed);
-    result.dimmed = wxBitmapBundle::FromSVG(data, wxSize(16, 16));
+    result.dimmed = wxBitmapBundle::FromSVG(data, tools_size);
     
     return result;
 }
@@ -67,7 +68,7 @@ void hmbToolsBar::init_toolsbar()
     toolbar = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxTB_HORIZONTAL | wxTB_FLAT | wxTB_TEXT | wxTB_NODIVIDER);
     toolbar->SetBackgroundColour(*wxWHITE);
-    toolbar->SetToolBitmapSize(wxSize(16, 16));
+    toolbar->SetToolBitmapSize(tools_size);
 
     // Разделитель для кнопок (по горизонтали)
     auto* spacer = new wxControl(toolbar, wxID_ANY, wxDefaultPosition, wxSize(1, 1), wxBORDER_NONE);
