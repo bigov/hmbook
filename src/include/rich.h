@@ -51,9 +51,7 @@ private:
     wxColor color_gray_bg = "#f0f0f0";
     
     wxRichTextCharacterStyleDefinition* defCharBase = nullptr; // базовый стиль
-    wxRichTextCharacterStyleDefinition* defCharLink = nullptr; // ссылки
     wxRichTextCharacterStyleDefinition* defCharCoBl = nullptr; // code block
-    wxRichTextCharacterStyleDefinition* defCharCoLn = nullptr; // code inline
 
     wxRichTextParagraphStyleDefinition* defParaBase = nullptr; // базовый стиль для абзаца
     wxRichTextParagraphStyleDefinition* defParaHead = nullptr; // стиль для заголовков
@@ -65,6 +63,7 @@ private:
     int row_current = 0;
     int row_total = 0;
     bool is_paragraph_open = false;
+    int list_depth = 0;  // уровень вложенности списков
 
     void bind_mouse_events();
     void new_document();

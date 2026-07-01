@@ -3,10 +3,10 @@
 
 ## Маркированный
 
- - during spring training in **2016**
- - **not return** until mid-June. _Cincinnati_ upon his return
- - `In 2017, he was 8–4 with a 4.45` ERA
- - in 70 [appearances](https://ya.ru) in relief.
+- during spring training in **2016**
+- **not return** until mid-June. _Cincinnati_ upon his return
+- `In 2017, he was 8–4 with a 4.45` ERA
+- in 70 [appearances](https://ya.ru) in relief.
 
 
 ## Нумерованый

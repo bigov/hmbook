@@ -49,24 +49,6 @@ hmbRich::hmbRich(wxWindow* parent)
     style_code_block->SetTextColour(this->color_code_fg);
     this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
-    // Style for inline code
-    this->defCharCoLn = new wxRichTextCharacterStyleDefinition("CharCoLn");
-    auto style_code_inline = &defCharCoLn->GetStyle();
-    style_code_inline->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_code_inline->SetFont(HMB_FONT_MONO);
-    style_code_inline->SetTextColour(this->color_code_fg);
-    style_code_inline->SetBackgroundColour(this->color_gray_bg);
-    this->style_sheet->AddCharacterStyle(this->defCharCoLn);
-
-    // Style for links
-    this->defCharLink = new wxRichTextCharacterStyleDefinition("CharLink");
-    auto style_link = &defCharLink->GetStyle();
-    style_link->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_link->SetFont(HMB_FONT_BASE);
-    style_link->SetTextColour(this->color_urls_fg);
-    style_link->SetFontUnderlined(true);
-    this->style_sheet->AddCharacterStyle(this->defCharLink);
-
     // Base paragraph style
     this->defParaBase = new wxRichTextParagraphStyleDefinition("ParaBase");
     auto style_para_base = &defParaBase->GetStyle();
@@ -213,35 +195,54 @@ void hmbRich::md_blockquote(cmark_node* node) {
 void hmbRich::md_num_list(cmark_node* node) {
     int n_start = cmark_node_get_list_start(node);
     cmark_node* item = cmark_node_first_child(node);
-    int indent = 40;
+    int base_indent = 40;
+    int level_step = 30;
+    int indent = base_indent + this->list_depth * level_step;
     int sub_indent = indent * (digits(n_start) - 1) + 50;
+    this->list_depth++;
     this->is_paragraph_open = true;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
         this->BeginNumberedBullet(n_start++, indent, sub_indent);
         this->node_iterator(item);
-        this->new_line();
+        
+        // Не добавлять new_line, если последний дочерний узел ITEM — вложенный список,
+        // т.к. вложенный список уже завершился своим new_line.
+        cmark_node* lch = cmark_node_last_child(item);
+        bool no_list = !(cmark_node_get_type(lch) == CMARK_NODE_LIST);
+        if (!lch || no_list) this->new_line();
+
         this->EndNumberedBullet();
         item = cmark_node_next(item);
     }
-    this->is_paragraph_open = false;
+    this->list_depth--;
+    if (this->list_depth == 0) this->is_paragraph_open = false;
 }
 
 
 void hmbRich::md_bul_list(cmark_node* node) {
     cmark_node* item = cmark_node_first_child(node);
-    int indent = 40;
-    int sub_indent = indent;
+    int base_indent = 50;
+    int sub_indent = 40;
+    int indent = base_indent + this->list_depth * base_indent;
+    this->list_depth++;
     this->is_paragraph_open = true;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
         this->BeginStandardBullet("-", indent, sub_indent);
         this->node_iterator(item);
-        this->new_line();
+        
+        // Не добавлять new_line, если последний дочерний узел ITEM — вложенный список,
+        // т.к. вложенный список уже завершился своим new_line.
+        cmark_node* lch = cmark_node_last_child(item);
+        bool no_list = !(cmark_node_get_type(lch) == CMARK_NODE_LIST);
+        if (!lch || no_list) this->new_line();
+
         this->EndStandardBullet();
         item = cmark_node_next(item);
     }
-    this->is_paragraph_open = false;
+    this->list_depth--;
+    if (this->list_depth == 0) this->is_paragraph_open = false;
 }
 
 
@@ -317,7 +318,11 @@ void hmbRich::md_text(cmark_node* node) {
 }
 
 void hmbRich::md_code_inline(cmark_node* node) {
-    this->BeginStyle(this->defCharCoLn->GetStyle());
+    wxRichTextAttr codeAttr;
+    codeAttr.SetFontFaceName(HMB_FONT_MONO.GetFaceName());
+    codeAttr.SetTextColour(this->color_code_fg);
+    codeAttr.SetBackgroundColour(this->color_gray_bg);
+    this->BeginStyle(codeAttr);
     this->WriteText("\'");
     this->md_text(node);
     this->WriteText("\'");
@@ -346,10 +351,13 @@ void hmbRich::md_strong(cmark_node* node) {
 
 void hmbRich::md_link(cmark_node* node) {
     const char *url = cmark_node_get_url(node);
-    //const char *title = cmark_node_get_title(node);
-    this->BeginURL(url, "CharLink");
+    wxRichTextAttr urlAttr;
+    urlAttr.SetTextColour(this->color_urls_fg);
+    urlAttr.SetFontUnderlined(true);
+    urlAttr.SetURL(wxString::FromUTF8(url));
+    this->BeginStyle(urlAttr);
     this->node_iterator(node);
-    this->EndURL();
+    this->EndStyle();
 }
 
 void hmbRich::md_image(cmark_node* node) {
