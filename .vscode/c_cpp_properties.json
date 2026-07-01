@@ -3,23 +3,19 @@
     "configurations": [
         {
             "name": "Win32-UCRT64",
-            "compilerPath": "g++.exe",
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",
-            "defines": [
-                "WXUSINGDLL",
-                "__WXMSW__",
-                "__WX__",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "includePath": [
-                "${workspaceFolder}/src",
-                "${workspaceFolder}/src/include",
-                "${workspaceFolder}/3rdparty/wxwidgets-src/include",
-                "${workspaceFolder}/3rdparty/cmark-src/src"
-            ]
+            "compileCommands": "${workspaceFolder}/build/Debug/compile_commands.json"
+        },
+        {
+            "name": "Win32-UCRT64 Release",
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64",
+            "compileCommands": "${workspaceFolder}/build/Release/compile_commands.json"
         }
     ]
 }

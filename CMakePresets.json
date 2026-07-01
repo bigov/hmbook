@@ -14,19 +14,19 @@
       }
     },
     {
-      "name": "debug",
+      "name": "Debug",
       "inherits": "base",
       "displayName": "Debug",
-      "description": "Сборка hmbook и зависимостей (wxWidgets, cmark) с символами отладки (Debug) в каталог build/debug. Конфигурация по умолчанию.",
+      "description": "Сборка hmbook и зависимостей (wxWidgets, cmark) с символами отладки (Debug) в каталог build/Debug. Конфигурация по умолчанию.",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "release",
+      "name": "Release",
       "inherits": "base",
       "displayName": "Release",
-      "description": "Полная сборка hmbook и зависимостей (wxWidgets, cmark) в режиме Release (с оптимизацией, без символов отладки) в каталог build/release.",
+      "description": "Полная сборка hmbook и зависимостей (wxWidgets, cmark) в режиме Release (с оптимизацией, без символов отладки) в каталог build/Release.",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -34,14 +34,14 @@
   ],
   "buildPresets": [
     {
-      "name": "debug",
+      "name": "Debug",
       "displayName": "Build: Debug",
-      "configurePreset": "debug"
+      "configurePreset": "Debug"
     },
     {
-      "name": "release",
+      "name": "Release",
       "displayName": "Build: Release",
-      "configurePreset": "release"
+      "configurePreset": "Release"
     }
   ]
 }

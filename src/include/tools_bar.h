@@ -17,6 +17,7 @@ private:
     wxToolBar* toolbar = nullptr;
 
     void init_toolsbar();
+    void add_spacer(int width = 1, int height = 1);
 };
 
 #endif // HMB_TOOLS_BAR_H

@@ -70,22 +70,17 @@ void hmbToolsBar::init_toolsbar()
     toolbar->SetBackgroundColour(*wxWHITE);
     toolbar->SetToolBitmapSize(tools_size);
 
-    // Разделитель для кнопок (по горизонтали)
-    auto* spacer = new wxControl(toolbar, wxID_ANY, wxDefaultPosition, wxSize(1, 1), wxBORDER_NONE);
-    spacer->SetBackgroundColour(*wxWHITE);
-
-
     auto icon = get_icon("OPEN");
     toolbar->AddTool(wxID_OPEN, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Open dir [Ctrl+O]"));
-    toolbar->AddControl(spacer);
+    add_spacer();
 
     icon = get_icon("SAVE");
     toolbar->AddTool(wxID_SAVE, wxEmptyString, icon.normal, icon.dimmed, wxITEM_NORMAL, _("Save file [Ctrl+S]"));
-    toolbar->AddControl(spacer);
+    add_spacer();
 
     icon = get_icon("SHOW_BUFFER_XML");
     toolbar->AddTool(hmbID_SHOW_BUFFER_XML, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Debug biffer [Ctrl+D]"));
-    toolbar->AddControl(spacer);
+    add_spacer();
 
     icon = get_icon("LINE_WRAPPING");
     toolbar->AddTool(hmbID_LINE_WRAPPING, wxEmptyString, icon.normal, icon.dimmed, wxITEM_CHECK, _("Word wrap"));
@@ -127,4 +122,12 @@ void hmbToolsBar::text_mode_enable(bool state)
 void hmbToolsBar::wrap_btn_enable(bool state)
 {
      toolbar->EnableTool(hmbID_LINE_WRAPPING, state);
+}
+
+// Создаёт и добавляет в тулбар разделитель между кнопками.
+void hmbToolsBar::add_spacer(int width, int height)
+{
+    auto* spacer = new wxControl(toolbar, wxID_ANY, wxDefaultPosition, wxSize(width, height), wxBORDER_NONE);
+    spacer->SetBackgroundColour(*wxWHITE);
+    toolbar->AddControl(spacer);
 }
