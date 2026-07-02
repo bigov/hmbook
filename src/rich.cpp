@@ -220,11 +220,9 @@ void hmbRich::new_document()
         this->saved_box_index = -1;
     }
 
-    // Сбросить фокусный объект перед очисткой
     this->SetFocusObject(&this->GetBuffer(), false);
-
-    this->SetInsertionPoint(0);
     this->Clear();
+    this->SetInsertionPoint(0);
     this->row_current = 0;
     this->row_total = 0;
 }
@@ -593,21 +591,18 @@ void hmbRich::node_iterator(cmark_node* node)
 void hmbRich::load_src_data()
 {
     cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
-    if (!node) {
+    if(cmark_node_get_type(node) != CMARK_NODE_DOCUMENT)
+    {
+        wxLogError(_("Markdown format error."));
+        if (node) cmark_node_free(node);
         this->load_as_plain_text();
         return;
     }
 
-    if(cmark_node_get_type(node) == CMARK_NODE_DOCUMENT) {
-        this->row_current = cmark_node_get_start_line(node);
-        this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
-    } else {
-        cmark_node_free(node);
-        this->load_as_plain_text();
-        return;
-    }
-    this->Freeze();
     new_document();
+    this->row_current = cmark_node_get_start_line(node);
+    this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
+    this->Freeze();
     this->BeginSuppressUndo();
     node_iterator(node);
     
