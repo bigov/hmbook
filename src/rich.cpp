@@ -1,5 +1,6 @@
 #include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/msgdlg.h>
 
 #include "rich.h"
 #include "tree.h"
@@ -178,6 +179,24 @@ void hmbRich::bind_mouse_events()
     this->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& event)
     {
         this->show_url(wxEmptyString);
+        event.Skip();
+    });
+
+    // Клик по гиперссылке — показать адрес во всплывающем окне.
+    this->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event)
+    {
+        long pos = wxNOT_FOUND;
+        wxTextAttr attr;
+
+        this->HitTest(event.GetPosition(), &pos);
+        if (pos != wxNOT_FOUND && this->GetStyle(pos, attr) && attr.HasFlag(wxTEXT_ATTR_URL))
+        {
+            wxString url = attr.GetURL();
+            if (!url.IsEmpty())
+            {
+                wxMessageBox(url, "URL", wxOK | wxICON_INFORMATION, this);
+            }
+        }
         event.Skip();
     });
 }
