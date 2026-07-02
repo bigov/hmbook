@@ -52,8 +52,6 @@ private:
     
     wxRichTextCharacterStyleDefinition* defCharBase = nullptr; // базовый стиль
     wxRichTextCharacterStyleDefinition* defCharCoBl = nullptr; // code block
-
-    wxRichTextParagraphStyleDefinition* defParaBase = nullptr; // базовый стиль для абзаца
     wxRichTextParagraphStyleDefinition* defParaHead = nullptr; // стиль для заголовков
 
     // Таблица стилей для всего документа
@@ -72,6 +70,7 @@ private:
     int  saved_box_index = -1;           // порядковый номер вложенного объекта в документе (-1 = основной буфер)
     int  saved_scroll_y = 0;             // позиция вертикальной прокрутки
 
+    void init_styles();
     void bind_mouse_events();
     void new_document();
     void load_as_plain_text();

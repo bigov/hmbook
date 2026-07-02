@@ -80,37 +80,57 @@ hmbRich::hmbRich(wxWindow* parent)
                     wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL)
 {
     bind_mouse_events();
+    init_styles();
+    new_document();
+}
 
+
+hmbRich::~hmbRich()
+{
+    // Буфер rich text хранит «сырой» указатель на style sheet и сам его не удаляет.
+    // Перед уничтожением style_sheet явно обнуляем ссылку в буфере.
+    this->GetBuffer().SetStyleSheet(nullptr);
+}
+
+
+void hmbRich::init_styles()
+{
     this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
 
-    // Base character style
     this->defCharBase = new wxRichTextCharacterStyleDefinition("CharBase");
     auto style_base = &defCharBase->GetStyle();
-
-    style_base->SetFlags(wxTEXT_ATTR_CHARACTER_STYLE_NAME|wxTEXT_ATTR_TEXT_COLOUR|wxTEXT_ATTR_BACKGROUND_COLOUR|\
-                wxTEXT_ATTR_FONT_POINT_SIZE|wxTEXT_ATTR_FONT_FACE|\
-                wxTEXT_ATTR_LEFT_INDENT|wxTEXT_ATTR_RIGHT_INDENT|wxTEXT_ATTR_LINE_SPACING);
     style_base->SetCharacterStyleName("CharBase");
+
+    style_base->SetFlags(wxTEXT_ATTR_CHARACTER_STYLE_NAME|wxTEXT_ATTR_TEXT_COLOUR|\
+        wxTEXT_ATTR_BACKGROUND_COLOUR|wxTEXT_ATTR_FONT_POINT_SIZE|wxTEXT_ATTR_FONT_FACE|\
+        wxTEXT_ATTR_FONT_WEIGHT|wxTEXT_ATTR_ALIGNMENT|wxTEXT_ATTR_LINE_SPACING);
+    
+    /* Для базового стиля не использовать:
+    wxTEXT_ATTR_LEFT_INDENT - отступ слева
+    wxTEXT_ATTR_RIGHT_INDENT - отступ справа
+    wxTEXT_ATTR_PARA_SPACING_BEFORE - отступ сверху
+    wxTEXT_ATTR_PARA_SPACING_AFTER - снизу
+ 
+    style_base->SetLeftIndent(10);
+    style_base->SetRightIndent(8);
+    style_base->SetParagraphSpacingBefore(0);
+    style_base->SetParagraphSpacingAfter(0);
+    */
     style_base->SetTextColour(HMB_COLOR_BASE_FG);
     style_base->SetBackgroundColour(HMB_COLOR_BASE_BG);
     style_base->SetFont(HMB_FONT_BASE);
-    style_base->SetLeftIndent(10);
-    style_base->SetRightIndent(8);
+    style_base->SetFontPointSize(HMB_FONT_BASE.GetPointSize());
+    style_base->SetFontWeight(wxFONTWEIGHT_NORMAL);
+    style_base->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
     style_base->SetLineSpacing(0);
-
     this->style_sheet->AddCharacterStyle(this->defCharBase);
 
-    // Basic style defines the document-wide baseline appearance.
-    // SetDefaultStyle влияет только на последующий ввод, а за стиль всего буфера отвечает SetBasicStyle.
-    // Рекомендуемая схема:
-    //  - сначала SetFont(HMB_FONT_BASE),
-    //  - затем SetBasicStyle с нужными цветами,
-    //  - отдельно формировать default стиль для ввода как объединение char+paragraph атрибутов.
-    this->SetBasicStyle(this->defCharBase->GetStyle());  // стиль буфера по-умолчанию
-    
-    this->SetDefaultStyle(this->defCharBase->GetStyle());
+    // SetBasicStyle - общий стиль всего буфера
+    // SetDefaultStyle - только на последующий ввод
+    this->SetBasicStyle(this->defCharBase->GetStyle());
+    //this->SetDefaultStyle(this->defCharBase->GetStyle());
         
-    // Style for code blocks
+    // Сode blocks
     this->defCharCoBl = new wxRichTextCharacterStyleDefinition("CharCoBl");
     auto style_code_block = &defCharCoBl->GetStyle();
     style_code_block->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
@@ -118,21 +138,7 @@ hmbRich::hmbRich(wxWindow* parent)
     style_code_block->SetTextColour(this->color_code_fg);
     this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
-    // Base paragraph style
-    this->defParaBase = new wxRichTextParagraphStyleDefinition("ParaBase");
-    auto style_para_base = &defParaBase->GetStyle();
-    style_para_base->SetFlags(wxTEXT_ATTR_ALIGNMENT |
-         wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
-         wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
-    style_para_base->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    style_para_base->SetLeftIndent(10);
-    style_para_base->SetRightIndent(8);
-    style_para_base->SetParagraphSpacingBefore(0);
-    style_para_base->SetParagraphSpacingAfter(0);
-    this->style_sheet->AddParagraphStyle(this->defParaBase);
-    this->SetDefaultStyle(this->defParaBase->GetStyle());
-
-    // Style for headers
+    // Headers
     this->defParaHead = new wxRichTextParagraphStyleDefinition("ParaHead");
     auto style_heading = &defParaHead->GetStyle();
     style_heading->SetFlags(wxTEXT_ATTR_ALIGNMENT |
@@ -144,21 +150,11 @@ hmbRich::hmbRich(wxWindow* parent)
     style_heading->SetParagraphSpacingBefore(10);
     style_heading->SetParagraphSpacingAfter(0);
     style_heading->SetCharacterStyleName("CharBase");
-    style_heading->SetTextColour("#404040");
+    style_heading->SetTextColour("#603030");
     this->style_sheet->AddParagraphStyle(this->defParaHead);
 
     this->GetBuffer().SetStyleSheet(this->style_sheet.get());
     this->ApplyStyleSheet(this->style_sheet.get());
-
-    new_document();
-}
-
-
-hmbRich::~hmbRich()
-{
-    // Буфер rich text хранит «сырой» указатель на style sheet и сам его не удаляет.
-    // Перед уничтожением style_sheet явно обнуляем ссылку в буфере.
-    this->GetBuffer().SetStyleSheet(nullptr);
 }
 
 void hmbRich::bind_mouse_events()
@@ -222,6 +218,17 @@ void hmbRich::new_document()
 
     this->SetFocusObject(&this->GetBuffer(), false);
     this->Clear();
+
+    // --- Внутренние отступы области документа (padding) ---
+    wxRichTextAttr docAttr;
+    wxTextBoxAttr& tba = docAttr.GetTextBoxAttr();
+    const int pad = this->FromDIP(8); // чтобы отступ адекватно выглядел на HiDPI
+    tba.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    tba.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    tba.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    tba.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    this->GetBuffer().SetAttributes(docAttr);
+
     this->SetInsertionPoint(0);
     this->row_current = 0;
     this->row_total = 0;
@@ -295,56 +302,37 @@ void hmbRich::md_blockquote(cmark_node* node) {
 
 
 void hmbRich::md_num_list(cmark_node* node) {
+    int d = 40;
     int n_start = cmark_node_get_list_start(node);
     cmark_node* item = cmark_node_first_child(node);
-    int base_indent = 40;
-    int level_step = 30;
-    int indent = base_indent + this->list_depth * level_step;
+    int indent = d + this->list_depth * d;
     int sub_indent = indent * (digits(n_start) - 1) + 50;
     this->list_depth++;
-    this->is_paragraph_open = true;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
         this->BeginNumberedBullet(n_start++, indent, sub_indent);
         this->node_iterator(item);
-        
-        // Не добавлять new_line, если последний дочерний узел ITEM — вложенный список,
-        // т.к. вложенный список уже завершился своим new_line.
-        cmark_node* lch = cmark_node_last_child(item);
-        bool no_list = !(cmark_node_get_type(lch) == CMARK_NODE_LIST);
-        if (!lch || no_list) this->new_line();
-
         this->EndNumberedBullet();
         item = cmark_node_next(item);
     }
     this->list_depth--;
-    if (this->list_depth == 0) this->is_paragraph_open = false;
 }
 
 
 void hmbRich::md_bul_list(cmark_node* node) {
+    int d = 40;
+    static enum wxTextAttrBulletStyle s = wxTEXT_ATTR_BULLET_STYLE_STANDARD;
     cmark_node* item = cmark_node_first_child(node);
-    int base_indent = 50;
-    int sub_indent = 40;
-    int indent = base_indent + this->list_depth * base_indent;
+    int indent = d + this->list_depth * d;
     this->list_depth++;
-    this->is_paragraph_open = true;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
-        this->BeginStandardBullet("-", indent, sub_indent);
+        this->BeginStandardBullet("-", indent, d, s);
         this->node_iterator(item);
-        
-        // Не добавлять new_line, если последний дочерний узел ITEM — вложенный список,
-        // т.к. вложенный список уже завершился своим new_line.
-        cmark_node* lch = cmark_node_last_child(item);
-        bool no_list = !(cmark_node_get_type(lch) == CMARK_NODE_LIST);
-        if (!lch || no_list) this->new_line();
-
         this->EndStandardBullet();
         item = cmark_node_next(item);
     }
     this->list_depth--;
-    if (this->list_depth == 0) this->is_paragraph_open = false;
 }
 
 
@@ -405,8 +393,8 @@ void hmbRich::md_header(cmark_node* node) {
     this->BeginFont(f);
     this->node_iterator(node);
     this->EndFont();
-    this->new_line();
     this->EndParagraphStyle();
+    this->new_line();
 }
 
 void hmbRich::md_thematic_break(cmark_node* node) {
@@ -489,17 +477,19 @@ void hmbRich::md_paragraph(cmark_node* node) {
     // Нумерованные и маркированные списки в wxWidgets отображаются как строки
     // со своим стилем параграфа, но парсер 'cmark' для каждой строки списка
     // определяет вложенную ноду параграфа. Поэтому для списков ее пропускать.
-    if(!this->is_paragraph_open) this->BeginParagraphStyle("ParaBase");
+            if(!this->is_paragraph_open) this->BeginStyle(this->defCharBase->GetStyle());
+
     this->node_iterator(node);
     if(!this->is_paragraph_open)
     {
         this->new_line();
-        this->EndParagraphStyle();
+        this->EndStyle();
     }
 }
 
 void hmbRich::node_dispatcher(cmark_node* node)
 {
+
   //debug_node(node);  //!!DEBUG!!
   //return;  //!!DEBUG!!
 
