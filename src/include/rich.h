@@ -60,7 +60,7 @@ private:
     hmbStatusBar* subscriber = nullptr;
     int row_current = 0;
     int row_total = 0;
-    bool is_paragraph_open = false;
+    //bool is_paragraph_open = false;
     int list_depth = 0;                  // уровень вложенности списков
     
     // Отслеживание курсора в документе.

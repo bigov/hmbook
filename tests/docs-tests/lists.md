@@ -1,6 +1,5 @@
 # Списки
 
-
 ## Маркированный
 
 - during spring training in **2016**

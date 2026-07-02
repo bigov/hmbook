@@ -143,15 +143,12 @@ void hmbRich::init_styles()
     this->defParaHead = new wxRichTextParagraphStyleDefinition("ParaHead");
     auto style_heading = &defParaHead->GetStyle();
     style_heading->SetFlags(wxTEXT_ATTR_ALIGNMENT |
-         wxTEXT_ATTR_LEFT_INDENT | wxTEXT_ATTR_RIGHT_INDENT |
          wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
     style_heading->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    style_heading->SetLeftIndent(10);
-    style_heading->SetRightIndent(8);
     style_heading->SetParagraphSpacingBefore(10);
     style_heading->SetParagraphSpacingAfter(0);
-    style_heading->SetCharacterStyleName("CharBase");
-    style_heading->SetTextColour("#603030");
+    style_heading->SetCharacterStyleName("ParaHead");
+    style_heading->SetTextColour("#404080");
     this->style_sheet->AddParagraphStyle(this->defParaHead);
 
     this->GetBuffer().SetStyleSheet(this->style_sheet.get());
@@ -405,15 +402,18 @@ void hmbRich::md_custom_block(cmark_node* node) {
 
 void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
-    this->BeginParagraphStyle("ParaHead");
+    //this->BeginParagraphStyle("ParaHead");
+    this->BeginStyle(this->defParaHead->GetStyle());
+
     wxFont f = HMB_FONT_BASE;
     f.SetPointSize(font_size);
     f.SetWeight(wxFONTWEIGHT_BOLD);
     this->BeginFont(f);
     this->node_iterator(node);
     this->EndFont();
+    //this->new_line();
     this->EndParagraphStyle();
-    this->new_line();
+    this->EndStyle();
 }
 
 void hmbRich::md_thematic_break(cmark_node* node) {
@@ -493,17 +493,10 @@ void hmbRich::md_unknown(cmark_node* node) {
 
 // Стандартный абзац.
 void hmbRich::md_paragraph(cmark_node* node) {
-    // Нумерованные и маркированные списки в wxWidgets отображаются как строки
-    // со своим стилем параграфа, но парсер 'cmark' для каждой строки списка
-    // определяет вложенную ноду параграфа. Поэтому для списков ее пропускать.
-            if(!this->is_paragraph_open) this->BeginStyle(this->defCharBase->GetStyle());
-
+    this->BeginStyle(this->defCharBase->GetStyle());
     this->node_iterator(node);
-    if(!this->is_paragraph_open)
-    {
-        this->new_line();
-        this->EndStyle();
-    }
+    this->new_line();
+    this->EndStyle();
 }
 
 void hmbRich::node_dispatcher(cmark_node* node)
