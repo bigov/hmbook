@@ -30,13 +30,13 @@ void hmbPanelView::page_changed(wxAuiNotebookEvent& event)
 {
     switch (this->nbook->GetSelection())
     {
-    case 0:
+    case 0: // страница рендера
         this->page_text->on_edit = false;
         this->page_text->toolsbar->text_mode_enable(false);
         this->page_text->toolsbar->wrap_btn_enable(false);
         this->page_rich->load_src_data(); // обновить рендер при переключении на вкладку
         break;
-    case 1:
+    case 1: // страница исходного кода
         this->page_text->on_edit = true;
         this->page_text->toolsbar->text_mode_enable(true);
         this->page_text->toolsbar->wrap_btn_enable(true);

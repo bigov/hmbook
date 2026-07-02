@@ -5,6 +5,75 @@
 #include "tree.h"
 #include "tools.h"
 
+// В документе может быть несколько вложенных wxRichTextBox. Возвращает индекс указанного.
+static int find_box_index(wxRichTextParagraphLayoutBox& buffer, wxRichTextBox* target)
+{
+    if (!target) return -1;
+    int index = 0;
+    wxRichTextObjectList& children = buffer.GetChildren();
+    for (auto it = children.begin(); it != children.end(); ++it)
+    {
+        wxRichTextObject* obj = *it;
+        // Параграф может содержать вложенные объекты
+        wxRichTextParagraph* para = dynamic_cast<wxRichTextParagraph*>(obj);
+        if (para)
+        {
+            wxRichTextObjectList& paraChildren = para->GetChildren();
+            for (auto jt = paraChildren.begin(); jt != paraChildren.end(); ++jt)
+            {
+                wxRichTextBox* box = dynamic_cast<wxRichTextBox*>(*jt);
+                if (box)
+                {
+                    if (box == target) return index;
+                    index++;
+                }
+            }
+        }
+        // Box может быть и непосредственным дочерним элементом буфера
+        wxRichTextBox* box = dynamic_cast<wxRichTextBox*>(obj);
+        if (box)
+        {
+            if (box == target) return index;
+            index++;
+        }
+    }
+    return -1;
+}
+
+// Поиск по индексу вложенного в документе объекта wxRichTextBox.
+static wxRichTextBox* find_box_by_index(wxRichTextParagraphLayoutBox& buffer, int target_index)
+{
+    if (target_index < 0) return nullptr;
+    int index = 0;
+    wxRichTextObjectList& children = buffer.GetChildren();
+    for (auto it = children.begin(); it != children.end(); ++it)
+    {
+        wxRichTextObject* obj = *it;
+        wxRichTextParagraph* para = dynamic_cast<wxRichTextParagraph*>(obj);
+        if (para)
+        {
+            wxRichTextObjectList& paraChildren = para->GetChildren();
+            for (auto jt = paraChildren.begin(); jt != paraChildren.end(); ++jt)
+            {
+                wxRichTextBox* box = dynamic_cast<wxRichTextBox*>(*jt);
+                if (box)
+                {
+                    if (index == target_index) return box;
+                    index++;
+                }
+            }
+        }
+        wxRichTextBox* box = dynamic_cast<wxRichTextBox*>(obj);
+        if (box)
+        {
+            if (index == target_index) return box;
+            index++;
+        }
+    }
+    return nullptr;
+}
+
+
 // Конструктор класса
 hmbRich::hmbRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
@@ -120,11 +189,46 @@ void hmbRich::bind_mouse_events()
 
 void hmbRich::new_document()
 {
-    this->Clear();
+    // Сохранить позицию прокрутки
+    this->saved_scroll_y = this->GetScrollPos(wxVERTICAL);
+
+    // Определить, находится ли фокус внутри вложенного объекта
+    wxRichTextParagraphLayoutBox* focus_obj = this->GetFocusObject();
+    this->saved_focus_in_object = (focus_obj != nullptr && focus_obj != &this->GetBuffer());
+
+    long caret_pos = this->GetInsertionPoint();
+
+    if (this->saved_focus_in_object)
+    {
+        // Сохраняем локальную строку/колонку внутри box
+        this->PositionToXY(caret_pos, &this->saved_caret_col, &this->saved_caret_line);
+
+        // Определяем порядковый номер box-а в документе
+        wxRichTextBox* box = nullptr;
+        wxRichTextObject* obj = dynamic_cast<wxRichTextObject*>(focus_obj);
+        while (obj && !box)
+        {
+            box = dynamic_cast<wxRichTextBox*>(obj);
+            obj = obj->GetParent();
+        }
+        this->saved_box_index = find_box_index(this->GetBuffer(), box);
+    }
+    else
+    {
+        // Обычный случай — позиция в основном буфере
+        this->PositionToXY(caret_pos, &this->saved_caret_col, &this->saved_caret_line);
+        this->saved_box_index = -1;
+    }
+
+    // Сбросить фокусный объект перед очисткой
+    this->SetFocusObject(&this->GetBuffer(), false);
+
     this->SetInsertionPoint(0);
+    this->Clear();
     this->row_current = 0;
     this->row_total = 0;
 }
+
 
 // чтение данных из буфера в UTF-8 строку в виде XML.
 void hmbRich::read_buffer_xml(std::string &out)
@@ -488,7 +592,6 @@ void hmbRich::node_iterator(cmark_node* node)
 // --- Load the Markdown text ---
 void hmbRich::load_src_data()
 {
-    new_document();
     cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
     if (!node) {
         this->load_as_plain_text();
@@ -503,7 +606,8 @@ void hmbRich::load_src_data()
         this->load_as_plain_text();
         return;
     }
-
+    this->Freeze();
+    new_document();
     this->BeginSuppressUndo();
     node_iterator(node);
     
@@ -512,19 +616,67 @@ void hmbRich::load_src_data()
         this->new_line();
     }
     
-    // Парсер игнорит в файле завешающий '\n'. Фикс - добавление последней строки, если она есть в исходных данных.
-    if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n") this->new_line();
+    // BUG: Парсер игнорит в файле завешающий '\n'.
+    // FIX: Добавление последней строки, если присутствует завешающий '\n'.
+    if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n")
+        this->new_line();
+    
     cmark_node_free(node);
     this->EndSuppressUndo();
+    this->Thaw();
+
+    restore_caret();
+}
+
+
+// Восстановление позиции курсора
+void hmbRich::restore_caret()
+{
+    if (this->saved_focus_in_object && this->saved_box_index >= 0)
+    {
+        // Ищем wxRichTextBox по сохранённому порядковому номеру
+        wxRichTextBox* box = find_box_by_index(this->GetBuffer(), this->saved_box_index);
+        if (box)
+        {
+            this->SetFocusObject(box, false);
+
+            long restore_pos = this->XYToPosition(this->saved_caret_col, this->saved_caret_line);
+            if (restore_pos != -1)
+            {
+                this->SetInsertionPoint(restore_pos);
+            }
+
+            // Восстановить позицию прокрутки
+            this->SetScrollPos(wxVERTICAL, this->saved_scroll_y);
+            this->Refresh();
+            return;
+        }
+        // Box не найден — восстанавливаем в основном буфере
+    }
+
+    // Обычный случай — восстановление в основном буфере
+    long restore_pos = this->XYToPosition(this->saved_caret_col, this->saved_caret_line);
+    if (restore_pos != -1)
+    {
+        this->SetInsertionPoint(restore_pos);
+    }
+
+    // Восстановить позицию прокрутки
+    this->SetScrollPos(wxVERTICAL, this->saved_scroll_y);
+    this->Refresh();
 }
 
 
 void hmbRich::load_as_plain_text()
 {
     wxLogError(_("Error parsing file '%s'."), HMB_FNAME.wc_str());
+    this->Freeze();
+    new_document();
     this->BeginSuppressUndo();
     this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
     this->EndSuppressUndo();
+    this->Thaw();
+    restore_caret();
 }
 
 wxMenu* hmbRich::edit_menu()

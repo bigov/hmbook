@@ -63,7 +63,14 @@ private:
     int row_current = 0;
     int row_total = 0;
     bool is_paragraph_open = false;
-    int list_depth = 0;  // уровень вложенности списков
+    int list_depth = 0;                  // уровень вложенности списков
+    
+    // Отслеживание курсора в документе.
+    bool saved_focus_in_object = false;  // фокус внутри вложенного объекта (wxRichTextBox)
+    long saved_caret_line = 0;           // номер строки положения курсора
+    long saved_caret_col = 0;            // номер колонки положения курсора
+    int  saved_box_index = -1;           // порядковый номер вложенного объекта в документе (-1 = основной буфер)
+    int  saved_scroll_y = 0;             // позиция вертикальной прокрутки
 
     void bind_mouse_events();
     void new_document();
@@ -71,6 +78,7 @@ private:
     void node_iterator(cmark_node* node);
     void node_dispatcher(cmark_node* node);
     void show_url(const wxString& url);
+    void restore_caret();
 
     void new_line();
     void line_break();
