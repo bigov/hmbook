@@ -8,14 +8,6 @@
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",
             "compileCommands": "${workspaceFolder}/build/Debug/compile_commands.json"
-        },
-        {
-            "name": "Win32-UCRT64 Release",
-            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "windows-gcc-x64",
-            "compileCommands": "${workspaceFolder}/build/Release/compile_commands.json"
         }
     ]
 }

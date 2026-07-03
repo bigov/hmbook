@@ -2,15 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "CMake: configure (Debug)",
-      "type": "shell",
-      "command": "cmake",
-      "args": ["--preset", "Debug"],
-      "options": { "cwd": "${workspaceFolder}" },
-      "problemMatcher": ["$gcc"],
-      "detail": "Конфигурация проекта (Ninja, Debug) в каталог build/Debug."
-    },
-    {
       "label": "CMake: build hmbook",
       "type": "shell",
       "command": "cmake",
@@ -25,25 +16,15 @@
       "detail": "Сборка цели hmbook с символами отладки в build/Debug."
     },
     {
-      "label": "CMake: configure (Release)",
+      "label": "hmbook: run",
       "type": "shell",
-      "command": "cmake",
-      "args": ["--preset", "Release"],
-      "options": { "cwd": "${workspaceFolder}" },
-      "problemMatcher": ["$gcc"],
-      "detail": "Конфигурация проекта (Ninja, Release) в каталог build/Release."
-    },
-    {
-      "label": "CMake: build hmbook (Release)",
-      "type": "shell",
-      "command": "cmake",
-      "args": ["--build", "--preset", "Release", "--target", "hmbook"],
-      "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: configure (Release)"],
+      "command": "${workspaceFolder}/build/Debug/hmbook.exe",
+      "args": [],
+      "options": { "cwd": "${workspaceFolder}/build/Debug" },
+      "dependsOn": ["CMake: build hmbook"],
       "dependsOrder": "sequence",
-      "problemMatcher": ["$gcc"],
-      "group": "build",
-      "detail": "Полная сборка hmbook в режиме Release (с оптимизацией, без символов отладки) в build/Release."
+      "problemMatcher": [],
+      "detail": "Сборка и запуск hmbook без отладчика."
     }
   ]
 }

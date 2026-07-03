@@ -2,18 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "hmbook (Run)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/build/Debug/hmbook.exe",
-      "cwd": "${workspaceFolder}/build/Debug",
-      "args": [],
-      "stopAtEntry": false,
-      "externalConsole": false,
-      "preLaunchTask": "CMake: build hmbook",
-      "noDebug": true
-    },
-    {
       "name": "hmbook (Debug)",
       "type": "cppdbg",
       "request": "launch",
