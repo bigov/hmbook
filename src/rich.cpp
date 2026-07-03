@@ -139,18 +139,6 @@ void hmbRich::init_styles()
     style_code_block->SetTextColour(this->color_code_fg);
     this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
-    // Headers
-    this->defParaHead = new wxRichTextParagraphStyleDefinition("ParaHead");
-    auto style_heading = &defParaHead->GetStyle();
-    style_heading->SetFlags(wxTEXT_ATTR_ALIGNMENT |
-         wxTEXT_ATTR_PARA_SPACING_BEFORE | wxTEXT_ATTR_PARA_SPACING_AFTER );
-    style_heading->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    style_heading->SetParagraphSpacingBefore(10);
-    style_heading->SetParagraphSpacingAfter(0);
-    style_heading->SetCharacterStyleName("ParaHead");
-    style_heading->SetTextColour("#404080");
-    this->style_sheet->AddParagraphStyle(this->defParaHead);
-
     this->GetBuffer().SetStyleSheet(this->style_sheet.get());
     this->ApplyStyleSheet(this->style_sheet.get());
 }
@@ -291,9 +279,14 @@ void hmbRich::new_line() {
     this->row_current++;
 }
 
-// Вставка переноса строки
+// Вставка мягкого переноса строки
+// BUG: wxRichTextCtrl отображает символ "SOFTBREAK" (код 29) не стабильно -
+// сети в строке есть форагменты инлайн форматирования, то строка не разделяется
+// как ожидается. Если таких элементов нет - строка разделяется. Для стабилизации
+// вызов LineBreak() заменен вводом переноса строки.
 void hmbRich::line_break() {
-    this->LineBreak();
+    //this->LineBreak();
+    if(this->show_softbreak) this->WriteText("\n");
     this->row_current++;
 }
 
@@ -326,7 +319,8 @@ void hmbRich::md_num_list(cmark_node* node) {
     this->list_depth++;
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
-        this->BeginNumberedBullet(n_start++, indent, sub_indent);
+        this->BeginNumberedBullet(n_start++, indent, sub_indent,
+            wxTEXT_ATTR_BULLET_STYLE_ARABIC|wxTEXT_ATTR_BULLET_STYLE_PERIOD);
         this->node_iterator(item);
         this->EndNumberedBullet();
         item = cmark_node_next(item);
@@ -341,13 +335,13 @@ void hmbRich::md_bul_list(cmark_node* node) {
     cmark_node* item = cmark_node_first_child(node);
     int indent = d + this->list_depth * d;
     this->list_depth++;
+    this->BeginStandardBullet("-", indent, d, s);
     while (item && cmark_node_get_type(item) == CMARK_NODE_ITEM)
     {
-        this->BeginStandardBullet("-", indent, d, s);
         this->node_iterator(item);
-        this->EndStandardBullet();
         item = cmark_node_next(item);
     }
+    this->EndStandardBullet();
     this->list_depth--;
 }
 
@@ -402,18 +396,14 @@ void hmbRich::md_custom_block(cmark_node* node) {
 
 void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
-    //this->BeginParagraphStyle("ParaHead");
-    this->BeginStyle(this->defParaHead->GetStyle());
-
-    wxFont f = HMB_FONT_BASE;
-    f.SetPointSize(font_size);
-    f.SetWeight(wxFONTWEIGHT_BOLD);
-    this->BeginFont(f);
+    this->BeginFontSize(font_size);
+    this->BeginTextColour("#404080");
+    this->BeginBold();
     this->node_iterator(node);
-    this->EndFont();
-    //this->new_line();
-    this->EndParagraphStyle();
-    this->EndStyle();
+    this->EndBold();
+    this->EndTextColour();
+    this->EndFontSize();
+    this->new_line();
 }
 
 void hmbRich::md_thematic_break(cmark_node* node) {
@@ -493,10 +483,10 @@ void hmbRich::md_unknown(cmark_node* node) {
 
 // Стандартный абзац.
 void hmbRich::md_paragraph(cmark_node* node) {
-    this->BeginStyle(this->defCharBase->GetStyle());
+    //this->BeginStyle(this->defCharBase->GetStyle());
     this->node_iterator(node);
     this->new_line();
-    this->EndStyle();
+    //this->EndStyle();
 }
 
 void hmbRich::node_dispatcher(cmark_node* node)
@@ -622,12 +612,17 @@ void hmbRich::load_src_data()
     this->EndSuppressUndo();
     this->Thaw();
 
-    restore_caret();
+    cursor_restore_pos();
+
+    // DEBUG
+    //std::string buffer_content = "";
+    //this->debug_buffer_content(buffer_content);
+    //std::cout  << buffer_content;
 }
 
 
 // Восстановление позиции курсора
-void hmbRich::restore_caret()
+void hmbRich::cursor_restore_pos()
 {
     if (this->saved_focus_in_object && this->saved_box_index >= 0)
     {
@@ -673,7 +668,7 @@ void hmbRich::load_as_plain_text()
     this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
     this->EndSuppressUndo();
     this->Thaw();
-    restore_caret();
+    cursor_restore_pos();
 }
 
 wxMenu* hmbRich::edit_menu()
@@ -914,4 +909,52 @@ void hmbRich::OnTabStops(wxCommandEvent& WXUNUSED(event))
     long start, end;
     this->GetSelection(& start, & end);
     this->SetStyle(start, end, attr);
+}
+
+// DEBUG: Обход внутренней структуры буфера wxRichTextCtrl
+void hmbRich::debug_buffer_content(std::string& out)
+{
+    wxRichTextBuffer& buffer = this->GetBuffer();
+    std::ostringstream ss;
+
+    for (auto it = buffer.GetChildren().begin(); it != buffer.GetChildren().end(); ++it)
+    {
+        // Указатель на абзац — дочерний элемент верхнего уровня буфера
+        wxRichTextParagraph* para = dynamic_cast<wxRichTextParagraph*>(*it);
+        if (!para) continue;
+
+        ss << "[PARA range=" << para->GetRange().GetStart()
+           << ".." << para->GetRange().GetEnd() << "]\n";
+
+        for (auto jt = para->GetChildren().begin(); jt != para->GetChildren().end(); ++jt)
+        {
+            wxRichTextObject* obj = *jt;
+
+            // Приведение объекта к типу текстового фрагмента
+            wxRichTextPlainText* txt = dynamic_cast<wxRichTextPlainText*>(obj);
+            if (txt)
+            {
+                // Текстовое содержимое фрагмента
+                wxString text = txt->GetText();
+                ss << "  TEXT [" << text.utf8_string() << "] len=" << text.length();
+                // Вывод кодов каждого символа
+                ss << " codes:";
+                for (size_t i = 0; i < text.length(); i++)
+                    ss << " " << (int)text[i];
+
+                // Атрибуты стиля текстового фрагмента (жирность, курсив и т.д.)
+                wxRichTextAttr attr = txt->GetAttributes();
+                if (attr.GetFontWeight() == wxFONTWEIGHT_BOLD)
+                    ss << " [BOLD]";
+                if (attr.GetFontStyle() == wxFONTSTYLE_ITALIC)
+                    ss << " [ITALIC]";
+                ss << "\n";
+            }
+            else
+            {
+                ss << "  OBJ type=" << wxString(obj->GetClassInfo()->GetClassName()).utf8_string() << "\n";
+            }
+        }
+    }
+    out = ss.str(); // полный дамп структуры буфера в виде UTF-8 строки
 }

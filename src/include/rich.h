@@ -62,6 +62,7 @@ private:
     int row_total = 0;
     //bool is_paragraph_open = false;
     int list_depth = 0;                  // уровень вложенности списков
+    bool show_softbreak = true;          // всегда отображать "softbreak"
     
     // Отслеживание курсора в документе.
     bool saved_focus_in_object = false;  // фокус внутри вложенного объекта (wxRichTextBox)
@@ -77,7 +78,8 @@ private:
     void node_iterator(cmark_node* node);
     void node_dispatcher(cmark_node* node);
     void show_url(const wxString& url);
-    void restore_caret();
+    void cursor_restore_pos();
+    void debug_buffer_content(std::string& out);
 
     void new_line();
     void line_break();
