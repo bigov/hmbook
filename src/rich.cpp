@@ -82,6 +82,24 @@ hmbRich::hmbRich(wxWindow* parent)
 {
     bind_mouse_events();
     init_styles();
+
+    wxRichTextAttr docAttr;
+    wxTextBoxAttr& tba = docAttr.GetTextBoxAttr();
+    
+    // --- Внутренние отступы области документа (padding) ---
+    const int pad = this->FromDIP(8); // чтобы отступ адекватно выглядел на HiDPI
+    tba.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    tba.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    tba.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    tba.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+
+    docAttr.SetTextColour(HMB_COLOR_BASE_FG);
+    docAttr.SetBackgroundColour(HMB_COLOR_BASE_BG);
+    docAttr.SetFont(HMB_FONT_BASE);
+    docAttr.SetFontPointSize(HMB_FONT_BASE.GetPointSize());
+
+    this->GetBuffer().SetAttributes(docAttr);
+
     new_document();
 }
 
@@ -96,51 +114,15 @@ hmbRich::~hmbRich()
 
 void hmbRich::init_styles()
 {
-    this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
-
-    this->defCharBase = new wxRichTextCharacterStyleDefinition("CharBase");
-    auto style_base = &defCharBase->GetStyle();
-    style_base->SetCharacterStyleName("CharBase");
-
-    style_base->SetFlags(wxTEXT_ATTR_CHARACTER_STYLE_NAME|wxTEXT_ATTR_TEXT_COLOUR|\
-        wxTEXT_ATTR_BACKGROUND_COLOUR|wxTEXT_ATTR_FONT_POINT_SIZE|wxTEXT_ATTR_FONT_FACE|\
-        wxTEXT_ATTR_FONT_WEIGHT|wxTEXT_ATTR_ALIGNMENT|wxTEXT_ATTR_LINE_SPACING);
-    
-    /* Для базового стиля не использовать:
-    wxTEXT_ATTR_LEFT_INDENT - отступ слева
-    wxTEXT_ATTR_RIGHT_INDENT - отступ справа
-    wxTEXT_ATTR_PARA_SPACING_BEFORE - отступ сверху
-    wxTEXT_ATTR_PARA_SPACING_AFTER - снизу
- 
-    style_base->SetLeftIndent(10);
-    style_base->SetRightIndent(8);
-    style_base->SetParagraphSpacingBefore(0);
-    style_base->SetParagraphSpacingAfter(0);
-    */
-    style_base->SetTextColour(HMB_COLOR_BASE_FG);
-    style_base->SetBackgroundColour(HMB_COLOR_BASE_BG);
-    style_base->SetFont(HMB_FONT_BASE);
-    style_base->SetFontPointSize(HMB_FONT_BASE.GetPointSize());
-    style_base->SetFontWeight(wxFONTWEIGHT_NORMAL);
-    style_base->SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-    style_base->SetLineSpacing(0);
-    this->style_sheet->AddCharacterStyle(this->defCharBase);
-
-    // SetBasicStyle - общий стиль всего буфера
-    // SetDefaultStyle - только на последующий ввод
-    this->SetBasicStyle(this->defCharBase->GetStyle());
-    //this->SetDefaultStyle(this->defCharBase->GetStyle());
-        
     // Сode blocks
     this->defCharCoBl = new wxRichTextCharacterStyleDefinition("CharCoBl");
     auto style_code_block = &defCharCoBl->GetStyle();
     style_code_block->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
     style_code_block->SetFont(HMB_FONT_MONO);
     style_code_block->SetTextColour(this->color_code_fg);
-    this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 
-    this->GetBuffer().SetStyleSheet(this->style_sheet.get());
-    this->ApplyStyleSheet(this->style_sheet.get());
+    this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
+    this->style_sheet->AddCharacterStyle(this->defCharCoBl);
 }
 
 void hmbRich::bind_mouse_events()
@@ -222,16 +204,6 @@ void hmbRich::new_document()
 
     this->SetFocusObject(&this->GetBuffer(), false);
     this->Clear();
-
-    // --- Внутренние отступы области документа (padding) ---
-    wxRichTextAttr docAttr;
-    wxTextBoxAttr& tba = docAttr.GetTextBoxAttr();
-    const int pad = this->FromDIP(8); // чтобы отступ адекватно выглядел на HiDPI
-    tba.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    tba.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    tba.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    tba.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    this->GetBuffer().SetAttributes(docAttr);
 
     this->SetInsertionPoint(0);
     this->row_current = 0;
