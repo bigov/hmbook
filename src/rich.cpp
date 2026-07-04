@@ -192,10 +192,10 @@ void hmbRich::new_document()
 
     // Очистить все накопленные стили (стек Begin.../End...)
     this->GetBuffer().EndAllStyles();
-
-    this->Clear();
     this->SetDefaultStyle(wxTextAttr());
-
+    this->Newline();
+    
+    this->Clear();
     this->SetInsertionPoint(0);
     this->row_current = 0;
     this->row_total = 0;
@@ -355,13 +355,17 @@ void hmbRich::md_custom_block(cmark_node* node) {
 
 void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
+
     this->BeginFontSize(font_size);
     this->BeginTextColour("#404080");
     this->BeginBold();
+    
     this->node_iterator(node);
+    
     this->EndBold();
     this->EndTextColour();
     this->EndFontSize();
+
     this->new_line();
 }
 
@@ -442,10 +446,8 @@ void hmbRich::md_unknown(cmark_node* node) {
 
 // Стандартный абзац.
 void hmbRich::md_paragraph(cmark_node* node) {
-    //this->BeginStyle(this->defCharBase->GetStyle());
     this->node_iterator(node);
     this->new_line();
-    //this->EndStyle();
 }
 
 void hmbRich::node_dispatcher(cmark_node* node)
