@@ -606,36 +606,15 @@ void hmbRich::load_src_data()
 // Восстановление позиции курсора
 void hmbRich::cursor_position_load()
 {
-     // Если курсор находился на строке во вложенном wxRichTextBox
+    // Если курсор находился на строке во вложенном wxRichTextBox
     if (this->cursor_position.focus_in_object && this->cursor_position.box_index >= 0)
     {
-        // Ищем wxRichTextBox по сохранённому порядковому номеру
-        wxRichTextBox* box = find_box_by_index(this->GetBuffer(), this->cursor_position.box_index);
-        if (box)
-        {
-            this->SetFocusObject(box, false);
-
-            long restore_pos = this->XYToPosition(this->cursor_position.caret_col, this->cursor_position.caret_line);
-            if (restore_pos != -1)
-            {
-                this->SetInsertionPoint(restore_pos);
-            }
-
-            // Восстановить позицию прокрутки
-            this->SetScrollPos(wxVERTICAL, this->cursor_position.scroll_y);
-            this->Refresh();
-            return;
-        }
+         wxRichTextBox* box = find_box_by_index(this->GetBuffer(), this->cursor_position.box_index);
+        if (box) this->SetFocusObject(box, false);
     }
 
-    // Обычный случай — восстановление в основном буфере
     long restore_pos = this->XYToPosition(this->cursor_position.caret_col, this->cursor_position.caret_line);
-    if (restore_pos != -1)
-    {
-        this->SetInsertionPoint(restore_pos);
-    }
-
-    // Восстановить позицию прокрутки
+    if (restore_pos != -1) this->SetInsertionPoint(restore_pos);
     this->SetScrollPos(wxVERTICAL, this->cursor_position.scroll_y);
     this->Refresh();
 }
