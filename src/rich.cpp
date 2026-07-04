@@ -176,21 +176,13 @@ void hmbRich::bind_events()
 
 void hmbRich::cursor_position_save()
 {
-    // Сохранить позицию прокрутки текста в окне
-    this->cursor_position.scroll_y = this->GetScrollPos(wxVERTICAL);
-
-    // Определить, находится ли фокус внутри вложенного объекта
+    this->cursor_position.box_index = -1;
+    
+    // Проверить, находится ли фокус внутри вложенного объекта
     wxRichTextParagraphLayoutBox* focus_obj = this->GetFocusObject();
     this->cursor_position.focus_in_object = (focus_obj != nullptr && focus_obj != &this->GetBuffer());
-
-    long caret_pos = this->GetInsertionPoint();
-
     if (this->cursor_position.focus_in_object)
     {
-        // Сохраняем локальную строку/колонку внутри box
-        this->PositionToXY(caret_pos, &this->cursor_position.caret_col, &this->cursor_position.caret_line);
-
-        // Определяем порядковый номер box-а в документе
         wxRichTextBox* box = nullptr;
         wxRichTextObject* obj = dynamic_cast<wxRichTextObject*>(focus_obj);
         while (obj && !box)
@@ -200,14 +192,12 @@ void hmbRich::cursor_position_save()
         }
         this->cursor_position.box_index = find_box_index(this->GetBuffer(), box);
     }
-    else
-    {
-        // Обычный случай — позиция в основном буфере
-        this->PositionToXY(caret_pos, &this->cursor_position.caret_col, &this->cursor_position.caret_line);
-        this->cursor_position.box_index = -1;
-    }
 
+    this->cursor_position.scroll_y = this->GetScrollPos(wxVERTICAL);    
+    long caret_pos = this->GetInsertionPoint();
+    this->PositionToXY(caret_pos, &this->cursor_position.caret_col, &this->cursor_position.caret_line);
 }
+
 
 void hmbRich::new_document()
 {
