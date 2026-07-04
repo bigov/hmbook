@@ -33,6 +33,14 @@ enum
     RICHTEXT_TAB_STOPS
 };
 
+// Отслеживание курсора в документе.
+typedef struct {
+    bool focus_in_object = false;  // фокус внутри вложенного объекта (wxRichTextBox)
+    long caret_line = 0;           // номер строки положения курсора
+    long caret_col = 0;            // номер колонки положения курсора
+    int  box_index = -1;           // порядковый номер вложенного объекта в документе (-1 = основной буфер)
+    int  scroll_y = 0;             // позиция вертикальной прокрутки
+} hmbRichState;
 
 class hmbRich: public wxRichTextCtrl
 {
@@ -49,7 +57,10 @@ private:
     wxColor color_urls_fg = "#25A4D1"; 
     wxColor color_code_fg = "#0954b8";
     wxColor color_gray_bg = "#f0f0f0";
+
+    wxRichTextAttr code_block_style;
     
+    hmbRichState cursor_position;
     hmbStatusBar* subscriber = nullptr;
     int row_current = 0;
     int row_total = 0;
@@ -57,20 +68,15 @@ private:
     int list_depth = 0;                  // уровень вложенности списков
     bool show_softbreak = true;          // всегда отображать "softbreak"
     
-    // Отслеживание курсора в документе.
-    bool saved_focus_in_object = false;  // фокус внутри вложенного объекта (wxRichTextBox)
-    long saved_caret_line = 0;           // номер строки положения курсора
-    long saved_caret_col = 0;            // номер колонки положения курсора
-    int  saved_box_index = -1;           // порядковый номер вложенного объекта в документе (-1 = основной буфер)
-    int  saved_scroll_y = 0;             // позиция вертикальной прокрутки
-
-    void bind_mouse_events();
+    void init_styles();
+    void cursor_position_save();
+    void cursor_position_load();
+    void bind_events();
     void new_document();
     void load_as_plain_text();
     void node_iterator(cmark_node* node);
     void node_dispatcher(cmark_node* node);
     void show_url(const wxString& url);
-    void cursor_restore_pos();
     void debug_buffer_content(std::string& out);
 
     void new_line();

@@ -80,25 +80,8 @@ hmbRich::hmbRich(wxWindow* parent)
     : wxRichTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                     wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL)
 {
-    bind_mouse_events();
-
-    wxRichTextAttr rt_attr;
-    wxTextBoxAttr& box_attr = rt_attr.GetTextBoxAttr();
-    
-    // --- Внутренние отступы области документа (padding) ---
-    const int pad = this->FromDIP(8); // чтобы отступ адекватно выглядел на HiDPI
-    box_attr.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    box_attr.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    box_attr.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    box_attr.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-
-    rt_attr.SetTextColour(HMB_COLOR_BASE_FG);
-    rt_attr.SetBackgroundColour(HMB_COLOR_BASE_BG);
-    rt_attr.SetFont(HMB_FONT_BASE);
-    rt_attr.SetFontPointSize(HMB_FONT_BASE.GetPointSize());
-
-    this->GetBuffer().SetAttributes(rt_attr);
-
+    this->bind_events();
+    this->init_styles();
     new_document();
 }
 
@@ -111,7 +94,36 @@ hmbRich::~hmbRich()
 }
 
 
-void hmbRich::bind_mouse_events()
+void hmbRich::init_styles()
+{
+    wxRichTextAttr rt_attr;
+    wxTextBoxAttr& box_attr = rt_attr.GetTextBoxAttr();
+    // --- Внутренние отступы области документа (padding) ---
+    const int pad = this->FromDIP(8); // чтобы отступ адекватно выглядел на HiDPI
+    box_attr.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    // Шрифт по-умолчанию
+    rt_attr.SetTextColour(HMB_COLOR_BASE_FG);
+    rt_attr.SetBackgroundColour(HMB_COLOR_BASE_BG);
+    rt_attr.SetFont(HMB_FONT_BASE);
+    rt_attr.SetFontPointSize(HMB_FONT_BASE.GetPointSize());
+    this->GetBuffer().SetAttributes(rt_attr);
+
+    // Настройка вида блоков кода
+    wxTextBoxAttr& cb_attr = this->code_block_style.GetTextBoxAttr();
+    cb_attr.GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
+    cb_attr.GetRightMargin().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+    cb_attr.GetLeftPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+    cb_attr.GetRightPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+    this->code_block_style.SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    this->code_block_style.SetFont(HMB_FONT_MONO);
+    this->code_block_style.SetTextColour(this->color_code_fg);
+    this->code_block_style.SetBackgroundColour(this->color_gray_bg);
+}
+
+void hmbRich::bind_events()
 {
     this->Bind(wxEVT_MOTION, [this](wxMouseEvent& event)
     {
@@ -152,24 +164,31 @@ void hmbRich::bind_mouse_events()
         }
         event.Skip();
     });
+
+    // Потеря объектом фокуса
+    this->Bind(wxEVT_KILL_FOCUS, [this](wxFocusEvent& event)
+    {
+        this->cursor_position_save();
+        event.Skip();
+    });
 }
 
 
-void hmbRich::new_document()
+void hmbRich::cursor_position_save()
 {
-    // Сохранить позицию прокрутки
-    this->saved_scroll_y = this->GetScrollPos(wxVERTICAL);
+    // Сохранить позицию прокрутки текста в окне
+    this->cursor_position.scroll_y = this->GetScrollPos(wxVERTICAL);
 
     // Определить, находится ли фокус внутри вложенного объекта
     wxRichTextParagraphLayoutBox* focus_obj = this->GetFocusObject();
-    this->saved_focus_in_object = (focus_obj != nullptr && focus_obj != &this->GetBuffer());
+    this->cursor_position.focus_in_object = (focus_obj != nullptr && focus_obj != &this->GetBuffer());
 
     long caret_pos = this->GetInsertionPoint();
 
-    if (this->saved_focus_in_object)
+    if (this->cursor_position.focus_in_object)
     {
         // Сохраняем локальную строку/колонку внутри box
-        this->PositionToXY(caret_pos, &this->saved_caret_col, &this->saved_caret_line);
+        this->PositionToXY(caret_pos, &this->cursor_position.caret_col, &this->cursor_position.caret_line);
 
         // Определяем порядковый номер box-а в документе
         wxRichTextBox* box = nullptr;
@@ -179,18 +198,23 @@ void hmbRich::new_document()
             box = dynamic_cast<wxRichTextBox*>(obj);
             obj = obj->GetParent();
         }
-        this->saved_box_index = find_box_index(this->GetBuffer(), box);
+        this->cursor_position.box_index = find_box_index(this->GetBuffer(), box);
     }
     else
     {
         // Обычный случай — позиция в основном буфере
-        this->PositionToXY(caret_pos, &this->saved_caret_col, &this->saved_caret_line);
-        this->saved_box_index = -1;
+        this->PositionToXY(caret_pos, &this->cursor_position.caret_col, &this->cursor_position.caret_line);
+        this->cursor_position.box_index = -1;
     }
 
+}
+
+void hmbRich::new_document()
+{
+    // Снять фокус, чтобы исключить блокировку элементов
     this->SetFocusObject(&this->GetBuffer(), false);
 
-    // Очистить все накопленные стили (стек Begin.../End...)
+    // Очистить стили
     this->GetBuffer().EndAllStyles();
     this->SetDefaultStyle(wxTextAttr());
     this->Newline();
@@ -250,6 +274,7 @@ void hmbRich::new_line() {
 void hmbRich::line_break() {
     //this->LineBreak();
     if(this->show_softbreak) this->WriteText("\n");
+    else this->WriteText(" ");
     this->row_current++;
 }
 
@@ -320,20 +345,7 @@ void hmbRich::md_item(cmark_node* node) {
 }
 
 void hmbRich::md_code_block(cmark_node* node) {
-    wxRichTextAttr attr;
-    
-    wxTextBoxAttr& box_attr = attr.GetTextBoxAttr();
-    box_attr.GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
-    box_attr.GetRightMargin().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
-    box_attr.GetLeftPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
-    box_attr.GetRightPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
-        
-    attr.SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    attr.SetFont(HMB_FONT_MONO);
-    attr.SetTextColour(this->color_code_fg);
-    attr.SetBackgroundColour(this->color_gray_bg);
-
-    wxRichTextBox* box = this->WriteTextBox(attr);
+    wxRichTextBox* box = this->WriteTextBox(this->code_block_style);
     const char* lit = cmark_node_get_literal(node);
     std::istringstream ss(lit);
     std::string line;
@@ -441,7 +453,7 @@ void hmbRich::md_image(cmark_node* node) {
 }
 
 void hmbRich::md_unknown(cmark_node* node) {
-    this->WriteText("Unknown\n");
+    this->WriteText("Unknown node\n");
 }
 
 // Стандартный абзац.
@@ -582,7 +594,7 @@ void hmbRich::load_src_data()
     this->EndSuppressUndo();
     this->Thaw();
 
-    cursor_restore_pos();
+    cursor_position_load();
 
     // DEBUG
     //std::string buffer_content = "";
@@ -592,39 +604,39 @@ void hmbRich::load_src_data()
 
 
 // Восстановление позиции курсора
-void hmbRich::cursor_restore_pos()
+void hmbRich::cursor_position_load()
 {
-    if (this->saved_focus_in_object && this->saved_box_index >= 0)
+     // Если курсор находился на строке во вложенном wxRichTextBox
+    if (this->cursor_position.focus_in_object && this->cursor_position.box_index >= 0)
     {
         // Ищем wxRichTextBox по сохранённому порядковому номеру
-        wxRichTextBox* box = find_box_by_index(this->GetBuffer(), this->saved_box_index);
+        wxRichTextBox* box = find_box_by_index(this->GetBuffer(), this->cursor_position.box_index);
         if (box)
         {
             this->SetFocusObject(box, false);
 
-            long restore_pos = this->XYToPosition(this->saved_caret_col, this->saved_caret_line);
+            long restore_pos = this->XYToPosition(this->cursor_position.caret_col, this->cursor_position.caret_line);
             if (restore_pos != -1)
             {
                 this->SetInsertionPoint(restore_pos);
             }
 
             // Восстановить позицию прокрутки
-            this->SetScrollPos(wxVERTICAL, this->saved_scroll_y);
+            this->SetScrollPos(wxVERTICAL, this->cursor_position.scroll_y);
             this->Refresh();
             return;
         }
-        // Box не найден — восстанавливаем в основном буфере
     }
 
     // Обычный случай — восстановление в основном буфере
-    long restore_pos = this->XYToPosition(this->saved_caret_col, this->saved_caret_line);
+    long restore_pos = this->XYToPosition(this->cursor_position.caret_col, this->cursor_position.caret_line);
     if (restore_pos != -1)
     {
         this->SetInsertionPoint(restore_pos);
     }
 
     // Восстановить позицию прокрутки
-    this->SetScrollPos(wxVERTICAL, this->saved_scroll_y);
+    this->SetScrollPos(wxVERTICAL, this->cursor_position.scroll_y);
     this->Refresh();
 }
 
@@ -638,7 +650,7 @@ void hmbRich::load_as_plain_text()
     this->WriteText(wxString::FromUTF8(HMB_SRC_DATA.c_str()));
     this->EndSuppressUndo();
     this->Thaw();
-    cursor_restore_pos();
+    cursor_position_load();
 }
 
 wxMenu* hmbRich::edit_menu()
