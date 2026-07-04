@@ -81,24 +81,23 @@ hmbRich::hmbRich(wxWindow* parent)
                     wxBORDER_NONE | wxWANTS_CHARS | wxVSCROLL)
 {
     bind_mouse_events();
-    init_styles();
 
-    wxRichTextAttr docAttr;
-    wxTextBoxAttr& tba = docAttr.GetTextBoxAttr();
+    wxRichTextAttr rt_attr;
+    wxTextBoxAttr& box_attr = rt_attr.GetTextBoxAttr();
     
     // --- Внутренние отступы области документа (padding) ---
     const int pad = this->FromDIP(8); // чтобы отступ адекватно выглядел на HiDPI
-    tba.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    tba.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    tba.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
-    tba.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetLeftPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetRightPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetTopPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
+    box_attr.GetBottomPadding().SetValue(pad, wxTEXT_ATTR_UNITS_PIXELS);
 
-    docAttr.SetTextColour(HMB_COLOR_BASE_FG);
-    docAttr.SetBackgroundColour(HMB_COLOR_BASE_BG);
-    docAttr.SetFont(HMB_FONT_BASE);
-    docAttr.SetFontPointSize(HMB_FONT_BASE.GetPointSize());
+    rt_attr.SetTextColour(HMB_COLOR_BASE_FG);
+    rt_attr.SetBackgroundColour(HMB_COLOR_BASE_BG);
+    rt_attr.SetFont(HMB_FONT_BASE);
+    rt_attr.SetFontPointSize(HMB_FONT_BASE.GetPointSize());
 
-    this->GetBuffer().SetAttributes(docAttr);
+    this->GetBuffer().SetAttributes(rt_attr);
 
     new_document();
 }
@@ -111,19 +110,6 @@ hmbRich::~hmbRich()
     this->GetBuffer().SetStyleSheet(nullptr);
 }
 
-
-void hmbRich::init_styles()
-{
-    // Сode blocks
-    this->defCharCoBl = new wxRichTextCharacterStyleDefinition("CharCoBl");
-    auto style_code_block = &defCharCoBl->GetStyle();
-    style_code_block->SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
-    style_code_block->SetFont(HMB_FONT_MONO);
-    style_code_block->SetTextColour(this->color_code_fg);
-
-    this->style_sheet = std::make_unique<wxRichTextStyleSheet>();
-    this->style_sheet->AddCharacterStyle(this->defCharCoBl);
-}
 
 void hmbRich::bind_mouse_events()
 {
@@ -203,7 +189,12 @@ void hmbRich::new_document()
     }
 
     this->SetFocusObject(&this->GetBuffer(), false);
+
+    // Очистить все накопленные стили (стек Begin.../End...)
+    this->GetBuffer().EndAllStyles();
+
     this->Clear();
+    this->SetDefaultStyle(wxTextAttr());
 
     this->SetInsertionPoint(0);
     this->row_current = 0;
@@ -329,34 +320,30 @@ void hmbRich::md_item(cmark_node* node) {
 }
 
 void hmbRich::md_code_block(cmark_node* node) {
-    wxRichTextAttr attr_bg;
-    attr_bg.SetBackgroundColour(this->color_gray_bg);
-    wxTextBoxAttr& tba = attr_bg.GetTextBoxAttr();
-    tba.GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
-    tba.GetRightMargin().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
-    tba.GetLeftPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
-    tba.GetRightPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+    wxRichTextAttr attr;
+    
+    wxTextBoxAttr& box_attr = attr.GetTextBoxAttr();
+    box_attr.GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
+    box_attr.GetRightMargin().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+    box_attr.GetLeftPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+    box_attr.GetRightPadding().SetValue(10, wxTEXT_ATTR_UNITS_POINTS);
+        
+    attr.SetFlags(wxTEXT_ATTR_FONT | wxTEXT_ATTR_TEXT_COLOUR | wxTEXT_ATTR_BACKGROUND_COLOUR);
+    attr.SetFont(HMB_FONT_MONO);
+    attr.SetTextColour(this->color_code_fg);
+    attr.SetBackgroundColour(this->color_gray_bg);
 
-    wxRichTextBox* box = this->WriteTextBox(attr_bg);
-    if (!box) return;
-
-    if (this->defCharCoBl)
-    {
-        box->SetDefaultStyle(this->defCharCoBl->GetStyle());
-    }
-    // Многострочный литерал
+    wxRichTextBox* box = this->WriteTextBox(attr);
     const char* lit = cmark_node_get_literal(node);
-
-    if (lit && *lit) {
-        std::istringstream ss(lit);
-        std::string line;
-        while (std::getline(ss, line)) {
-            box->AddParagraph(wxString::FromUTF8(line.c_str()));
-            this->row_current++;
-        }
-        box->AddParagraph(wxEmptyString);
+    std::istringstream ss(lit);
+    std::string line;
+    while (std::getline(ss, line)) {
+        box->AddParagraph(wxString::FromUTF8(line.c_str()));
         this->row_current++;
     }
+    box->GetBuffer()->EndAllStyles();
+    box->AddParagraph(wxEmptyString);
+    this->row_current++;
 }
 
 void hmbRich::md_html_block(cmark_node* node) {
@@ -570,6 +557,15 @@ void hmbRich::load_src_data()
     this->BeginSuppressUndo();
     node_iterator(node);
     
+    // Защита от утечки стека стилей: все Begin...() должны быть закрыты End...()
+    size_t stack_size = this->GetBuffer().GetStyleStackSize();
+    if (stack_size > 0)
+    {
+        wxLogWarning(_("Style stack leak: %zu unclosed Begin...() calls after rendering."),
+                     stack_size);
+        this->GetBuffer().EndAllStyles();
+    }
+
     // Дополнить пустые строки до конца документа.
     while (this->row_current < this->row_total) {
         this->new_line();
