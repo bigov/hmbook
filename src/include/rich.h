@@ -15,12 +15,10 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 
 #include "status_bar.h"
 #include "tools.h"
-//#include "tree.h"
-#include "tools.h"
-
 
 class wxMenu;
 class wxCommandEvent;
+class hmbPanelTree;
 
 enum
 {
@@ -55,6 +53,7 @@ public:
     void load_src_data();
     void read_buffer_xml(std::string& out);
     void bind_status_bar(hmbStatusBar* status_bar);
+    void bind_paneltree_ptr(hmbPanelTree* panel_tree);
 
 private:
     wxColor color_urls_fg = "#25A4D1"; 
@@ -65,7 +64,8 @@ private:
     
     hmbRichState cursor_position;
     hmbStatusBar* status_bar_ptr = nullptr;
-    //hmbTree* nav_tree_ptr = nullptr;
+    hmbPanelTree* panel_tree_ptr = nullptr;
+
     int row_current = 0;
     int row_total = 0;
     //bool is_paragraph_open = false;

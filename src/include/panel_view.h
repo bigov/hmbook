@@ -9,10 +9,10 @@
 #include "rich.h"
 #include "text.h"
 
-class hmbPanelTree;
 class wxAuiNotebook;
 class wxTextCtrl;
 class hmbToolsBar;
+
 
 // Панель вида реализует интерфейс подписчика,
 // чтобы напрямую получать уведомления о выборе файла из panel_tree.
@@ -30,6 +30,7 @@ public:
     wxMenu* edit_menu();
     void bind_statusbar(hmbStatusBar* status_bar);
     void bind_toolsbar(hmbToolsBar* tools_bar);
+    void bind_paneltree_ptr(hmbPanelTree* panel_tree);
 
 private:
     wxAuiNotebook* nbook = nullptr;

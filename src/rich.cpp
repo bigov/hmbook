@@ -3,6 +3,7 @@
 #include <wx/msgdlg.h>
 
 #include "rich.h"
+#include "panel_tree.h"
 
 // В документе может быть несколько вложенных wxRichTextBox. Возвращает индекс указанного.
 static int find_box_index(wxRichTextParagraphLayoutBox& buffer, wxRichTextBox* target)
@@ -164,14 +165,6 @@ void hmbRich::bind_events()
 }
 
 
-void hmbRich::left_click_url(wxString url)
-{
-    if (url.IsEmpty()) return;
-    wxString fullPath = HMB_DNAME + wxFileName::GetPathSeparator() + url;
-    wxMessageBox(fullPath, "URL", wxOK | wxICON_INFORMATION, this);
-}
-
-
 void hmbRich::cursor_position_save()
 {
     this->cursor_position.box_index = -1;
@@ -247,6 +240,22 @@ void hmbRich::show_url(const wxString& url) {
         this->status_bar_ptr->show_url(url);
     }
 }
+
+// Приязка указателя на панель навигации требуется для реализации переходов по ссылкам
+void hmbRich::bind_paneltree_ptr(hmbPanelTree* panel_tree)
+{
+    this->panel_tree_ptr = panel_tree;
+}
+
+
+void hmbRich::left_click_url(wxString url)
+{
+    if (url.IsEmpty()) return;
+    wxString fullPath = HMB_DNAME + wxFileName::GetPathSeparator() + url;
+    if (this->panel_tree_ptr) this->panel_tree_ptr->set_cursor_to(fullPath);
+    //wxMessageBox(fullPath, "URL", wxOK | wxICON_INFORMATION, this);
+}
+
 
 // Вствка нового абзаца
 void hmbRich::new_line() {

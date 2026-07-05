@@ -3,36 +3,35 @@
 hmbPanelTree::hmbPanelTree(wxWindow* parent) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME)
 {
-    this->tree_viewer = new hmbTree(this);
-    this->tree_viewer->SetMinSize(wxSize(40, -1)); // минимальная ширина панели
+    this->tree_ptr = new hmbTree(this);
+    this->tree_ptr->SetMinSize(wxSize(40, -1)); // минимальная ширина панели
 
     // Чтобы иметь возможность для обеих панелей одинаково настраивать
     // размеры и цвет полей и рамок, TreeViewer вложен в wxBoxSizer.
     // дерево занимает всю полезную площадь контейнера.
     wxBoxSizer* navSizer = new wxBoxSizer(wxVERTICAL);
-    navSizer->Add(this->tree_viewer, 1, wxEXPAND);
+    navSizer->Add(this->tree_ptr, 1, wxEXPAND);
     this->SetSizer(navSizer);
 }
 
 hmbPanelTree::~hmbPanelTree()
 {
-    this->bind_subscriber(nullptr);  // отключить подписку
-    if (this->tree_viewer)
+    this->bind_panelview_ptr(nullptr);  // отключить подписку
+    if (this->tree_ptr)
     {
-        delete this->tree_viewer;
-        this->tree_viewer = nullptr;
+        this->tree_ptr = nullptr;
     }
 }
 
-void hmbPanelTree::bind_subscriber(hmbPanelView* subscriber)
+void hmbPanelTree::bind_panelview_ptr(hmbPanelView* panel_view)
 {
     // hmbTree будет вызывать интерфейс подписчика (при выборе файла).
-    this->tree_viewer->bind_subscriber(subscriber);
+    this->tree_ptr->bind_panelview_ptr(panel_view);
 }
 
 void hmbPanelTree::set_root_dir(const wxString& dir)
 {
-    this->tree_viewer->set_root_dir(dir);
+    this->tree_ptr->set_root_dir(dir);
 }
 
 // Установка курсора на указанный файл в дереве, и его загрузка в панель просмотра.
@@ -40,7 +39,7 @@ void hmbPanelTree::set_cursor_to(const wxString& current_file)
 {
     if (!current_file.empty() && wxFileExists(current_file))
     {
-        this->tree_viewer->select_item(current_file);
+        this->tree_ptr->select_item(current_file);
     }
 }
 
@@ -53,6 +52,6 @@ void hmbPanelTree::open_dir()
     wxDirDialog dlg(this, "Select directory", dir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
     if (dlg.ShowModal() == wxID_OK) {
         wxString path = dlg.GetPath();
-        this->tree_viewer->set_root_dir(path);
+        this->tree_ptr->set_root_dir(path);
     }
 }

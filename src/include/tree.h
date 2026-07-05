@@ -21,13 +21,12 @@ class hmbTree : public wxTreeCtrl
 {
 public:
     explicit hmbTree(wxWindow* parent);
-    void bind_subscriber(hmbPanelView* subscriber);
+    void bind_panelview_ptr(hmbPanelView* panel_view);
     void set_root_dir(const wxString& dir);
     void select_item(const wxString& filePath);
 
 private:
-    hmbPanelView* view_panel = nullptr; // Подписчик, который будет уведомляться при выборе файла
-
+    hmbPanelView* panel_view_ptr = nullptr; // Для загрузки выбранного файла
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);
 };

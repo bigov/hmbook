@@ -30,7 +30,9 @@ hmbWindow::hmbWindow(const wxString& title)
     
     this->panel_view = new hmbPanelView(this->splitter);
     this->panel_tree = new hmbPanelTree(this->splitter);
-    this->panel_tree->bind_subscriber(this->panel_view); // связать выбор в дереве с отображением в панели просмотра
+
+    this->panel_tree->bind_panelview_ptr(this->panel_view); // связать выбор в дереве с отображением в панели просмотра
+    this->panel_view->bind_paneltree_ptr(this->panel_tree); // переход по ссылке в панели вида устанавливает курсор на файл
     
     this->splitter->SplitVertically(panel_tree, panel_view);
 

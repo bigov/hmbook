@@ -88,6 +88,13 @@ void hmbPanelView::bind_toolsbar(hmbToolsBar* tools_bar)
     this->page_text->toolsbar = tools_bar;
 }
 
+
+void hmbPanelView::bind_paneltree_ptr(hmbPanelTree* panel_tree)
+{
+    this->page_rich->bind_paneltree_ptr(panel_tree);
+}
+
+
 // Загрузка содержимого из файла.
 void hmbPanelView::load_file(const wxString& filePath)
 {
