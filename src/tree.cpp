@@ -85,7 +85,7 @@ void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
 // Регистрация подписчика на событие выбора файла.
 void hmbTree::bind_subscriber(hmbPanelView* subscriber)
 {
-    this->subscriber = subscriber;
+    this->view_panel = subscriber;
 }
 
 // Выбор элемента в дереве по полному пути к файлу. Если файл найден, он будет выбран, иначе - ничего не произойдет.
@@ -116,7 +116,7 @@ void hmbTree::on_selection(wxTreeEvent& event)
         HMB_FNAME = pData->GetFilePath();
 
         // Вызов интерфейса подписчика для загрузки выбранного файла
-        if (this->subscriber) this->subscriber->load_file(HMB_FNAME);
+        if (this->view_panel) this->view_panel->load_file(HMB_FNAME);
     }
 
     event.Skip();

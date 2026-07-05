@@ -6,6 +6,7 @@
 #include <wx/sizer.h>
 
 #include "panel_view.h"
+#include "tree.h"
 
 class hmbTree;
 

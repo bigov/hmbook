@@ -26,7 +26,7 @@ public:
     void select_item(const wxString& filePath);
 
 private:
-    hmbPanelView* subscriber = nullptr; // Подписчик, который будет уведомляться при выборе файла
+    hmbPanelView* view_panel = nullptr; // Подписчик, который будет уведомляться при выборе файла
 
     void populate_tree(const wxString& path, wxTreeItemId parent);
     void on_selection(wxTreeEvent& event);

@@ -8,7 +8,6 @@
 
 #include "rich.h"
 #include "text.h"
-//#include "panel_tree.h"
 
 class hmbPanelTree;
 class wxAuiNotebook;
@@ -29,7 +28,7 @@ public:
     void mode_switch(wxCommandEvent& event);
     void toggle_wrap(wxCommandEvent& event);
     wxMenu* edit_menu();
-    void bind_subscriber(hmbStatusBar* status_bar);
+    void bind_statusbar(hmbStatusBar* status_bar);
     void bind_toolsbar(hmbToolsBar* tools_bar);
 
 private:

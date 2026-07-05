@@ -66,7 +66,7 @@ hmbWindow::hmbWindow(const wxString& title)
     this->statusBar = new hmbStatusBar(this);
     this->SetStatusBar(this->statusBar);
     this->statusBar->set_text_2(title);
-    this->panel_view->bind_subscriber(this->statusBar);
+    this->panel_view->bind_statusbar(this->statusBar);
     this->panel_view->bind_toolsbar(this->toolsBar);
 
     load_params();

@@ -77,9 +77,9 @@ wxMenu* hmbPanelView::edit_menu()
 }
 
 
-void hmbPanelView::bind_subscriber(hmbStatusBar* status_bar)
+void hmbPanelView::bind_statusbar(hmbStatusBar* status_bar)
 {
-    this->page_rich->bind_subscriber(status_bar);
+    this->page_rich->bind_status_bar(status_bar);
 }
 
 

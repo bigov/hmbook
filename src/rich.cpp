@@ -3,8 +3,6 @@
 #include <wx/msgdlg.h>
 
 #include "rich.h"
-#include "tree.h"
-#include "tools.h"
 
 // В документе может быть несколько вложенных wxRichTextBox. Возвращает индекс указанного.
 static int find_box_index(wxRichTextParagraphLayoutBox& buffer, wxRichTextBox* target)
@@ -128,16 +126,13 @@ void hmbRich::bind_events()
     this->Bind(wxEVT_MOTION, [this](wxMouseEvent& event)
     {
         long pos = wxNOT_FOUND;
-        wxString url = wxEmptyString;
-        wxTextAttr attr;
-
         this->HitTest(event.GetPosition(), &pos);
-        if (pos != wxNOT_FOUND && this->GetStyle(pos, attr) && attr.HasFlag(wxTEXT_ATTR_URL))
-        {
-            url = attr.GetURL();
-        }
+        if (pos == wxNOT_FOUND) return;
 
-        this->show_url(url);
+        wxTextAttr attr;
+        this->GetStyle(pos, attr);
+        if (attr.HasFlag(wxTEXT_ATTR_URL)) this->show_url(attr.GetURL());
+
         event.Skip();
     });
 
@@ -147,21 +142,16 @@ void hmbRich::bind_events()
         event.Skip();
     });
 
-    // Клик по гиперссылке — показать адрес во всплывающем окне.
+    // Клик по гиперссылке.
     this->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& event)
     {
         long pos = wxNOT_FOUND;
-        wxTextAttr attr;
-
         this->HitTest(event.GetPosition(), &pos);
-        if (pos != wxNOT_FOUND && this->GetStyle(pos, attr) && attr.HasFlag(wxTEXT_ATTR_URL))
-        {
-            wxString url = attr.GetURL();
-            if (!url.IsEmpty())
-            {
-                wxMessageBox(url, "URL", wxOK | wxICON_INFORMATION, this);
-            }
-        }
+        if (pos == wxNOT_FOUND) return;
+        
+        wxTextAttr attr;
+        this->GetStyle(pos, attr);
+        if (attr.HasFlag(wxTEXT_ATTR_URL)) this->left_click_url(attr.GetURL());
         event.Skip();
     });
 
@@ -174,12 +164,20 @@ void hmbRich::bind_events()
 }
 
 
+void hmbRich::left_click_url(wxString url)
+{
+    if (url.IsEmpty()) return;
+    wxString fullPath = HMB_DNAME + wxFileName::GetPathSeparator() + url;
+    wxMessageBox(fullPath, "URL", wxOK | wxICON_INFORMATION, this);
+}
+
+
 void hmbRich::cursor_position_save()
 {
     this->cursor_position.box_index = -1;
     
     // Проверить, находится ли фокус внутри вложенного объекта
-    wxRichTextParagraphLayoutBox* focus_obj = this->GetFocusObject();
+    auto focus_obj = this->GetFocusObject();
     this->cursor_position.focus_in_object = (focus_obj != nullptr && focus_obj != &this->GetBuffer());
     if (this->cursor_position.focus_in_object)
     {
@@ -238,15 +236,15 @@ void hmbRich::read_buffer_xml(std::string &out)
 }
 
 // Привязка статус-бара для отображения URL при наведении мыши на ссылку.
-void hmbRich::bind_subscriber(hmbStatusBar* status_bar)
+void hmbRich::bind_status_bar(hmbStatusBar* status_bar)
 {
-    this->subscriber = status_bar;
+    this->status_bar_ptr = status_bar;
 }
 
 // Отображение URL в статус-баре при наведении мыши на ссылку.
 void hmbRich::show_url(const wxString& url) {
-    if (this->subscriber) {
-        this->subscriber->show_url(url);
+    if (this->status_bar_ptr) {
+        this->status_bar_ptr->show_url(url);
     }
 }
 

@@ -15,6 +15,9 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 
 #include "status_bar.h"
 #include "tools.h"
+//#include "tree.h"
+#include "tools.h"
+
 
 class wxMenu;
 class wxCommandEvent;
@@ -51,7 +54,7 @@ public:
     wxMenu* edit_menu();
     void load_src_data();
     void read_buffer_xml(std::string& out);
-    void bind_subscriber(hmbStatusBar* status_bar);
+    void bind_status_bar(hmbStatusBar* status_bar);
 
 private:
     wxColor color_urls_fg = "#25A4D1"; 
@@ -61,7 +64,8 @@ private:
     wxRichTextAttr code_block_style;
     
     hmbRichState cursor_position;
-    hmbStatusBar* subscriber = nullptr;
+    hmbStatusBar* status_bar_ptr = nullptr;
+    //hmbTree* nav_tree_ptr = nullptr;
     int row_current = 0;
     int row_total = 0;
     //bool is_paragraph_open = false;
@@ -78,6 +82,7 @@ private:
     void node_dispatcher(cmark_node* node);
     void show_url(const wxString& url);
     void debug_buffer_content(std::string& out);
+    void left_click_url(wxString url);
 
     void new_line();
     void line_break();
