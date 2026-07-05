@@ -250,10 +250,18 @@ void hmbRich::bind_paneltree_ptr(hmbPanelTree* panel_tree)
 
 void hmbRich::left_click_url(wxString url)
 {
+    if (!this->panel_tree_ptr) return;
     if (url.IsEmpty()) return;
+    if (!url.ends_with(".md"))
+    {
+        wxMessageBox(url, "URL", wxOK | wxICON_INFORMATION, this);
+        return;
+    } 
+
     wxString fullPath = HMB_DNAME + wxFileName::GetPathSeparator() + url;
-    if (this->panel_tree_ptr) this->panel_tree_ptr->set_cursor_to(fullPath);
-    //wxMessageBox(fullPath, "URL", wxOK | wxICON_INFORMATION, this);
+    // DEBUG
+    //std::cout << fullPath << std::endl;
+    this->panel_tree_ptr->set_cursor_to(fullPath);
 }
 
 
