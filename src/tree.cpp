@@ -1,5 +1,6 @@
 #include <wx/dir.h>
 #include <wx/filename.h>
+#include <wx/msgdlg.h>
 
 #include "tree.h"
 #include "tools.h"
@@ -58,27 +59,35 @@ void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
     if (!directory.IsOpened())
         return;
     
+    wxArrayString dirs;
+    wxArrayString files;
+
     wxString filename;
     bool cont = directory.GetFirst(&filename);
     
     while (cont)
     {
         wxString fullPath = path + wxFileName::GetPathSeparator() + filename;
-        
-        if (wxDir::Exists(fullPath))
-        {
-            // Это директория - добавляем как ветку и рекурсивно заполняем
-            wxTreeItemId folder = this->AppendItem(parent, filename);
-            populate_tree(fullPath, folder);
-        }
-        else
-        {
-            // Это файл - добавляем как лист с полным путем в данных
-            wxTreeItemId fileItem = this->AppendItem(parent, filename);
-            this->SetItemData(fileItem, new FileItemData(fullPath));
-        }
-        
+        if (wxDir::Exists(fullPath)) dirs.Add(filename);
+        else files.Add(filename);
         cont = directory.GetNext(&filename);
+    }
+
+    dirs.Sort();
+    files.Sort();
+
+    for (const auto& dirName : dirs)
+    {
+        wxString fullPath = path + wxFileName::GetPathSeparator() + dirName;
+        wxTreeItemId folder = this->AppendItem(parent, dirName);
+        populate_tree(fullPath, folder);
+    }
+
+    for (const auto& fileName : files)
+    {
+        wxString fullPath = path + wxFileName::GetPathSeparator() + fileName;
+        wxTreeItemId fileItem = this->AppendItem(parent, fileName);
+        this->SetItemData(fileItem, new FileItemData(fullPath));
     }
 }
 
@@ -98,6 +107,12 @@ void hmbTree::select_item(const wxString& filePath)
 }
 
 
+wxString hmbTree::get_current_dir() const
+{
+    if (HMB_FNAME.IsEmpty()) return HMB_DNAME;
+    return wxFileName(HMB_FNAME).GetPath();
+}
+
 void hmbTree::on_selection(wxTreeEvent& event)
 {
     // Получаем идентификатор выбранного узла из системного события wxTreeCtrl.
@@ -110,12 +125,13 @@ void hmbTree::on_selection(wxTreeEvent& event)
     
     // Проверяем, есть ли у элемента данные (это файл)
     auto pData = static_cast<FileItemData*>(this->GetItemData(itemId));
-    if (pData)
+    if (!pData) return;
+    auto fname = pData->GetFilePath();
+    if (!fname.EndsWith(".md"))
     {
-        // Сохраняем текущий выбранный файл в состоянии дерева.
+        wxMessageBox(fname, "URL", wxOK | wxICON_INFORMATION, this);
+    } else {
         HMB_FNAME = pData->GetFilePath();
-
-        // Вызов интерфейса подписчика для загрузки выбранного файла
         if (this->panel_view_ptr) this->panel_view_ptr->load_file(HMB_FNAME);
     }
 

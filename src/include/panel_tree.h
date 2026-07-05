@@ -23,6 +23,7 @@ public:
     void open_dir();
     void set_root_dir(const wxString& dir);
     void set_cursor_to(const wxString& current_file);
+    wxString get_current_dir();
 
 private:
     // Внутренний контрол дерева файлов.

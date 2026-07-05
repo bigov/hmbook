@@ -252,15 +252,14 @@ void hmbRich::left_click_url(wxString url)
 {
     if (!this->panel_tree_ptr) return;
     if (url.IsEmpty()) return;
-    if (!url.ends_with(".md"))
+    if (!url.EndsWith(".md"))
     {
         wxMessageBox(url, "URL", wxOK | wxICON_INFORMATION, this);
         return;
     } 
-
-    wxString fullPath = HMB_DNAME + wxFileName::GetPathSeparator() + url;
-    // DEBUG
-    //std::cout << fullPath << std::endl;
+    wxString fpath = url;
+    fpath.Replace("/", wxFileName::GetPathSeparator());
+    wxString fullPath = this->panel_tree_ptr->get_current_dir() + wxFileName::GetPathSeparator() + fpath;
     this->panel_tree_ptr->set_cursor_to(fullPath);
 }
 

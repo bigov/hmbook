@@ -34,6 +34,13 @@ void hmbPanelTree::set_root_dir(const wxString& dir)
     this->tree_ptr->set_root_dir(dir);
 }
 
+
+wxString hmbPanelTree::get_current_dir()
+{
+    return this->tree_ptr->get_current_dir();
+}
+
+
 // Установка курсора на указанный файл в дереве, и его загрузка в панель просмотра.
 void hmbPanelTree::set_cursor_to(const wxString& current_file)
 {

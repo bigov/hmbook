@@ -24,6 +24,7 @@ public:
     void bind_panelview_ptr(hmbPanelView* panel_view);
     void set_root_dir(const wxString& dir);
     void select_item(const wxString& filePath);
+    wxString get_current_dir() const;
 
 private:
     hmbPanelView* panel_view_ptr = nullptr; // Для загрузки выбранного файла
