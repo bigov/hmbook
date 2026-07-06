@@ -84,6 +84,7 @@ private:
     void show_url(const wxString& url);
     void debug_buffer_content(std::string& out);
     void left_click_url(wxString url);
+    void follow_local_page(const wxString url);
 
     void new_line();
     void line_break();

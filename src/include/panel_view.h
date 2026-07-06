@@ -24,7 +24,6 @@ public:
     // Реализация абстрактного метода hmbSubscriber.
     // Вызывается panel_tree при выборе файла в дереве.
     void load_file(const wxString& filePath);
-    void save_file();
     void mode_switch(wxCommandEvent& event);
     void toggle_wrap(wxCommandEvent& event);
     wxMenu* edit_menu();

@@ -159,3 +159,42 @@ void debug_node(cmark_node* node) {
     }
     std::cerr << "[" << start_line << " - " << end_line << "] " << cmark_type_to_const_name(t) << "\n";
 }
+
+// Запуск консольной команды без создания видимого окна.
+// Возвращает код возврата процесса, или -1 при ошибке запуска.
+int run_cmd_hidden(const std::string& cmd, const std::string& workDir)
+{
+    STARTUPINFOA si = {};
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
+
+    PROCESS_INFORMATION pi = {};
+
+    std::string cmdLine = "cmd.exe /C " + cmd;
+
+    const char* dir = workDir.empty() ? nullptr : workDir.c_str();
+
+    BOOL ok = CreateProcessA(
+        nullptr,
+        cmdLine.data(),
+        nullptr, nullptr,
+        FALSE,
+        CREATE_NO_WINDOW,
+        nullptr,
+        dir,
+        &si, &pi
+    );
+
+    if (!ok) return -1;
+
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    DWORD exitCode = 0;
+    GetExitCodeProcess(pi.hProcess, &exitCode);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return static_cast<int>(exitCode);
+}

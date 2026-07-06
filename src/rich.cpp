@@ -248,19 +248,38 @@ void hmbRich::bind_paneltree_ptr(hmbPanelTree* panel_tree)
 }
 
 
-void hmbRich::left_click_url(wxString url)
+void hmbRich::follow_local_page(const wxString url)
 {
     if (!this->panel_tree_ptr) return;
-    if (url.IsEmpty()) return;
-    if (!url.EndsWith(".md"))
-    {
-        wxMessageBox(url, "URL", wxOK | wxICON_INFORMATION, this);
-        return;
-    } 
     wxString fpath = url;
     fpath.Replace("/", wxFileName::GetPathSeparator());
     wxString fullPath = this->panel_tree_ptr->get_current_dir() + wxFileName::GetPathSeparator() + fpath;
     this->panel_tree_ptr->set_cursor_to(fullPath);
+}
+
+
+void hmbRich::left_click_url(wxString url)
+{
+    if (url.IsEmpty()) return;
+    if (url.EndsWith(".md"))
+    {
+        follow_local_page(url);
+        return;
+    }
+
+    if (url.StartsWith("http://")) 
+    {
+        wxLaunchDefaultBrowser(url);
+        return;
+    }
+
+    if (url.StartsWith("https://")) 
+    {
+        wxLaunchDefaultBrowser(url);
+        return;
+    }
+
+    wxMessageBox(url, "URL", wxOK | wxICON_INFORMATION, this);
 }
 
 
@@ -371,17 +390,13 @@ void hmbRich::md_custom_block(cmark_node* node) {
 
 void hmbRich::md_header(cmark_node* node) {
     int font_size = 18 - cmark_node_get_heading_level(node) * 2;
-
     this->BeginFontSize(font_size);
     this->BeginTextColour("#404080");
     this->BeginBold();
-    
     this->node_iterator(node);
-    
     this->EndBold();
     this->EndTextColour();
     this->EndFontSize();
-
     this->new_line();
 }
 
@@ -470,8 +485,7 @@ void hmbRich::md_paragraph(cmark_node* node) {
 void hmbRich::node_dispatcher(cmark_node* node)
 {
 
-  //debug_node(node);  //!!DEBUG!!
-  //return;  //!!DEBUG!!
+  debug_node(node);  //!!DEBUG!!
 
   if (!node) return;
   cmark_node_type t = cmark_node_get_type(node);

@@ -5,7 +5,7 @@ hmbText::hmbText(wxWindow* parent)
         wxBORDER_NONE | wxVSCROLL )
 {
     // Базовый стиль текста для всего буфера STC.
-    this->StyleSetFont(wxSTC_STYLE_DEFAULT, HMB_FONT_BASE);
+    this->StyleSetFont(wxSTC_STYLE_DEFAULT, HMB_FONT_MONO);
     this->StyleSetForeground(wxSTC_STYLE_DEFAULT, HMB_COLOR_BASE_FG);
     this->StyleSetBackground(wxSTC_STYLE_DEFAULT, HMB_COLOR_BASE_BG);
     this->StyleClearAll();

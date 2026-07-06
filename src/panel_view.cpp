@@ -108,8 +108,3 @@ void hmbPanelView::load_file(const wxString& filePath)
     this->page_text->load_data(HMB_SRC_DATA);
 }
 
-void hmbPanelView::save_file()
-{
-    file_write(HMB_SRC_DATA, HMB_FNAME);
-}
-

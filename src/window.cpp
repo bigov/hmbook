@@ -90,10 +90,59 @@ void hmbWindow::SetAppIcon(const wxString& iconPath)
 
 void hmbWindow::save_file_data()
 {
-    this->panel_view->save_file();
     this->toolsBar->save_btn_enable(false);
-    this->statusBar->set_text_2("File saved");
+
+    // Копируем данные для потокобезопасной записи
+    auto data = HMB_SRC_DATA;
+    auto path = HMB_FNAME;
+
+    std::thread([this, data, path]()
+    {
+        file_write(data, path);
+
+        // CallAfter гарантирует, что обновление UI произойдёт 
+        // в главном потоке (требование wxWidgets).
+        this->CallAfter([this]()
+        {
+            this->statusBar->set_text_2("File saved");
+        });
+
+        this->git_push();
+
+    }).detach();
+
 }
+
+
+void hmbWindow::git_pull()
+{
+    if (HMB_DNAME.IsEmpty()) return;
+    wxString gitDir = HMB_DNAME + wxFileName::GetPathSeparator() + ".git";
+    if (!wxDir::Exists(gitDir)) return;
+    std::string dir;
+    wx_to_utf8(HMB_DNAME, dir);
+    run_cmd_hidden("git pull", dir);
+}
+
+
+void hmbWindow::git_push()
+{
+    if (HMB_DNAME.IsEmpty()) return;
+    wxString gitDir = HMB_DNAME + wxFileName::GetPathSeparator() + ".git";
+    if (!wxDir::Exists(gitDir)) return;
+
+    wxString current_time = wxDateTime::Now().Format("%Y-%m-%d %H:%M");
+
+    std::string dir;
+    wx_to_utf8(HMB_DNAME, dir);
+    std::string msg;
+    wx_to_utf8(current_time, msg);
+
+    run_cmd_hidden("git add .", dir);
+    run_cmd_hidden("git commit -am \"" + msg + "\"", dir);
+    run_cmd_hidden("git push", dir);
+}
+
 
 void hmbWindow::OnClose(wxCommandEvent& WXUNUSED(event))
 {
@@ -135,6 +184,7 @@ void hmbWindow::load_params()
 
     // Загрузка данных из сохраненной директории
     this->panel_tree->set_root_dir(config.Read("/MainWindow/current_dir", wxEmptyString));
+    this->git_pull();
     auto current_file = config.Read("/MainWindow/current_file", wxEmptyString);
     // Установка курсора на указанный файл (если он существует) автоматически приведет к его загрузке в панель просмотра.
     this->panel_tree->set_cursor_to(current_file);

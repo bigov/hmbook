@@ -7,6 +7,7 @@
 #include <iterator>
 #include <sstream>
 #include <cstring>
+#include <windows.h>
 
 //#include <bits/stdc++.h>
 
@@ -55,6 +56,7 @@ std::string replace_placeholder(std::string tpl,
                           const std::string& content);
 
 int digits(long long n); // Количество разрядов в числе
+int run_cmd_hidden(const std::string& cmd, const std::string& workDir = "");
 void debug_node(cmark_node* node);
 static const char* cmark_type_to_const_name(cmark_node_type t);
 
