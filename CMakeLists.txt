@@ -55,6 +55,9 @@ else()
     )
 endif()
 
+# GIT_REPOSITORY "https://github.com/mity/md4c.git"
+# GIT_TAG "release-0.5.3"
+
 message(STATUS "wxWidgets source cache: ${HMBOOK_WX_SOURCE_DIR}")
 
 SET(wxUSE_WEBVIEW "OFF")
