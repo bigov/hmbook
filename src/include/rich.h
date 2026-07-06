@@ -35,7 +35,7 @@ enum
 };
 
 // Отслеживание курсора в документе.
-typedef struct {
+typedef struct hmbRichState {
     bool focus_in_object = false;  // фокус внутри вложенного объекта (wxRichTextBox)
     long caret_line = 0;           // номер строки положения курсора
     long caret_col = 0;            // номер колонки положения курсора
@@ -56,7 +56,8 @@ public:
     void bind_paneltree_ptr(hmbPanelTree* panel_tree);
 
 private:
-    wxColor color_urls_fg = "#25A4D1"; 
+    wxColor color_url_local = "#479752"; 
+    wxColor color_url_network = "#25A4D1"; 
     wxColor color_code_fg = "#0954b8";
     wxColor color_gray_bg = "#f0f0f0";
 

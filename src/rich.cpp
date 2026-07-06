@@ -428,11 +428,12 @@ void hmbRich::md_strong(cmark_node* node) {
 }
 
 void hmbRich::md_link(cmark_node* node) {
-    const char *url = cmark_node_get_url(node);
+    wxString url = wxString::FromUTF8(cmark_node_get_url(node));
     wxRichTextAttr urlAttr;
-    urlAttr.SetTextColour(this->color_urls_fg);
+    if (url.EndsWith(".md"))urlAttr.SetTextColour(this->color_url_local);
+    else urlAttr.SetTextColour(this->color_url_network);
     urlAttr.SetFontUnderlined(true);
-    urlAttr.SetURL(wxString::FromUTF8(url));
+    urlAttr.SetURL(url);
     this->BeginStyle(urlAttr);
     this->node_iterator(node);
     this->EndStyle();
