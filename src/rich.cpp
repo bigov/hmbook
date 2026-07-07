@@ -4,6 +4,7 @@
 
 #include "rich.h"
 #include "panel_tree.h"
+#include "md_parser.h"
 
 // В документе может быть несколько вложенных wxRichTextBox. Возвращает индекс указанного.
 static int find_box_index(wxRichTextParagraphLayoutBox& buffer, wxRichTextBox* target)
@@ -485,7 +486,7 @@ void hmbRich::md_paragraph(cmark_node* node) {
 void hmbRich::node_dispatcher(cmark_node* node)
 {
 
-  debug_node(node);  //!!DEBUG!!
+  //debug_node(node);  //!!DEBUG!!
 
   if (!node) return;
   cmark_node_type t = cmark_node_get_type(node);
@@ -574,6 +575,16 @@ void hmbRich::node_iterator(cmark_node* node)
 // --- Load the Markdown text ---
 void hmbRich::load_src_data()
 {
+
+        // NEW parser -- start --
+    md_node n;
+    int md_rc = md_parce(HMB_SRC_DATA, n);
+    if (md_rc != 0) {
+        wxLogWarning(_("md4c parser returned error code %d"), md_rc);
+    }
+    std::cout << node_debug(n);
+    // NEW parser -- end --
+
     cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
     if(cmark_node_get_type(node) != CMARK_NODE_DOCUMENT)
     {
@@ -588,7 +599,7 @@ void hmbRich::load_src_data()
     this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
     this->Freeze();
     this->BeginSuppressUndo();
-    node_iterator(node);
+    this->node_iterator(node);
     
     // Защита от утечки стека стилей: все Begin...() должны быть закрыты End...()
     size_t stack_size = this->GetBuffer().GetStyleStackSize();
