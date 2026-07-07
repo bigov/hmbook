@@ -27,71 +27,6 @@ static std::string attr_to_string(const MD_ATTRIBUTE* attr)
 	return std::string(attr->text, attr->size);
 }
 
-// Преобразование MD_ALIGN (md4c) в md_align
-static md_align convert_align(MD_ALIGN a)
-{
-	switch (a) {
-	case MD_ALIGN_LEFT:   return MD_ALIGN_LEFT;
-	case MD_ALIGN_CENTER: return MD_ALIGN_CENTER;
-	case MD_ALIGN_RIGHT:  return MD_ALIGN_RIGHT;
-	default:              return MD_ALIGN_NONE;
-	}
-}
-
-// Преобразование MD_BLOCKTYPE в md_node_type
-static md_node_type block_to_node_type(MD_BLOCKTYPE type)
-{
-	switch (type) {
-	case MD_BLOCK_DOC:   return MD_NODE_DOC;
-	case MD_BLOCK_QUOTE: return MD_NODE_QUOTE;
-	case MD_BLOCK_UL:    return MD_NODE_UL;
-	case MD_BLOCK_OL:    return MD_NODE_OL;
-	case MD_BLOCK_LI:    return MD_NODE_LI;
-	case MD_BLOCK_HR:    return MD_NODE_HR;
-	case MD_BLOCK_H:     return MD_NODE_H;
-	case MD_BLOCK_CODE:  return MD_NODE_CODE_BLOCK;
-	case MD_BLOCK_HTML:  return MD_NODE_HTML_BLOCK;
-	case MD_BLOCK_P:     return MD_NODE_P;
-	case MD_BLOCK_TABLE: return MD_NODE_TABLE;
-	case MD_BLOCK_THEAD: return MD_NODE_THEAD;
-	case MD_BLOCK_TBODY: return MD_NODE_TBODY;
-	case MD_BLOCK_TR:    return MD_NODE_TR;
-	case MD_BLOCK_TH:    return MD_NODE_TH;
-	case MD_BLOCK_TD:    return MD_NODE_TD;
-	default:             return MD_NODE_NONE;
-	}
-}
-
-// Преобразование MD_SPANTYPE в md_node_type
-static md_node_type span_to_node_type(MD_SPANTYPE type)
-{
-	switch (type) {
-	case MD_SPAN_EM:     return MD_NODE_EM;
-	case MD_SPAN_STRONG: return MD_NODE_STRONG;
-	case MD_SPAN_A:      return MD_NODE_A;
-	case MD_SPAN_IMG:    return MD_NODE_IMG;
-	case MD_SPAN_CODE:   return MD_NODE_CODE_SPAN;
-	case MD_SPAN_DEL:    return MD_NODE_DEL;
-	case MD_SPAN_U:      return MD_NODE_U;
-	default:             return MD_NODE_NONE;
-	}
-}
-
-// Преобразование MD_TEXTTYPE в md_node_type
-static md_node_type text_to_node_type(MD_TEXTTYPE type)
-{
-	switch (type) {
-	case MD_TEXT_NORMAL:   return MD_NODE_TEXT;
-	case MD_TEXT_NULLCHAR: return MD_NODE_TEXT;
-	case MD_TEXT_BR:       return MD_NODE_BR;
-	case MD_TEXT_SOFTBR:   return MD_NODE_SOFTBR;
-	case MD_TEXT_ENTITY:   return MD_NODE_TEXT_ENTITY;
-	case MD_TEXT_CODE:     return MD_NODE_TEXT_CODE;
-	case MD_TEXT_HTML:     return MD_NODE_TEXT_HTML;
-	default:               return MD_NODE_TEXT;
-	}
-}
-
 // Контекст построения дерева: стек текущих открытых узлов
 struct md_build_ctx {
 	md_node* root = nullptr;       // указатель на корневой узел (владеет вызывающая сторона)
@@ -105,8 +40,8 @@ static int cb_enter_block(MD_BLOCKTYPE type, void* detail, void* userdata)
 	auto* ctx = static_cast<md_build_ctx*>(userdata);
 
 	auto node = std::make_unique<md_node>();
-	node->type = block_to_node_type(type);
-	node->kind = MD_NODE_KIND_BLOCK;
+	node->type = type;
+	node->kind = BLOCK;
 
 	// Извлечение атрибутов из detail
 	switch (type) {
@@ -137,12 +72,10 @@ static int cb_enter_block(MD_BLOCKTYPE type, void* detail, void* userdata)
 	}
 	case MD_BLOCK_TH: {
 		auto* d = static_cast<MD_BLOCK_TD_DETAIL*>(detail);
-		if (d) node->align = convert_align(d->align);
 		break;
 	}
 	case MD_BLOCK_TD: {
 		auto* d = static_cast<MD_BLOCK_TD_DETAIL*>(detail);
-		if (d) node->align = convert_align(d->align);
 		break;
 	}
 	default:
@@ -172,8 +105,8 @@ static int cb_enter_span(MD_SPANTYPE type, void* detail, void* userdata)
 	auto* ctx = static_cast<md_build_ctx*>(userdata);
 
 	auto node = std::make_unique<md_node>();
-	node->type = span_to_node_type(type);
-	node->kind = MD_NODE_KIND_SPAN;
+	node->type = type;
+	node->kind = SPAN;
 
 	// Извлечение атрибутов спана
 	switch (type) {
@@ -218,8 +151,8 @@ static int cb_text(MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* us
 	auto* ctx = static_cast<md_build_ctx*>(userdata);
 
 	auto node = std::make_unique<md_node>();
-	node->type = text_to_node_type(type);
-	node->kind = MD_NODE_KIND_TEXT;
+	node->type = type;
+	node->kind = TEXT;
 
 	if (type == MD_TEXT_NULLCHAR) {
 		node->text = "\xEF\xBF\xBD"; // U+FFFD
@@ -238,8 +171,8 @@ static int cb_text(MD_TEXTTYPE type, const MD_CHAR* text, MD_SIZE size, void* us
 int md_parce(const std::string &text, md_node &out)
 {
 	out = md_node{};
-	out.type = MD_NODE_DOC;
-	out.kind = MD_NODE_KIND_BLOCK;
+	out.type = MD_BLOCK_DOC;
+	out.kind = BLOCK;
 
 	md_build_ctx ctx;
 	ctx.root = &out;
@@ -262,40 +195,44 @@ int md_parce(const std::string &text, md_node &out)
 
 // --- Отладочный вывод дерева ---
 
-static const char* node_type_name(md_node_type type)
+// Имя типа узла для отладочного вывода
+static const char* node_type_name(const md_node &node)
 {
-	switch (type) {
-	case MD_NODE_NONE:        return "NONE";
-	case MD_NODE_DOC:         return "DOC";
-	case MD_NODE_QUOTE:       return "QUOTE";
-	case MD_NODE_UL:          return "UL";
-	case MD_NODE_OL:          return "OL";
-	case MD_NODE_LI:          return "LI";
-	case MD_NODE_HR:          return "HR";
-	case MD_NODE_H:           return "H";
-	case MD_NODE_CODE_BLOCK:  return "CODE_BLOCK";
-	case MD_NODE_HTML_BLOCK:  return "HTML_BLOCK";
-	case MD_NODE_P:           return "P";
-	case MD_NODE_TABLE:       return "TABLE";
-	case MD_NODE_THEAD:       return "THEAD";
-	case MD_NODE_TBODY:       return "TBODY";
-	case MD_NODE_TR:          return "TR";
-	case MD_NODE_TH:          return "TH";
-	case MD_NODE_TD:          return "TD";
-	case MD_NODE_EM:          return "EM";
-	case MD_NODE_STRONG:      return "STRONG";
-	case MD_NODE_A:           return "A";
-	case MD_NODE_IMG:         return "IMG";
-	case MD_NODE_CODE_SPAN:   return "CODE_SPAN";
-	case MD_NODE_DEL:         return "DEL";
-	case MD_NODE_U:           return "U";
-	case MD_NODE_TEXT:        return "TEXT";
-	case MD_NODE_SOFTBR:      return "SOFTBR";
-	case MD_NODE_BR:          return "BR";
-	case MD_NODE_TEXT_CODE:   return "TEXT_CODE";
-	case MD_NODE_TEXT_HTML:   return "TEXT_HTML";
-	case MD_NODE_TEXT_ENTITY: return "TEXT_ENTITY";
-	default:                   return "UNKNOWN";
+	switch ((node.kind << 8) | node.type) {
+	// Блоки
+	case (BLOCK << 8) | MD_BLOCK_DOC:   return "DOC";
+	case (BLOCK << 8) | MD_BLOCK_QUOTE: return "QUOTE";
+	case (BLOCK << 8) | MD_BLOCK_UL:    return "UL";
+	case (BLOCK << 8) | MD_BLOCK_OL:    return "OL";
+	case (BLOCK << 8) | MD_BLOCK_LI:    return "LI";
+	case (BLOCK << 8) | MD_BLOCK_HR:    return "HR";
+	case (BLOCK << 8) | MD_BLOCK_H:     return "H";
+	case (BLOCK << 8) | MD_BLOCK_CODE:  return "CODE_BLOCK";
+	case (BLOCK << 8) | MD_BLOCK_HTML:  return "HTML_BLOCK";
+	case (BLOCK << 8) | MD_BLOCK_P:     return "P";
+	case (BLOCK << 8) | MD_BLOCK_TABLE: return "TABLE";
+	case (BLOCK << 8) | MD_BLOCK_THEAD: return "THEAD";
+	case (BLOCK << 8) | MD_BLOCK_TBODY: return "TBODY";
+	case (BLOCK << 8) | MD_BLOCK_TR:    return "TR";
+	case (BLOCK << 8) | MD_BLOCK_TH:    return "TH";
+	case (BLOCK << 8) | MD_BLOCK_TD:    return "TD";
+	// Спаны
+	case (SPAN << 8) | MD_SPAN_EM:      return "EM";
+	case (SPAN << 8) | MD_SPAN_STRONG:  return "STRONG";
+	case (SPAN << 8) | MD_SPAN_A:       return "A";
+	case (SPAN << 8) | MD_SPAN_IMG:     return "IMG";
+	case (SPAN << 8) | MD_SPAN_CODE:    return "CODE_SPAN";
+	case (SPAN << 8) | MD_SPAN_DEL:     return "DEL";
+	case (SPAN << 8) | MD_SPAN_U:       return "U";
+	// Текст
+	case (TEXT << 8) | MD_TEXT_NORMAL:   return "TEXT";
+	case (TEXT << 8) | MD_TEXT_NULLCHAR: return "TEXT";
+	case (TEXT << 8) | MD_TEXT_BR:       return "BR";
+	case (TEXT << 8) | MD_TEXT_SOFTBR:   return "SOFTBR";
+	case (TEXT << 8) | MD_TEXT_ENTITY:   return "TEXT_ENTITY";
+	case (TEXT << 8) | MD_TEXT_CODE:     return "TEXT_CODE";
+	case (TEXT << 8) | MD_TEXT_HTML:     return "TEXT_HTML";
+	default:                                          return "UNKNOWN";
 	}
 }
 
@@ -304,24 +241,24 @@ std::string node_debug(const md_node &node, int depth)
 	std::ostringstream ss;
 	std::string indent(depth * 2, ' ');
 
-	ss << indent << node_type_name(node.type);
+	ss << indent << node_type_name(node);
 
 	// Дополнительные атрибуты
-	if (node.type == MD_NODE_H)
+	if (node.type == MD_BLOCK_H)
 		ss << " level=" << node.heading_level;
-	if (node.type == MD_NODE_OL)
+	if (node.type == MD_BLOCK_OL)
 		ss << " start=" << node.ol_start << " tight=" << node.is_tight;
-	if (node.type == MD_NODE_UL)
+	if (node.type == MD_BLOCK_UL)
 		ss << " tight=" << node.is_tight;
-	if (node.type == MD_NODE_LI && node.is_task)
+	if (node.type == MD_BLOCK_LI && node.is_task)
 		ss << " task mark='" << node.task_mark << "'";
-	if (node.type == MD_NODE_CODE_BLOCK && !node.fence_info.empty())
+	if (node.type == MD_BLOCK_CODE && !node.fence_info.empty())
 		ss << " info=\"" << node.fence_info << "\"";
-	if (node.type == MD_NODE_A)
+	if (node.type == MD_SPAN_A)
 		ss << " href=\"" << node.href << "\"";
-	if (node.type == MD_NODE_IMG)
+	if (node.type == MD_SPAN_IMG)
 		ss << " src=\"" << node.src << "\"";
-	if ((node.type == MD_NODE_TD || node.type == MD_NODE_TH) && node.align != MD_ALIGN_NONE) {
+	if ((node.type == MD_BLOCK_TD || node.type == MD_BLOCK_TH) && node.align != MD_ALIGN_DEFAULT) {
 		static const char* align_names[] = { "none", "left", "center", "right" };
 		ss << " align=" << align_names[node.align];
 	}
