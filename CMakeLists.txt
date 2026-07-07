@@ -55,9 +55,6 @@ else()
     )
 endif()
 
-# GIT_REPOSITORY "https://github.com/mity/md4c.git"
-# GIT_TAG "release-0.5.3"
-
 message(STATUS "wxWidgets source cache: ${HMBOOK_WX_SOURCE_DIR}")
 
 SET(wxUSE_WEBVIEW "OFF")
@@ -67,6 +64,30 @@ SET(wxBUILD_MONOLITHIC "ON")
 
 FetchContent_GetProperties(wxWidgets)
 FetchContent_MakeAvailable(wxWidgets)
+
+# Библиотека парсера Markdown - md4c
+SET(HMBOOK_MD4C_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/md4c-src")
+SET(HMBOOK_MD4C_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/md4c-${CMAKE_BUILD_TYPE}")
+
+if(EXISTS "${HMBOOK_MD4C_SOURCE_DIR}/CMakeLists.txt")
+    FetchContent_Declare(
+      md4c
+      SOURCE_DIR "${HMBOOK_MD4C_SOURCE_DIR}"
+      BINARY_DIR "${HMBOOK_MD4C_BINARY_DIR}"
+    )
+else()
+    FetchContent_Declare(
+      md4c
+      GIT_REPOSITORY "https://github.com/mity/md4c.git"
+      GIT_TAG "release-0.5.3"
+      SOURCE_DIR "${HMBOOK_MD4C_SOURCE_DIR}"
+      BINARY_DIR "${HMBOOK_MD4C_BINARY_DIR}"
+    )
+endif()
+
+message(STATUS "md4c source cache: ${HMBOOK_MD4C_SOURCE_DIR}")
+FetchContent_GetProperties(md4c)
+FetchContent_MakeAvailable(md4c)
 
 # Библиотека парсера Markdown - cmark
 SET(HMBOOK_CMARK_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-src")
