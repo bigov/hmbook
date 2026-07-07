@@ -126,13 +126,13 @@ SET(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -I\"${wxwidgets_SOURCE_DIR}/include\"")
 # Сборка приложения
 AUX_SOURCE_DIRECTORY("src" SOURCE)
 add_executable(${HMBOOK} ${SOURCE} ${CMAKE_BINARY_DIR}/app.rc)
-target_include_directories(${HMBOOK} PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
+target_include_directories(${HMBOOK} PRIVATE ${CMAKE_SOURCE_DIR}/src/include )
 target_compile_definitions(${HMBOOK} PRIVATE WXUSINGDLL __WXMSW__)
 
 # Скрыть консоль
 #target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
 
-target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets cmark)
+target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets cmark md4c)
 
 # Добавление .dll библиотеки в каталог запуска
 SET(BIN_LIB "${HMBOOK_WX_BINARY_DIR}/lib/gcc_x64_dll")

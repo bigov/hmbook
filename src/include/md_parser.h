@@ -2,7 +2,7 @@
 #define MD_PARSER_H
 
 #include <string>
-#include <md4c.h>
+#include "md4c.h"
 
 class hmbParser;
 

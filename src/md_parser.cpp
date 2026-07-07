@@ -2,11 +2,11 @@
 #include "md_parser.h"
 
 enum md_node_type {
-	MD_NODE_NONE;
-}
+	MD_NODE_NONE,
+};
 
 typedef struct cmark_node {
-	md_node_type;
+	md_node_type type;
 	int line_start = 0;
 	int line_end = 0;
 } cmark_node;
@@ -22,4 +22,4 @@ public:
 	};
 
 private:
-}
+};
