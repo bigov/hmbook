@@ -109,6 +109,9 @@ private:
     void md_strong(cmark_node* node);
     void md_link(cmark_node* node);
     void md_image(cmark_node* node);
+    void md_table(cmark_node* node);
+    void md_table_row(cmark_node* node);
+    void md_table_cell(cmark_node* node);
     void md_unknown(cmark_node* node);
 
     void on_change_font(wxCommandEvent& WXUNUSED(event));

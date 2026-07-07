@@ -482,6 +482,33 @@ void hmbRich::md_paragraph(cmark_node* node) {
     this->new_line();
 }
 
+void hmbRich::md_table(cmark_node* node) {
+    this->WriteText("Table node\n");
+    // Обход строк таблицы
+    this->node_iterator(node);
+}
+
+void hmbRich::md_table_row(cmark_node* node) {
+    this->WriteText("Table row node\n");
+    bool is_header = cmark_gfm_extensions_get_table_row_is_header(node);
+    cmark_node* cell = cmark_node_first_child(node);
+    bool first = true;
+    if (is_header) this->BeginBold();
+    while (cell) {
+        if (!first) this->WriteText("\t");
+        first = false;
+        this->node_iterator(cell);
+        cell = cmark_node_next(cell);
+    }
+    if (is_header) this->EndBold();
+    this->new_line();
+}
+
+void hmbRich::md_table_cell(cmark_node* node) {
+    this->WriteText("Table cell node\n");
+    this->node_iterator(node);
+}
+
 void hmbRich::node_dispatcher(cmark_node* node)
 {
 
@@ -554,10 +581,17 @@ void hmbRich::node_dispatcher(cmark_node* node)
     md_image(node);
     break;
   default:
+    // Типы CMARK_NODE_TABLE, CMARK_NODE_TABLE_ROW, CMARK_NODE_TABLE_CELL — 
+    // это глобальные переменные (не enum-константы), поэтому их нельзя
+    // использовать в case, но можно в цепочке if внутри default:
+    if (t == CMARK_NODE_TABLE) { md_table(node); break; }
+    if (t == CMARK_NODE_TABLE_ROW) { md_table_row(node); break; }
+    if (t == CMARK_NODE_TABLE_CELL) { md_table_cell(node); break; }
     md_unknown(node);
     break;
   }
 }
+
 
 // Последовательный обход ветвей дерева нод
 void hmbRich::node_iterator(cmark_node* node)
@@ -565,7 +599,8 @@ void hmbRich::node_iterator(cmark_node* node)
     if (!node) return;
     cmark_node* child = cmark_node_first_child(node);
     while (child) {
-        if (cmark_node_is_block(child)) row_check(child);
+        if ((cmark_node_get_type(child) & CMARK_NODE_TYPE_MASK) == CMARK_NODE_TYPE_BLOCK)
+            row_check(child);
         node_dispatcher(child);
         child = cmark_node_next(child);
     }
@@ -574,8 +609,19 @@ void hmbRich::node_iterator(cmark_node* node)
 // --- Load the Markdown text ---
 void hmbRich::load_src_data()
 {
-    cmark_node* node = cmark_parse_document(HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size(), CMARK_OPT_DEFAULT);
-    if(cmark_node_get_type(node) != CMARK_NODE_DOCUMENT)
+    // Регистрация расширений GFM
+    cmark_gfm_core_extensions_ensure_registered();
+
+    // Создание парсера с подключением расширения "table"
+    cmark_parser* parser = cmark_parser_new(CMARK_OPT_DEFAULT);
+    cmark_syntax_extension* table_ext = cmark_find_syntax_extension("table");
+    if (table_ext) cmark_parser_attach_syntax_extension(parser, table_ext);
+
+    cmark_parser_feed(parser, HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size());
+    cmark_node* node = cmark_parser_finish(parser);
+    cmark_parser_free(parser);
+
+    if(!node || cmark_node_get_type(node) != CMARK_NODE_DOCUMENT)
     {
         wxLogError(_("Markdown format error."));
         if (node) cmark_node_free(node);

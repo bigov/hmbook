@@ -24,7 +24,9 @@
 #include <wx/log.h>
 
 extern "C" {
-#include <cmark.h>
+#include <cmark-gfm.h>
+#include <cmark-gfm-core-extensions.h>
+#include <table.h>
 }
 
 // Идентификатор кнопки переключения переноса слов на вкладке "Text".
