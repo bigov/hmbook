@@ -479,7 +479,8 @@ void hmbRich::md_unknown(cmark_node* node) {
 // Стандартный абзац.
 void hmbRich::md_paragraph(cmark_node* node) {
     this->node_iterator(node);
-    this->new_line();
+    if(this->row_current < this->row_total)
+        this->new_line();
 }
 
 void hmbRich::md_table(cmark_node* node) {
@@ -610,62 +611,22 @@ void hmbRich::node_iterator(cmark_node* node)
 // --- Load the Markdown text ---
 void hmbRich::load_src_data()
 {
-    // Регистрация расширений GFM
-    cmark_gfm_core_extensions_ensure_registered();
-
-    // Создание парсера с подключением расширения "table"
-    cmark_parser* parser = cmark_parser_new(CMARK_OPT_DEFAULT);
-    cmark_syntax_extension* table_ext = cmark_find_syntax_extension("table");
-    if (table_ext) cmark_parser_attach_syntax_extension(parser, table_ext);
-
-    cmark_parser_feed(parser, HMB_SRC_DATA.c_str(), HMB_SRC_DATA.size());
-    cmark_node* node = cmark_parser_finish(parser);
-    cmark_parser_free(parser);
-
-    if(!node || cmark_node_get_type(node) != CMARK_NODE_DOCUMENT)
+    auto md = hmbParser(HMB_SRC_DATA);
+    if(!md.node)
     {
-        wxLogError(_("Markdown format error."));
-        if (node) cmark_node_free(node);
-        this->load_as_plain_text();
-        return;
+         this->load_as_plain_text();
+         return;
     }
 
     new_document();
-    this->row_current = cmark_node_get_start_line(node);
-    this->row_total = this->row_current + cmark_node_get_end_line(node) - 1;
+    this->row_current = md.start_line();
+    this->row_total = this->row_current + md.end_line() - 1;
     this->Freeze();
     this->BeginSuppressUndo();
-    node_iterator(node);
-    
-    // Защита от утечки стека стилей: все Begin...() должны быть закрыты End...()
-    size_t stack_size = this->GetBuffer().GetStyleStackSize();
-    if (stack_size > 0)
-    {
-        wxLogWarning(_("Style stack leak: %zu unclosed Begin...() calls after rendering."),
-                     stack_size);
-        this->GetBuffer().EndAllStyles();
-    }
-
-    // Дополнить пустые строки до конца документа.
-    while (this->row_current < this->row_total) {
-        this->new_line();
-    }
-    
-    // BUG: Парсер игнорит в файле завершающий '\n'.
-    // FIX: Добавление последней строки, если присутствует завешающий '\n'.
-    if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n")
-        this->new_line();
-    
-    cmark_node_free(node);
+    node_iterator(md.node);
     this->EndSuppressUndo();
     this->Thaw();
-
     cursor_position_load();
-
-    // DEBUG
-    //std::string buffer_content = "";
-    //this->debug_buffer_content(buffer_content);
-    //std::cout  << buffer_content;
 }
 
 

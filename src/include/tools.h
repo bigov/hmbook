@@ -9,18 +9,30 @@
 #include <cstring>
 #include <windows.h>
 
+#include "wx/colordlg.h"
+#include "wx/config.h"
+#include "wx/dir.h"
+#include "wx/dirdlg.h"
+#include "wx/filedlg.h"
+#include "wx/filefn.h"
+#include "wx/filename.h"
+#include "wx/fontdlg.h"
+#include "wx/frame.h"
+#include "wx/icon.h"
+#include "wx/image.h"
+#include "wx/log.h"
 #include "wx/menu.h"
+#include "wx/panel.h"
 #include "wx/richtext/richtextctrl.h"
 #include "wx/richtext/richtextxml.h"
-#include "wx/wfstream.h"
-#include "wx/string.h"
+#include "wx/sizer.h"
+#include "wx/splitter.h"
 #include "wx/sstream.h"
-#include "wx/colordlg.h"
-#include "wx/fontdlg.h"
+#include "wx/stdpaths.h"
+#include "wx/string.h"
 #include "wx/textdlg.h"
 #include "wx/tokenzr.h"
-#include "wx/log.h"
-
+#include "wx/wfstream.h"
 
 // Идентификатор кнопки переключения переноса слов на вкладке "Text".
 enum {

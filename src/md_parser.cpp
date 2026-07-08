@@ -45,3 +45,53 @@ void debug_node(cmark_node* node) {
     std::cerr << "[" << start_line << " - " << end_line << "] " << cmark_type_to_const_name(t) << "\n";
 }
 
+hmbParser::hmbParser(const std::string &text)
+{
+    // Регистрация расширений GFM
+    cmark_gfm_core_extensions_ensure_registered();
+
+    // Создание парсера с подключением расширения "table"
+    cmark_parser* parser = cmark_parser_new(CMARK_OPT_DEFAULT);
+    cmark_syntax_extension* table_ext = cmark_find_syntax_extension("table");
+    if (table_ext) cmark_parser_attach_syntax_extension(parser, table_ext);
+
+    cmark_parser_feed(parser, text.c_str(), text.size());
+    this->node = cmark_parser_finish(parser);
+    cmark_parser_free(parser);
+
+    if(!this->node || cmark_node_get_type(this->node) != CMARK_NODE_DOCUMENT)
+    {
+        wxLogError(_("Markdown format error."));
+        if (this->node) cmark_node_free(this->node);
+        this->node = nullptr;
+    } else {
+        this->end_row_num = cmark_node_get_end_line(this->node);
+        
+        // BUG: cmark игнорит в файле завершающий '\n'.
+        // FIX: если присутствует завешающий '\n', то добавить параграф
+        if (text.size() >= 1 && text.substr(text.size()-1) == "\n")
+        {
+            cmark_node* empty_row = cmark_node_new(CMARK_NODE_PARAGRAPH);
+            cmark_node_append_child(this->node, empty_row);
+            this->end_row_num += 1;
+        }
+    }
+}
+
+int hmbParser::start_line()
+{
+    return cmark_node_get_start_line(this->node);
+}
+
+int hmbParser::end_line()
+{
+    return this->end_row_num;
+}
+
+
+hmbParser::~hmbParser()
+{
+    if(this->node == nullptr) return;
+    cmark_node_free(this->node);
+    this->node = nullptr;
+}
