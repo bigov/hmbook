@@ -9,25 +9,17 @@
 #include <cstring>
 #include <windows.h>
 
-//#include <bits/stdc++.h>
-
-#include <wx/menu.h>
-#include <wx/richtext/richtextctrl.h>
-#include <wx/richtext/richtextxml.h>
-#include <wx/wfstream.h>
-#include <wx/string.h>
-#include <wx/sstream.h>
-#include <wx/colordlg.h>
-#include <wx/fontdlg.h>
-#include <wx/textdlg.h>
-#include <wx/tokenzr.h>
-#include <wx/log.h>
-
-extern "C" {
-#include <cmark-gfm.h>
-#include <cmark-gfm-core-extensions.h>
-#include <table.h>
-}
+#include "wx/menu.h"
+#include "wx/richtext/richtextctrl.h"
+#include "wx/richtext/richtextxml.h"
+#include "wx/wfstream.h"
+#include "wx/string.h"
+#include "wx/sstream.h"
+#include "wx/colordlg.h"
+#include "wx/fontdlg.h"
+#include "wx/textdlg.h"
+#include "wx/tokenzr.h"
+#include "wx/log.h"
 
 // Идентификатор кнопки переключения переноса слов на вкладке "Text".
 enum {
@@ -59,7 +51,5 @@ std::string replace_placeholder(std::string tpl,
 
 int digits(long long n); // Количество разрядов в числе
 int run_cmd_hidden(const std::string& cmd, const std::string& workDir = "");
-void debug_node(cmark_node* node);
-static const char* cmark_type_to_const_name(cmark_node_type t);
 
 #endif // HMB_TOOLS_H

@@ -8,3 +8,11 @@ MDBook написан на языке программирования C++. Дл
 
  - [DeepWiki commonmark/cmark](https://deepwiki.com/commonmark/cmark/1-overview)
  - Документации [wxRichTextCtrl](https://docs.wxwidgets.org/stable/overview_richtextctrl.html)
+
+## MS VS Code
+
+Для работы статического анализатора необходимо выполнить из корневой папки проекта?
+
+```
+cmake --preset Debug --fresh
+```

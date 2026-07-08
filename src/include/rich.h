@@ -14,6 +14,7 @@ Related Classes (https://docs.wxwidgets.org/stable/overview_richtextctrl.html):
 */
 
 #include "status_bar.h"
+#include "md_parser.h"
 #include "tools.h"
 
 class wxMenu;
