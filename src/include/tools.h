@@ -21,10 +21,25 @@
 #include "wx/tokenzr.h"
 #include "wx/log.h"
 
+
 // Идентификатор кнопки переключения переноса слов на вкладке "Text".
 enum {
     hmbID_LINE_WRAPPING = wxID_HIGHEST + 1,
     hmbID_SHOW_BUFFER_XML
+};
+
+enum
+{
+    RICHTEXT_LEFT_ALIGN = hmbID_SHOW_BUFFER_XML + 1, // было = 1100,
+    RICHTEXT_RIGHT_ALIGN,
+    RICHTEXT_CENTRE,
+    RICHTEXT_JUSTIFY,
+    RICHTEXT_CHANGE_FONT,
+    RICHTEXT_CHANGE_TEXT_COLOUR,
+    RICHTEXT_CHANGE_BACKGROUND_COLOUR,
+    RICHTEXT_LEFT_INDENT,
+    RICHTEXT_RIGHT_INDENT,
+    RICHTEXT_TAB_STOPS
 };
 
 extern wxString HMB_FNAME;

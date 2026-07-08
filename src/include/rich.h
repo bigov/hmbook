@@ -21,20 +21,6 @@ class wxMenu;
 class wxCommandEvent;
 class hmbPanelTree;
 
-enum
-{
-    RICHTEXT_LEFT_ALIGN = 1100,
-    RICHTEXT_RIGHT_ALIGN,
-    RICHTEXT_CENTRE,
-    RICHTEXT_JUSTIFY,
-    RICHTEXT_CHANGE_FONT,
-    RICHTEXT_CHANGE_TEXT_COLOUR,
-    RICHTEXT_CHANGE_BACKGROUND_COLOUR,
-    RICHTEXT_LEFT_INDENT,
-    RICHTEXT_RIGHT_INDENT,
-    RICHTEXT_TAB_STOPS
-};
-
 // Отслеживание курсора в документе.
 typedef struct hmbRichState {
     bool focus_in_object = false;  // фокус внутри вложенного объекта (wxRichTextBox)
@@ -50,7 +36,7 @@ public:
     explicit hmbRich(wxWindow* parent);
     ~hmbRich() override;
 
-    wxMenu* edit_menu();
+    wxMenu* edit_menu(); // в отдельном файле "rich_menu.cpp"
     void load_src_data();
     void read_buffer_xml(std::string& out);
     void bind_status_bar(hmbStatusBar* status_bar);
@@ -83,7 +69,6 @@ private:
     void node_iterator(cmark_node* node);
     void node_dispatcher(cmark_node* node);
     void show_url(const wxString& url);
-    void debug_buffer_content(std::string& out);
     void left_click_url(wxString url);
     void follow_local_page(const wxString url);
 
