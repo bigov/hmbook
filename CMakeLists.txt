@@ -60,7 +60,7 @@ SET(wxBUILD_MONOLITHIC "ON")
 FetchContent_GetProperties(wxWidgets)
 FetchContent_MakeAvailable(wxWidgets)
 
-# Библиотека парсера Markdown - cmark
+# Библиотека парсера Markdown - cmark-gfm
 SET(GFM_SOURCE_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-gfm-0.29.0.gfm.13")
 SET(GFM_BINARY_DIR "${HMBOOK_DEPS_SOURCE_DIR}/cmark-${CMAKE_BUILD_TYPE}")
 
@@ -85,6 +85,7 @@ message(STATUS "libcmark-gfm source cache: ${GFM_SOURCE_DIR}")
 FetchContent_GetProperties(libcmark-gfm)
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 set(CMAKE_POLICY_DEFAULT_CMP0148 OLD)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 FetchContent_MakeAvailable(libcmark-gfm)
 set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
 

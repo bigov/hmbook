@@ -483,7 +483,8 @@ void hmbRich::md_paragraph(cmark_node* node) {
 }
 
 void hmbRich::md_table(cmark_node* node) {
-    this->WriteText("Table node\n");
+    uint16_t col_count = cmark_gfm_extensions_get_table_columns(node);
+    std::cout << "Table, colmns: " << col_count << std::endl;
     // Обход строк таблицы
     this->node_iterator(node);
 }
@@ -650,7 +651,7 @@ void hmbRich::load_src_data()
         this->new_line();
     }
     
-    // BUG: Парсер игнорит в файле завешающий '\n'.
+    // BUG: Парсер игнорит в файле завершающий '\n'.
     // FIX: Добавление последней строки, если присутствует завешающий '\n'.
     if (HMB_SRC_DATA.size() >= 1 && HMB_SRC_DATA.substr(HMB_SRC_DATA.size()-1) == "\n")
         this->new_line();
