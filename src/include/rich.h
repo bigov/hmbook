@@ -49,6 +49,12 @@ private:
     wxColor color_gray_bg = "#f0f0f0";
 
     wxRichTextAttr code_block_style;
+    wxRichTextAttr table_attr;
+    wxRichTextAttr table_cell_attr;
+
+    wxRichTextTable* current_table = nullptr;
+    int table_row = 0;
+    int table_col = 0;
     
     hmbRichState cursor_position;
     hmbStatusBar* status_bar_ptr = nullptr;
