@@ -40,6 +40,11 @@
     "key": "ctrl+f5",
     "command": "workbench.action.debug.start",
     "when": "!inDebugMode"
+  },
+  {
+  "key": "ctrl+shift+g",
+  "command": "workbench.action.tasks.runTask",
+  "args": "CMake: Generate compile_commands.json"
   }
 ]
 ```
