@@ -195,6 +195,23 @@ void hmbRich::bind_events()
         this->cursor_position_save();
         event.Skip();
     });
+
+    // чувствительность прокрутки колеса мыши
+    this->Bind(wxEVT_MOUSEWHEEL, [this](wxMouseEvent& event)
+    {
+    int rotation = event.GetWheelRotation();
+    int delta = event.GetWheelDelta();
+    
+    // Множитель чувствительности: <1.0 — менее чувствительно, >1.0 — более
+    double sensitivity = 5.0;
+    
+    int lines = static_cast<int>((rotation / delta) * event.GetLinesPerAction() * sensitivity);
+    if (lines == 0 && rotation != 0)
+        lines = (rotation > 0) ? 1 : -1;
+    
+    this->ScrollLines(-lines);
+    // Не вызываем event.Skip(), чтобы подавить стандартную обработку
+    });
 }
 
 
@@ -501,8 +518,9 @@ void hmbRich::md_image(cmark_node* node) {
 
     filepath = base_dir + filepath;
 
-    wxImage img(filepath, wxBITMAP_TYPE_ANY); // Вставка PNG
+    wxImage img(filepath, wxBITMAP_TYPE_ANY);
     if (img.IsOk()) this->WriteImage(wxBitmap(img));
+    else wxLogError(_("Cannot open file '%s'."), filepath.wc_str());
 }
 
 void hmbRich::md_unknown(cmark_node* node) {
@@ -529,6 +547,14 @@ void hmbRich::md_table(cmark_node* node) {
     this->table_row = 0;
     this->node_iterator(node);                       // Обход строк таблицы
     this->SetFocusObject(&this->GetBuffer(), false); // восстановить фокус на основной буфер
+
+    // Переместить позицию вставки за таблицу, чтобы последующий контент
+    // документа не оказался перед ней
+    if (this->current_table) {
+        long after_table = this->current_table->GetRange().GetEnd() + 1;
+        this->SetInsertionPoint(after_table);
+    }
+
     this->current_table = nullptr;
 }
 
