@@ -52,9 +52,9 @@ private:
     wxRichTextAttr table_attr;
     wxRichTextAttr table_cell_attr;
 
-    wxRichTextTable* current_table = nullptr;
-    int table_row = 0;
-    int table_col = 0;
+    wxRichTextTable* ctable = nullptr;
+    int ctable_row = 0;
+    int ctable_col = 0;
     
     hmbRichState cursor_position;
     hmbStatusBar* status_bar_ptr = nullptr;

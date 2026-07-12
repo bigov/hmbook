@@ -123,28 +123,32 @@ void hmbRich::init_styles()
 
     // Стиль таблицы
     this->table_attr.GetTextBoxAttr().GetWidth().SetValue(100, wxTEXT_ATTR_UNITS_PERCENTAGE);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetTop().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetBottom().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetLeft().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetRight().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetTop().SetColour(*wxBLACK);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetBottom().SetColour(*wxBLACK);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetLeft().SetColour(*wxBLACK);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetRight().SetColour(*wxBLACK);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetTop().SetWidth(1, wxTEXT_ATTR_UNITS_PIXELS);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetBottom().SetWidth(1, wxTEXT_ATTR_UNITS_PIXELS);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetLeft().SetWidth(1, wxTEXT_ATTR_UNITS_PIXELS);
-    this->table_attr.GetTextBoxAttr().GetBorder().GetRight().SetWidth(1, wxTEXT_ATTR_UNITS_PIXELS);
+
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetTop().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetTop().SetColour(*wxBLACK);
+    this->table_attr.GetTextBoxAttr().GetBorder().GetTop().SetWidth(0, wxTEXT_ATTR_UNITS_PIXELS);
+
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetRight().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetRight().SetColour(*wxBLACK);
+    this->table_attr.GetTextBoxAttr().GetBorder().GetRight().SetWidth(0, wxTEXT_ATTR_UNITS_PIXELS);
+
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetBottom().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetBottom().SetColour(*wxBLACK);
+    this->table_attr.GetTextBoxAttr().GetBorder().GetBottom().SetWidth(0, wxTEXT_ATTR_UNITS_PIXELS);
+    
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetLeft().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_attr.GetTextBoxAttr().GetBorder().GetLeft().SetColour(*wxBLACK);
+    this->table_attr.GetTextBoxAttr().GetBorder().GetLeft().SetWidth(0, wxTEXT_ATTR_UNITS_PIXELS);
 
     // Стиль ячеек
     this->table_cell_attr.GetTextBoxAttr().GetPadding().GetLeft().SetValue(4, wxTEXT_ATTR_UNITS_PIXELS);
     this->table_cell_attr.GetTextBoxAttr().GetPadding().GetRight().SetValue(4, wxTEXT_ATTR_UNITS_PIXELS);
     this->table_cell_attr.GetTextBoxAttr().GetPadding().GetTop().SetValue(2, wxTEXT_ATTR_UNITS_PIXELS);
     this->table_cell_attr.GetTextBoxAttr().GetPadding().GetBottom().SetValue(2, wxTEXT_ATTR_UNITS_PIXELS);
-    this->table_cell_attr.GetTextBoxAttr().GetBorder().GetTop().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_cell_attr.GetTextBoxAttr().GetBorder().GetBottom().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_cell_attr.GetTextBoxAttr().GetBorder().GetLeft().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
-    this->table_cell_attr.GetTextBoxAttr().GetBorder().GetRight().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_cell_attr.GetTextBoxAttr().GetBorder().GetTop().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_cell_attr.GetTextBoxAttr().GetBorder().GetBottom().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_cell_attr.GetTextBoxAttr().GetBorder().GetLeft().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
+    //this->table_cell_attr.GetTextBoxAttr().GetBorder().GetRight().SetStyle(wxTEXT_BOX_ATTR_BORDER_THIN);
     this->table_cell_attr.GetTextBoxAttr().GetBorder().GetTop().SetColour(*wxLIGHT_GREY);
     this->table_cell_attr.GetTextBoxAttr().GetBorder().GetBottom().SetColour(*wxLIGHT_GREY);
     this->table_cell_attr.GetTextBoxAttr().GetBorder().GetLeft().SetColour(*wxLIGHT_GREY);
@@ -355,6 +359,7 @@ void hmbRich::line_break() {
 // Восстанавливаем их по source positions текущей block-ноды.
 void hmbRich::row_check(cmark_node* node) {
     if(!node) return;
+    if(this->ctable) return;
     int row_begin = cmark_node_get_start_line(node);
     while (row_begin > this->row_current)
     {
@@ -543,45 +548,48 @@ void hmbRich::md_table(cmark_node* node) {
     wxRichTextObject* obj = this->GetFocusObject()->InsertObjectWithUndo(
                 &this->GetBuffer(), this->GetInsertionPoint(), table, this,
                 wxRICHTEXT_INSERT_WITH_PREVIOUS_PARAGRAPH_STYLE);
-    this->current_table = wxDynamicCast(obj, wxRichTextTable);
-    this->table_row = 0;
+    this->ctable = wxDynamicCast(obj, wxRichTextTable);
+    this->ctable_row = 0;
     this->node_iterator(node);                       // Обход строк таблицы
     this->SetFocusObject(&this->GetBuffer(), false); // восстановить фокус на основной буфер
 
     // Переместить позицию вставки за таблицу, чтобы последующий контент
     // документа не оказался перед ней
-    if (this->current_table) {
-        long after_table = this->current_table->GetRange().GetEnd() + 1;
+    if (this->ctable) {
+        long after_table = this->ctable->GetRange().GetEnd() + 1;
         this->SetInsertionPoint(after_table);
     }
 
-    this->current_table = nullptr;
+    this->row_current += this->ctable_row;
+    this->ctable = nullptr;
+    this->ctable_row = 0;
+    this->ctable_col = 0;
 }
 
 void hmbRich::md_table_row(cmark_node* node) {
-     if (!this->current_table) return;
+     if (!this->ctable) return;
 
-    this->current_table->AddRows(this->current_table->GetRowCount(), 1, this->table_cell_attr);
-    this->table_col = 0;
+    this->ctable->AddRows(this->ctable->GetRowCount(), 1, this->table_cell_attr);
+    this->ctable_col = 0;
     bool is_header = cmark_gfm_extensions_get_table_row_is_header(node);
     if (is_header) this->BeginBold();
     this->node_iterator(node);
     if (is_header) this->EndBold();
-    this->table_row++;
+    this->ctable_row++;
 }
 
 void hmbRich::md_table_cell(cmark_node* node) {
-    if (!this->current_table) return;
-    if (this->table_col >= this->current_table->GetColumnCount()) return;
+    if (!this->ctable) return;
+    if (this->ctable_col >= this->ctable->GetColumnCount()) return;
 
-    wxRichTextCell* cell = this->current_table->GetCell(this->table_row, this->table_col);
-    if (!cell) { this->table_col++; return; }
+    wxRichTextCell* cell = this->ctable->GetCell(this->ctable_row, this->ctable_col);
+    if (!cell) { this->ctable_col++; return; }
     //cell->SetAttributes(this->table_cell_attr); // Применить стиль ячейки
     // Переключить фокус записи на ячейку и записать содержимое
     this->SetFocusObject(cell, false);
     cell->Clear();
     this->node_iterator(node);
-    this->table_col++;
+    this->ctable_col++;
 }
 
 void hmbRich::node_dispatcher(cmark_node* node)
