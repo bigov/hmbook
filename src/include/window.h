@@ -9,7 +9,7 @@
 #include "tools_bar.h"
 #include "status_bar.h"
 
-class hmbTree;
+class hmbTreeCtrl;
 
 class hmbWindow: public wxFrame
 {

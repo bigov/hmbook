@@ -114,7 +114,7 @@ target_include_directories(${HMBOOK} PRIVATE
 target_compile_definitions(${HMBOOK} PRIVATE WXUSINGDLL __WXMSW__)
 
 # Скрыть консоль
-#target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
+target_link_options(${HMBOOK} PRIVATE -mwindows -Wl,-subsystem,windows)
 
 target_link_libraries(${HMBOOK} PRIVATE wxWidgets::wxWidgets libcmark-gfm libcmark-gfm-extensions)
 

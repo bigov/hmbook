@@ -45,7 +45,7 @@ void debug_node(cmark_node* node) {
     std::cerr << "[" << start_line << " - " << end_line << "] " << cmark_type_to_const_name(t) << "\n";
 }
 
-hmbParser::hmbParser(const std::string &text)
+MdTree::MdTree(const std::string &text)
 {
     // Регистрация расширений GFM
     cmark_gfm_core_extensions_ensure_registered();
@@ -56,42 +56,47 @@ hmbParser::hmbParser(const std::string &text)
     if (table_ext) cmark_parser_attach_syntax_extension(parser, table_ext);
 
     cmark_parser_feed(parser, text.c_str(), text.size());
-    this->node = cmark_parser_finish(parser);
+    this->node_ptr = cmark_parser_finish(parser);
     cmark_parser_free(parser);
 
-    if(!this->node || cmark_node_get_type(this->node) != CMARK_NODE_DOCUMENT)
+    if(!this->node_ptr || cmark_node_get_type(this->node_ptr) != CMARK_NODE_DOCUMENT)
     {
         wxLogError(_("Markdown format error."));
-        if (this->node) cmark_node_free(this->node);
-        this->node = nullptr;
+        if (this->node_ptr) cmark_node_free(this->node_ptr);
+        this->node_ptr = nullptr;
     } else {
-        this->end_row_num = cmark_node_get_end_line(this->node);
+        this->end_row_num = cmark_node_get_end_line(this->node_ptr);
         
         // BUG: cmark игнорит в файле завершающий '\n'.
         // FIX: если присутствует завешающий '\n', то добавить параграф
         if (text.size() >= 1 && text.substr(text.size()-1) == "\n")
         {
             cmark_node* empty_row = cmark_node_new(CMARK_NODE_PARAGRAPH);
-            cmark_node_append_child(this->node, empty_row);
+            cmark_node_append_child(this->node_ptr, empty_row);
             this->end_row_num += 1;
         }
     }
 }
 
-int hmbParser::start_line()
+bool  MdTree::error()
 {
-    return cmark_node_get_start_line(this->node);
+    return this->node_ptr == nullptr;
 }
 
-int hmbParser::end_line()
+int MdTree::start_line()
+{
+    return cmark_node_get_start_line(this->node_ptr);
+}
+
+int MdTree::end_line()
 {
     return this->end_row_num;
 }
 
 
-hmbParser::~hmbParser()
+MdTree::~MdTree()
 {
-    if(this->node == nullptr) return;
-    cmark_node_free(this->node);
-    this->node = nullptr;
+    if(this->node_ptr == nullptr) return;
+    cmark_node_free(this->node_ptr);
+    this->node_ptr = nullptr;
 }

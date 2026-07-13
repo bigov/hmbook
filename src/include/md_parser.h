@@ -12,17 +12,21 @@ extern "C" {
 void debug_node(cmark_node* node);
 static const char* cmark_type_to_const_name(cmark_node_type t);
 
-class hmbParser
+class MdTree
 {
 public: 
-    hmbParser(const std::string  &text);
-    ~hmbParser();
-    cmark_node* node = nullptr;
+    MdTree(const std::string  &text);
+    ~MdTree();
+    cmark_node* node_ptr = nullptr;
 
     int start_line();
     int end_line();
+    bool error();
+
 private:
     int end_row_num = 0;
 };
+
+
 
 #endif // MD_PARSER_H

@@ -8,7 +8,7 @@
 #include "panel_view.h"
 #include "tree.h"
 
-class hmbTree;
+class hmbTreeCtrl;
 
 class hmbPanelTree : public wxPanel
 {
@@ -27,7 +27,7 @@ public:
 
 private:
     // Внутренний контрол дерева файлов.
-    hmbTree* tree_ptr = nullptr;
+    hmbTreeCtrl* tree_ptr = nullptr;
 };
 
 #endif // HMB_PANEL_TREE_H

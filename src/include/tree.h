@@ -17,10 +17,10 @@ private:
     wxString item_file_path;
 };
 
-class hmbTree : public wxTreeCtrl
+class hmbTreeCtrl : public wxTreeCtrl
 {
 public:
-    explicit hmbTree(wxWindow* parent);
+    explicit hmbTreeCtrl(wxWindow* parent);
     void bind_panelview_ptr(hmbPanelView* panel_view);
     void set_root_dir(const wxString& dir);
     void select_item(const wxString& filePath);

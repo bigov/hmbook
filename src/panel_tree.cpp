@@ -3,7 +3,7 @@
 hmbPanelTree::hmbPanelTree(wxWindow* parent) :
     wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_THEME)
 {
-    this->tree_ptr = new hmbTree(this);
+    this->tree_ptr = new hmbTreeCtrl(this);
     this->tree_ptr->SetMinSize(wxSize(40, -1)); // минимальная ширина панели
 
     // Чтобы иметь возможность для обеих панелей одинаково настраивать

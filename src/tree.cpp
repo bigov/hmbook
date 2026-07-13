@@ -31,15 +31,15 @@ wxTreeItemId find_item_by_path(wxTreeCtrl* tree, const wxTreeItemId& parent, con
 }
 }
 
-hmbTree::hmbTree(wxWindow* parent)
+hmbTreeCtrl::hmbTreeCtrl(wxWindow* parent)
     : wxTreeCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                  wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE | wxBORDER_NONE)
 {
     // Привязываем событие выбора элемента в дереве
-    Bind(wxEVT_TREE_SEL_CHANGED, &hmbTree::on_selection, this);
+    Bind(wxEVT_TREE_SEL_CHANGED, &hmbTreeCtrl::on_selection, this);
 }
 
-void hmbTree::set_root_dir(const wxString& dir)
+void hmbTreeCtrl::set_root_dir(const wxString& dir)
 {
     if(dir.IsEmpty()) return;
     wxDir directory(dir);
@@ -53,7 +53,7 @@ void hmbTree::set_root_dir(const wxString& dir)
     Expand(root);
 }
 
-void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
+void hmbTreeCtrl::populate_tree(const wxString& path, wxTreeItemId parent)
 {
     wxDir directory(path);
     if (!directory.IsOpened())
@@ -92,14 +92,14 @@ void hmbTree::populate_tree(const wxString& path, wxTreeItemId parent)
 }
 
 // Регистрация подписчика на событие выбора файла.
-void hmbTree::bind_panelview_ptr(hmbPanelView* panel_view)
+void hmbTreeCtrl::bind_panelview_ptr(hmbPanelView* panel_view)
 {
     this->panel_view_ptr = panel_view;
 }
 
 // Выбор элемента в дереве по полному пути к файлу. Если файл найден, он будет выбран, иначе - ничего не произойдет.
 // Если файл найден и выбран, это вызовет событие выбора, которое загрузит файл в панель просмотра.
-void hmbTree::select_item(const wxString& filePath)
+void hmbTreeCtrl::select_item(const wxString& filePath)
 {
     if (filePath.IsEmpty()) return;
     wxTreeItemId item = find_item_by_path(this, this->GetRootItem(), filePath);
@@ -107,13 +107,13 @@ void hmbTree::select_item(const wxString& filePath)
 }
 
 
-wxString hmbTree::get_current_dir() const
+wxString hmbTreeCtrl::get_current_dir() const
 {
     if (HMB_FNAME.IsEmpty()) return HMB_DNAME;
     return wxFileName(HMB_FNAME).GetPath();
 }
 
-void hmbTree::on_selection(wxTreeEvent& event)
+void hmbTreeCtrl::on_selection(wxTreeEvent& event)
 {
     // Получаем идентификатор выбранного узла из системного события wxTreeCtrl.
     wxTreeItemId itemId = event.GetItem();
