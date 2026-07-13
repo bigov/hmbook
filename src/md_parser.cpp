@@ -92,11 +92,3 @@ int MdTree::end_line()
 {
     return this->end_row_num;
 }
-
-
-MdTree::~MdTree()
-{
-    if(this->node_ptr == nullptr) return;
-    cmark_node_free(this->node_ptr);
-    this->node_ptr = nullptr;
-}
