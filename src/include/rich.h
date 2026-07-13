@@ -52,6 +52,7 @@ private:
     wxRichTextAttr table_attr;
     wxRichTextAttr table_cell_attr;
 
+    std::unique_ptr<MdTree> md_tree = nullptr;
     wxRichTextTable* ctable = nullptr;
     int ctable_row = 0;
     int ctable_col = 0;

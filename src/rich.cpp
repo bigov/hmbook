@@ -692,19 +692,19 @@ void hmbRich::node_iterator(cmark_node* node)
 // --- Load the Markdown text ---
 void hmbRich::load_src_data()
 {
-    auto md_tree = MdTree(HMB_SRC_DATA);
-    if(md_tree.error())
+    this->md_tree = std::make_unique<MdTree>(HMB_SRC_DATA);
+    if(this->md_tree->error())
     {
          this->load_as_plain_text();
          return;
     }
 
     new_document();
-    this->row_current = md_tree.start_line();
-    this->row_total = this->row_current + md_tree.end_line() - 1;
+    this->row_current = this->md_tree->start_line();
+    this->row_total = this->row_current + this->md_tree->end_line() - 1;
     this->Freeze();
     this->BeginSuppressUndo();
-    node_iterator(md_tree.node_ptr);
+    node_iterator(this->md_tree->get_root_ptr());
     this->EndSuppressUndo();
     this->Thaw();
     cursor_position_load();

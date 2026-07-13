@@ -32,17 +32,13 @@ public:
     MdTree(MdTree&&) = default;
     MdTree& operator=(MdTree&&) = default;
 
-    cmark_node* get_raw_node() const { return node_ptr.get(); }
-    //Если функция библиотеки возвращает новый cmark_node* (который вы хотите забрать себе), используем reset():
-    // this->node_ptr.reset(cmark_parser_finish(parser));
-
+    bool error();
     int start_line();
     int end_line();
-    bool error();
+    cmark_node* get_root_ptr() const { return tree_ptr.get(); }
 
 private:
-    //cmark_node* node_ptr = nullptr;
-    std::unique_ptr<cmark_node, CmarkNodeDeleter> node_ptr;
+    std::unique_ptr<cmark_node, CmarkNodeDeleter> tree_ptr;
     int end_row_num = 0;
 };
 

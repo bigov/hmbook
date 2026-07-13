@@ -56,23 +56,23 @@ MdTree::MdTree(const std::string &text)
     if (table_ext) cmark_parser_attach_syntax_extension(parser, table_ext);
 
     cmark_parser_feed(parser, text.c_str(), text.size());
-    this->node_ptr = cmark_parser_finish(parser);
+    this->tree_ptr.reset(cmark_parser_finish(parser));
     cmark_parser_free(parser);
 
-    if(!this->node_ptr || cmark_node_get_type(this->node_ptr) != CMARK_NODE_DOCUMENT)
+    if(!this->tree_ptr || cmark_node_get_type(this->tree_ptr.get()) != CMARK_NODE_DOCUMENT)
     {
         wxLogError(_("Markdown format error."));
-        if (this->node_ptr) cmark_node_free(this->node_ptr);
-        this->node_ptr = nullptr;
+        if (this->tree_ptr) cmark_node_free(this->tree_ptr.get());
+        this->tree_ptr = nullptr;
     } else {
-        this->end_row_num = cmark_node_get_end_line(this->node_ptr);
+        this->end_row_num = cmark_node_get_end_line(this->tree_ptr.get());
         
         // BUG: cmark игнорит в файле завершающий '\n'.
         // FIX: если присутствует завешающий '\n', то добавить параграф
         if (text.size() >= 1 && text.substr(text.size()-1) == "\n")
         {
             cmark_node* empty_row = cmark_node_new(CMARK_NODE_PARAGRAPH);
-            cmark_node_append_child(this->node_ptr, empty_row);
+            cmark_node_append_child(this->tree_ptr.get(), empty_row);
             this->end_row_num += 1;
         }
     }
@@ -80,12 +80,12 @@ MdTree::MdTree(const std::string &text)
 
 bool  MdTree::error()
 {
-    return this->node_ptr == nullptr;
+    return this->tree_ptr == nullptr;
 }
 
 int MdTree::start_line()
 {
-    return cmark_node_get_start_line(this->node_ptr);
+    return cmark_node_get_start_line(this->get_root_ptr());
 }
 
 int MdTree::end_line()
